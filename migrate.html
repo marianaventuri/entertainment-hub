@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Migração para Firestore</title>
+<script type="importmap">
+{
+  "imports": {
+    "firebase/app": "https://www.gstatic.com/firebasejs/12.15.0/firebase-app.js",
+    "firebase/firestore": "https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore.js"
+  }
+}
+</script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: system-ui, sans-serif; background: #07090f; color: #e8edf8; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 20px; }
+h1 { font-size: 1.4rem; }
+.container { max-width: 700px; width: 100%; background: #0e1117; border: 1px solid #1e2840; border-radius: 14px; padding: 24px; }
+textarea { width: 100%; min-height: 200px; background: #141820; border: 1px solid #253050; border-radius: 8px; color: #e8edf8; padding: 12px; font-size: 0.85rem; font-family: monospace; resize: vertical; }
+button { padding: 10px 24px; background: #6c63ff; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 0.9rem; }
+button:hover { background: #5a52e0; }
+button:disabled { opacity: 0.5; cursor: not-allowed; }
+.log { margin-top: 16px; font-size: 0.82rem; color: #8896b3; max-height: 300px; overflow-y: auto; font-family: monospace; }
+.log .ok { color: #34d399; }
+.log .err { color: #f87171; }
+.log .info { color: #60a5fa; }
+.step { background: #141820; border-radius: 8px; padding: 16px; margin-bottom: 16px; border: 1px solid #1e2840; }
+.step-num { color: #6c63ff; font-weight: 700; margin-right: 8px; }
+code { background: #1a2030; padding: 2px 6px; border-radius: 4px; font-size: 0.8rem; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>⬆ Migrar dados para Firestore</h1>
+  <p style="color:#8896b3;margin:8px 0 20px;font-size:0.85rem">
+    Cole o JSON completo extraído do localStorage e clique em Migrar.
+  </p>
+
+  <div class="step">
+    <span class="step-num">1</span>
+    Cole aqui o JSON completo (cópia do console):
+    <textarea id="jsonInput" placeholder='[{"id":123,"title":"...", ...}]'></textarea>
+  </div>
+
+  <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+    <button id="btnMigrate" onclick="migrate()">🚀 Migrar para Firestore</button>
+    <span id="statusMsg" style="font-size:0.85rem;color:var(--text2)"></span>
+  </div>
+
+  <div class="log" id="log"></div>
+</div>
+
+<script type="module">
+import { initializeApp } from 'firebase/app'
+import { getFirestore, doc, setDoc, writeBatch } from 'firebase/firestore'
+
+const firebaseConfig = {
+  apiKey: "AIzaSyBtshsP-a2tCOdugp-rqdY_XM8RCkIx9hA",
+  authDomain: "entertainment-hub-7777a.firebaseapp.com",
+  projectId: "entertainment-hub-7777a",
+  storageBucket: "entertainment-hub-7777a.firebasestorage.app",
+  messagingSenderId: "892977006495",
+  appId: "1:892977006495:web:0007bbc575a24676161faa"
+}
+
+const app = initializeApp(firebaseConfig)
+const db = getFirestore(app)
+
+const logEl = document.getElementById('log')
+const btn = document.getElementById('btnMigrate')
+const statusMsg = document.getElementById('statusMsg')
+
+function log(msg, type='info') {
+  const div = document.createElement('div')
+  div.className = type
+  div.textContent = msg
+  logEl.appendChild(div)
+  logEl.scrollTop = logEl.scrollHeight
+}
+
+window.migrate = async function() {
+  const raw = document.getElementById('jsonInput').value.trim()
+  if (!raw) { statusMsg.textContent = '⚠️ Cole o JSON primeiro'; return }
+
+  let items
+  try {
+    items = JSON.parse(raw)
+    // se ainda for string (duplo stringify), parse de novo
+    if (typeof items === 'string') items = JSON.parse(items)
+  } catch(e) {
+    log('❌ JSON inválido: ' + e.message, 'err')
+    return
+  }
+
+  if (!Array.isArray(items) || items.length === 0) {
+    log('❌ JSON deve ser um array com ao menos 1 item', 'err')
+    return
+  }
+
+  btn.disabled = true
+  statusMsg.textContent = '⏳ Migrando...'
+  logEl.innerHTML = ''
+  log(`📦 ${items.length} itens para migrar`, 'info')
+
+  try {
+    const batch = writeBatch(db)
+    let count = 0
+
+    for (const item of items) {
+      const id = String(item.id)
+      const ref = doc(db, 'media', id)
+
+      const data = { ...item }
+      if (data.finishedAt) data.finishedAt = data.finishedAt
+      if (data.addedAt) data.addedAt = data.addedAt
+
+      batch.set(ref, data)
+      count++
+
+      if (count % 500 === 0) {
+        await batch.commit()
+        log(`✅ ${count} itens processados...`, 'ok')
+      }
+    }
+
+    if (count % 500 !== 0) {
+      await batch.commit()
+    }
+
+    log(`✅ ✅ ✅ Migração concluída! ${count} itens salvos no Firestore.`, 'ok')
+    statusMsg.textContent = `✅ ${count} itens migrados!`
+    statusMsg.style.color = '#34d399'
+  } catch(e) {
+    log(`❌ Erro: ${e.message}`, 'err')
+    statusMsg.textContent = '❌ Erro na migração'
+    statusMsg.style.color = '#f87171'
+  }
+
+  btn.disabled = false
+}
+</script>
+</body>
+</html>
