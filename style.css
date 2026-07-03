@@ -455,40 +455,12 @@ body {
   overflow: hidden;
 }
 
-.hscroll-card .hscroll-card-poster {
-  width: 100%;
-  aspect-ratio: 2/3;
-  background: var(--surface2);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-  font-size: 2rem;
+.hscroll-card .card-overlay {
+  padding: var(--space-2);
 }
 
-.hscroll-card-poster img { width: 100%; height: 100%; object-fit: cover; }
-
-.hscroll-type-icon { font-size: 1.6rem; opacity: .6; }
-
-.hscroll-card-body {
-  padding: var(--space-2) var(--space-2) var(--space-3);
-}
-
-.hscroll-card-title {
-  font-family: var(--font);
-  font-weight: var(--weight-semibold);
-  font-size: var(--font-sm);
-  line-height: 1.3;
-  display: -webkit-box;
-  -webkit-line-clamp: 2;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
-  margin-bottom: 2px;
-}
-
-.hscroll-card-meta {
-  font-size: var(--font-xs);
-  color: var(--text2);
+.hscroll-card .card-info-title {
+  -webkit-line-clamp: 1;
 }
 
 .hscroll-more {
@@ -610,6 +582,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
+  border-radius: var(--radius);
 }
 
 .card-poster img {
