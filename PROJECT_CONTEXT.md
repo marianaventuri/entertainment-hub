@@ -14,6 +14,7 @@ App para catalogar filmes, séries, animes, mangás, doramas, jogos e livros com
 | `.gitignore` | node_modules/, .firebase/, .firebaserc |
 | `firebase.json` | Config Firebase Hosting (público: raiz, sem rewrites SPA) |
 | `.firebaserc` | Vincula ao projeto `entertainment-hub-7777a` |
+| `.github/workflows/deploy.yml` | GitHub Actions: deploy automático no push |
 | `migrate.html` | Script de migração avulso (não carregado pelo app) |
 | `firestore-crud.js` | Versão antiga com ES modules (não usado) |
 
@@ -88,7 +89,17 @@ Bottom nav: Home → Catálogo → Wishlist → Conquistas
 
 - **Firebase Hosting:** https://entertainment-hub-7777a.web.app
 - **GitHub (código):** https://github.com/marianaventuri/entertainment-hub
-- **Comando:** `firebase deploy --only hosting`
+- **Automático:** GitHub Actions (`.github/workflows/deploy.yml`) — deploy em todo `git push` para `main`
+- **Manual:** `firebase deploy --only hosting`
+
+### CI/CD
+
+O workflow `Deploy Firebase Hosting`:
+1. Escuta pushes na branch `main`
+2. Instala `firebase-tools`
+3. Executa `firebase deploy --only hosting` com o token do secret `FIREBASE_TOKEN`
+
+**Setup único:** `firebase login:ci` → token adicionado como secret `FIREBASE_TOKEN` no repositório GitHub.
 
 ## PWA
 
