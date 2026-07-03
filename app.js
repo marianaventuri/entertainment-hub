@@ -341,9 +341,9 @@ function openDetail(id) {
   document.getElementById('detailOverlay').classList.add('open');
 }
 
-function addRelated(title, type, cover, originalId) {
+async function addRelated(title, type, cover, originalId) {
   const item = {
-    id: Date.now() + Math.random(),
+    id: String(Date.now() + Math.random()),
     title, type, cover: cover || '',
     status: 'Quero assistir',
     rating: 0,
@@ -353,7 +353,7 @@ function addRelated(title, type, cover, originalId) {
   };
   db.push(item);
   save();
-  saveItemToFirestore(item);
+  await saveItemToFirestore(item);
   renderCatalogo();
   updateCounts();
   checkAchievements();
@@ -490,10 +490,10 @@ function editItem(id) {
   document.getElementById('addOverlay').classList.add('open');
 }
 
-function deleteItem(id) {
+async function deleteItem(id) {
   if (!confirm('Remover esta obra do catálogo?')) return;
   db = db.filter(x=>x.id!==id);
-  deleteItemFromFirestore(id);
+  await deleteItemFromFirestore(id);
   save();
   document.getElementById('detailOverlay').classList.remove('open');
   renderCatalogo();
@@ -545,7 +545,7 @@ function confirmDeleteSelected() {
   toast(`${size} obra(s) removida(s)`);
 }
 
-function saveItem() {
+async function saveItem() {
   const title = document.getElementById('f-title').value.trim();
   if (!title) {
     document.getElementById('f-title').focus();
@@ -564,7 +564,7 @@ function saveItem() {
   const rating = parseInt(document.getElementById('starInput').dataset.val)||0;
 
   const item = {
-    id:       editingId || Date.now(),
+    id:       String(editingId || Date.now()),
     title,
     type:     document.getElementById('f-type').value,
     status:   document.getElementById('f-status').value,
@@ -594,7 +594,7 @@ function saveItem() {
   }
 
   save();
-  saveItemToFirestore(item);
+  await saveItemToFirestore(item);
   closeAddModal();
   renderCatalogo();
   toast(editingId ? 'Obra atualizada!' : 'Obra adicionada!', editingId?'✏️':'🎉');
