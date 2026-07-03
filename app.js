@@ -11,6 +11,7 @@ let favEdit     = false;
 
 let isDeleteMode = false;
 let selectedIds = new Set();
+let localSaveGuard = false;
 
 let unsubscribeSync = null;
 
@@ -594,7 +595,9 @@ async function saveItem() {
   }
 
   save();
+  localSaveGuard = true;
   await saveItemToFirestore(item);
+  setTimeout(() => { localSaveGuard = false; }, 100);
   closeAddModal();
   renderCatalogo();
   toast(editingId ? 'Obra atualizada!' : 'Obra adicionada!', editingId?'✏️':'🎉');
@@ -1419,6 +1422,7 @@ async function initApp() {
   if (bnHome) bnHome.classList.add('active');
   if (unsubscribeSync) unsubscribeSync()
   unsubscribeSync = subscribeCatalog(updatedData => {
+    if (localSaveGuard) return;
     const norm = a => JSON.stringify([...a].sort((x,y)=>String(x.id).localeCompare(String(y.id))))
     if (norm(db) === norm(updatedData)) return
     const prevIds = new Set(db.map(x=>x.id))
