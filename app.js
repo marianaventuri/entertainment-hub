@@ -752,7 +752,7 @@ function renderHome() {
 
   c.innerHTML = `
     <div class="home-greeting">
-      <div class="home-greeting-text">${greeting}, ${esc(userName)} <span class="home-wave">👋</span></div>
+      <div class="home-greeting-text">${greeting}, ${esc(userName)} <span class="home-wave">👋</span> ✨</div>
       ${total > 0 ? `<div class="home-greeting-sub">Você tem ${total} obra${total !== 1 ? 's' : ''} no catálogo</div>` : ''}
     </div>
 
