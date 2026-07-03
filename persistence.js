@@ -50,27 +50,21 @@ async function loadCatalog() {
     const col = getMediaCollection()
     const snapshot = await col.get()
     if (!snapshot.empty) {
-      const data = []
-      snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }))
+      const firestoreData = []
+      snapshot.forEach(doc => firestoreData.push({ id: doc.id, ...doc.data() }))
       console.log('Carregado do Firestore (usuário)')
-      // Merge with localStorage to recover items that failed to sync
+      // Prefer localStorage data (user's latest edits); Firestore fills gaps
       const stored = readLocalStorageFallback()
       if (stored) {
         const localItems = JSON.parse(stored)
-        const firestoreIds = new Set(data.map(x => x.id))
-        const missing = localItems.filter(x => !firestoreIds.has(x.id))
-        if (missing.length) {
-          console.log(`Mesclando ${missing.length} itens do localStorage perdidos no Firestore`)
-          const batch = firebase.firestore().batch()
-          missing.forEach(item => {
-            const ref = col.doc(String(item.id))
-            batch.set(ref, item)
-          })
-          await batch.commit()
-          data.push(...missing)
-        }
+        const localIds = new Set(localItems.map(x => x.id))
+        const onlyInFirestore = firestoreData.filter(x => !localIds.has(x.id))
+        console.log(`localStorage: ${localItems.length}, Firestore: ${firestoreData.length}, mesclados: ${onlyInFirestore.length}`)
+        // Try to recover local items back to Firestore in background
+        recoverLocalItems(localItems, firestoreData, col)
+        return [...localItems, ...onlyInFirestore]
       }
-      return data
+      return firestoreData
     }
     const migrated = await migrateLegacyData()
     if (migrated > 0) {
@@ -137,6 +131,26 @@ async function deleteItemFromFirestore(id) {
   } catch (err) {
     console.error('Erro ao remover do Firestore:', err)
     return false
+  }
+}
+
+// Silently try to sync local items that Firestore is missing/stale
+function recoverLocalItems(localItems, firestoreItems, col) {
+  const fsMap = new Map(firestoreItems.map(x => [x.id, x]))
+  const batch = firebase.firestore().batch()
+  let count = 0
+  localItems.forEach(item => {
+    const existing = fsMap.get(item.id)
+    if (!existing || JSON.stringify(existing) !== JSON.stringify(item)) {
+      batch.set(col.doc(String(item.id)), item)
+      count++
+    }
+  })
+  if (count) {
+    console.log(`Recuperando ${count} obras para o Firestore...`)
+    batch.commit().then(() => console.log('Recuperação concluída')).catch(err => {
+      if (err.code !== 'permission-denied') console.error('Erro na recuperação:', err)
+    })
   }
 }
 

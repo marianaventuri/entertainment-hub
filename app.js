@@ -12,6 +12,7 @@ let favEdit     = false;
 let isDeleteMode = false;
 let selectedIds = new Set();
 let localSaveGuard = false;
+let revertGuard = false;
 
 let unsubscribeSync = null;
 
@@ -603,6 +604,8 @@ async function saveItem() {
   if (saved) {
     toast(editingId ? '✏️ Obra atualizada!' : '🎉 Obra adicionada!');
   } else {
+    revertGuard = true;
+    setTimeout(() => { revertGuard = false; }, 3000);
     toast('⚠️ Salvo localmente, mas erro no servidor. Recarregue com cuidado.', '⚠️');
   }
   checkAchievements();
@@ -1426,14 +1429,27 @@ async function initApp() {
   if (bnHome) bnHome.classList.add('active');
   if (unsubscribeSync) unsubscribeSync()
   unsubscribeSync = subscribeCatalog(updatedData => {
-    if (localSaveGuard) return;
+    if (localSaveGuard || revertGuard) return;
     const norm = a => JSON.stringify([...a].sort((x,y)=>String(x.id).localeCompare(String(y.id))))
     if (norm(db) === norm(updatedData)) return
     const prevIds = new Set(db.map(x=>x.id))
     const nextIds = new Set(updatedData.map(x=>x.id))
     const added = [...nextIds].filter(id => !prevIds.has(id))
     const removed = [...prevIds].filter(id => !nextIds.has(id))
-    db = updatedData
+    // Merge: preserve local version when Firestore data is stale
+    const localMap = new Map(db.map(x => [x.id, x]))
+    updatedData.forEach(item => {
+      localMap.set(item.id, item)
+    })
+    db = [...localMap.values()]
+    // Re-apply localStorage items that Firestore rejected
+    const saved = readLocalStorageFallback()
+    if (saved) {
+      const localItems = JSON.parse(saved)
+      const localMap = new Map(db.map(x => [x.id, x]))
+      localItems.forEach(item => localMap.set(item.id, item))
+      db = [...localMap.values()]
+    }
     updateCounts()
     renderHome()
     renderCatalogo()
