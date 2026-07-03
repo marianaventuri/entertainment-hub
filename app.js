@@ -1446,7 +1446,6 @@ async function initApp() {
     const saved = readLocalStorageFallback()
     if (saved) {
       const localItems = JSON.parse(saved)
-      const localMap = new Map(db.map(x => [x.id, x]))
       localItems.forEach(item => localMap.set(item.id, item))
       db = [...localMap.values()]
     }
