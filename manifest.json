@@ -1,0 +1,20 @@
+{
+  "name": "Minha Biblioteca",
+  "short_name": "Biblioteca",
+  "description": "Catálogo pessoal de filmes, séries, animes, mangás, doramas, jogos e livros",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#07090f",
+  "theme_color": "#07090f",
+  "lang": "pt-BR",
+  "categories": ["entertainment", "books", "lifestyle"],
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}

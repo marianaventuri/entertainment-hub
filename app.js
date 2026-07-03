@@ -66,9 +66,12 @@ function navigate(page, resetFilters = true) {
   const bnEl = document.getElementById('bn-' + page);
   if (bnEl) bnEl.classList.add('active');
 
+  document.querySelectorAll(`.nav-item[onclick*="navigate('${page}'"]`).forEach(n => n.classList.add('active'));
+
   closeSidebar();
 
-  if      (page === 'catalogo')   { renderCatalogo(); }
+  if      (page === 'home')      { renderHome(); }
+  else if (page === 'catalogo')  { renderCatalogo(); }
   else if (page === 'dashboard')  { renderDashboard(); }
   else if (page === 'timeline')   { renderTimeline(); }
   else if (page === 'wishlist')   { renderWishlist(); }
@@ -689,6 +692,133 @@ function renderWishlist() {
 }
 
 /* ═══════════════════════════════════════════
+   HOME
+═══════════════════════════════════════════ */
+function renderHome() {
+  const c = document.getElementById('homeContent');
+  if (!c) { console.error('homeContent não encontrado!'); return; }
+
+  const total = db.length;
+  const userName = currentUser?.displayName || 'Mari';
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? 'Bom dia' : hour < 18 ? 'Boa tarde' : 'Boa noite';
+
+  const watching = db.filter(x => x.status === 'Assistindo').sort((a,b) => b.id - a.id);
+
+  const watchSections = [
+    { label: 'Continue assistindo', icon: '▶️', types: ['Filme','Série','Anime','Dorama'] },
+    { label: 'Continue lendo',      icon: '📖', types: ['Mangá','Livro'] },
+    { label: 'Continue jogando',    icon: '🎮', types: ['Jogo'] },
+  ]
+  .filter(s => watching.some(x => s.types.includes(x.type)))
+  .map(s => {
+    const items = watching.filter(x => s.types.includes(x.type)).slice(0, 8);
+    return `
+      <div class="home-section">
+        <h2 class="home-section-title">${s.icon} ${s.label}</h2>
+        <div class="home-hscroll">
+          ${items.map(item => {
+            const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
+            const coverHtml = item.cover
+              ? `<div class="hscroll-card-poster"><img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()"></div>`
+              : `<div class="hscroll-card-poster"><span class="hscroll-type-icon">${t.icon}</span></div>`;
+            return `
+              <div class="card hscroll-card" onclick="openDetail(${item.id})">
+                ${coverHtml}
+                <div class="hscroll-card-body">
+                  <div class="hscroll-card-title">${esc(item.title)}</div>
+                  <div class="hscroll-card-meta">${t.icon} ${esc(item.type)}</div>
+                </div>
+              </div>`;
+          }).join('')}
+          ${items.length ? `<button class="hscroll-more" onclick="navigateFilter('catalogo','status','Assistindo')">Ver todos →</button>` : ''}
+        </div>
+      </div>`;
+  }).join('');
+
+  const typeCounts = ['Filme','Série','Anime','Mangá','Dorama','Jogo','Livro']
+    .map(t => ({ type: t, icon: TIPO[t].icon, n: db.filter(x => x.type === t).length }))
+    .filter(t => t.n > 0);
+
+  const finished = db.filter(x => x.status === 'Finalizado').length;
+  const watchingCount = db.filter(x => x.status === 'Assistindo').length;
+  const totalHours = db.reduce((s,x) => s + (parseFloat(x.hours)||0), 0);
+  const avgRating = db.filter(x => x.rating).length
+    ? (db.filter(x => x.rating).reduce((s,x) => s + x.rating, 0) / db.filter(x => x.rating).length).toFixed(1)
+    : '—';
+  const favCount = db.filter(x => x.fav).length;
+
+  const recent = [...db].sort((a,b) => b.id - a.id).slice(0, 6);
+
+  c.innerHTML = `
+    <div class="home-greeting">
+      <div class="home-greeting-text">${greeting}, ${esc(userName)} <span class="home-wave">👋</span></div>
+      ${total > 0 ? `<div class="home-greeting-sub">Você tem ${total} obra${total !== 1 ? 's' : ''} no catálogo</div>` : ''}
+    </div>
+
+    ${watching.length > 0 ? watchSections : ''}
+
+    <div class="home-section">
+      <h2 class="home-section-title">📚 Minha Biblioteca</h2>
+      <div class="home-type-grid">
+        ${typeCounts.map(t => `
+          <button class="home-type-card" onclick="navigateFilter('catalogo','tipo','${t.type}')">
+            <span class="home-type-icon">${t.icon}</span>
+            <span class="home-type-name">${t.type}</span>
+            <span class="home-type-count">${t.n}</span>
+          </button>
+        `).join('')}
+        ${typeCounts.length === 0 ? '<div class="home-empty">Adicione sua primeira obra!</div>' : ''}
+      </div>
+    </div>
+
+    ${total > 0 ? `
+    <div class="home-section">
+      <h2 class="home-section-title">⚡ Estatísticas rápidas</h2>
+      <div class="home-stats-grid">
+        <div class="stat-card"><div class="stat-val">${total}</div><div class="stat-label">Total</div></div>
+        <div class="stat-card"><div class="stat-val">${finished}</div><div class="stat-label">Finalizados</div></div>
+        <div class="stat-card"><div class="stat-val">${watchingCount}</div><div class="stat-label">Em andamento</div></div>
+        <div class="stat-card"><div class="stat-val">${totalHours.toFixed(0)}h</div><div class="stat-label">Horas</div></div>
+        <div class="stat-card"><div class="stat-val">${avgRating}★</div><div class="stat-label">Nota média</div></div>
+        <div class="stat-card"><div class="stat-val">${favCount}</div><div class="stat-label">Favoritos</div></div>
+      </div>
+    </div>
+
+    <div class="home-section">
+      <h2 class="home-section-title">🕐 Últimas obras</h2>
+      <div class="grid home-recent-grid">
+        ${recent.map(item => {
+          const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
+          const coverHtml = item.cover
+            ? `<img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()">`
+            : `<div class="card-poster-placeholder"><span class="type-icon">${t.icon}</span><span class="type-label">${esc(item.type)}</span></div>`;
+          return `
+            <div class="card" onclick="openDetail(${item.id})" style="--t-color:${t.color}">
+              <div class="card-poster" style="border-bottom:2px solid ${t.color}22">${coverHtml}</div>
+              <div class="card-body">
+                <div class="card-title">${esc(item.title)}</div>
+                <div class="card-meta"><span class="card-type">${t.icon} ${esc(item.type)}</span></div>
+              </div>
+            </div>`;
+        }).join('')}
+      </div>
+    </div>
+    ` : ''}
+
+    <div class="home-section">
+      <h2 class="home-section-title">⚡ Atalhos rápidos</h2>
+      <div class="home-actions">
+        <button class="btn btn-primary home-action-btn" onclick="openAddModal()">➕ Adicionar obra</button>
+        <button class="btn btn-ghost home-action-btn" onclick="openImportModal()">⬆ Importar</button>
+        <button class="btn btn-ghost home-action-btn" onclick="openWishModal()">❤️ Lista de desejos</button>
+        <button class="btn btn-ghost home-action-btn" onclick="navigate('catalogo')">📋 Ver catálogo</button>
+      </div>
+    </div>
+  `;
+}
+
+/* ═══════════════════════════════════════════
    DASHBOARD
 ═══════════════════════════════════════════ */
 function renderDashboard() {
@@ -1201,9 +1331,66 @@ document.addEventListener('keydown', e=>{
 document.getElementById('w-title').addEventListener('keydown', e=>{ if(e.key==='Enter') saveWish(); });
 
 /* ═══════════════════════════════════════════
-   PERSISTENCE - migração + carga Firestore/localStorage
+   AUTH — signIn / signOut
 ═══════════════════════════════════════════ */
-(async () => {
+async function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider()
+  try {
+    await auth.signInWithPopup(provider)
+  } catch (err) {
+    console.error('Erro login:', err)
+    if (err.code === 'auth/popup-blocked') {
+      toast('⚠️ Popup bloqueado — redirecionando...', '⚠️')
+      await auth.signInWithRedirect(provider)
+    } else if (err.code === 'auth/unauthorized-domain') {
+      toast('⚠️ Domínio não autorizado no Firebase Console.', '⚠️')
+    } else {
+      toast('❌ Erro ao fazer login.', '❌')
+    }
+  }
+}
+
+async function signOutUser() {
+  try {
+    await auth.signOut()
+  } catch (err) {
+    console.error('Erro ao sair:', err)
+    toast('❌ Erro ao sair.', '❌')
+  }
+}
+
+/* ═══════════════════════════════════════════
+   AUTH + INIT
+═══════════════════════════════════════════ */
+function handleAuthChange(user) {
+  const overlay = document.getElementById('loginOverlay')
+  const mainContent = document.querySelector('.main')
+  const userMenu = document.getElementById('userMenu')
+  const avatar = document.getElementById('userAvatar')
+  const sidebar = document.getElementById('sidebar')
+  const bottomNav = document.getElementById('bottomNav')
+
+  if (user) {
+    overlay.classList.add('hidden')
+    mainContent.style.display = ''
+    if (sidebar) sidebar.style.display = ''
+    if (bottomNav) bottomNav.style.display = ''
+    userMenu.style.display = 'flex'
+    avatar.textContent = user.displayName ? user.displayName.charAt(0).toUpperCase() : user.email.charAt(0).toUpperCase()
+    initApp()
+  } else {
+    overlay.classList.remove('hidden')
+    mainContent.style.display = 'none'
+    if (sidebar) sidebar.style.display = 'none'
+    if (bottomNav) bottomNav.style.display = 'none'
+    userMenu.style.display = 'none'
+    db = []
+    wishdb = load(WISH_KEY, [])
+    if (unsubscribeSync) { unsubscribeSync(); unsubscribeSync = null; }
+  }
+}
+
+async function initApp() {
   try {
     await migrateIfNeeded()
     const data = await loadCatalog()
@@ -1211,6 +1398,26 @@ document.getElementById('w-title').addEventListener('keydown', e=>{ if(e.key==='
       db = data
     }
   } catch (_) {}
+  // Ensure page-home exists (in case of cached HTML)
+  if (!document.getElementById('page-home')) {
+    const content = document.querySelector('.content');
+    if (content) {
+      // Remove active from other pages
+      content.querySelectorAll('.page.active').forEach(p => p.classList.remove('active'));
+      const div = document.createElement('div');
+      div.className = 'page active';
+      div.id = 'page-home';
+      div.innerHTML = '<div id="homeContent"></div>';
+      content.insertBefore(div, content.firstChild);
+    }
+  }
+  // Sync sidebar + bottom nav active state
+  document.querySelectorAll('.nav-item.active').forEach(n => n.classList.remove('active'));
+  const homeNav = document.querySelector('.nav-item[onclick*="navigate(\'home\'"]');
+  if (homeNav) homeNav.classList.add('active');
+  const bnHome = document.getElementById('bn-home');
+  if (bnHome) bnHome.classList.add('active');
+  if (unsubscribeSync) unsubscribeSync()
   unsubscribeSync = subscribeCatalog(updatedData => {
     const norm = a => JSON.stringify([...a].sort((x,y)=>String(x.id).localeCompare(String(y.id))))
     if (norm(db) === norm(updatedData)) return
@@ -1220,6 +1427,7 @@ document.getElementById('w-title').addEventListener('keydown', e=>{ if(e.key==='
     const removed = [...prevIds].filter(id => !nextIds.has(id))
     db = updatedData
     updateCounts()
+    renderHome()
     renderCatalogo()
     const msgs = []
     if (added.length) msgs.push(`${added.length} adicionada(s)`)
@@ -1228,5 +1436,34 @@ document.getElementById('w-title').addEventListener('keydown', e=>{ if(e.key==='
     toast(`🔄 Sincronizado: ${msgs.join(', ')}`, '🔄')
   })
   updateCounts()
+  renderHome()
   renderCatalogo()
-})()
+}
+
+auth.getRedirectResult().catch(err => {
+  console.error('Erro redirect:', err)
+  toast('❌ ' + (err.message || err.code), '❌')
+})
+initAuth(handleAuthChange)
+
+/* ═══════════════════════════════════════════
+   PWA INSTALL PROMPT
+═══════════════════════════════════════════ */
+let installPrompt = null
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault()
+  installPrompt = e
+  const btn = document.createElement('button')
+  btn.className = 'btn btn-primary'
+  btn.textContent = '📲 Instalar app'
+  btn.style.cssText = 'position:fixed;bottom:80px;right:16px;z-index:999;padding:10px 20px;border-radius:40px;box-shadow:0 4px 20px rgba(108,92,231,.4)'
+  btn.onclick = async () => {
+    if (!installPrompt) return
+    installPrompt.prompt()
+    const result = await installPrompt.userChoice
+    if (result.outcome === 'accepted') btn.remove()
+    installPrompt = null
+  }
+  document.body.appendChild(btn)
+  setTimeout(() => { if (btn.parentNode) btn.remove() }, 30000)
+})

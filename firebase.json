@@ -1,0 +1,16 @@
+{
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      ".git/**",
+      ".gitignore",
+      ".firebase/**",
+      ".firebaserc",
+      "firebase.json",
+      "**/node_modules/**",
+      "**/*.md",
+      "migrate.html",
+      "firestore-crud.js"
+    ]
+  }
+}

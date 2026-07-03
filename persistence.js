@@ -16,13 +16,50 @@ function readLocalStorageFallback() {
   return localStorage.getItem('biblioteca_v2') || localStorage.getItem('catalogo') || null
 }
 
-async function loadCatalog() {
+function getMediaCollection() {
+  const uid = getUserUid()
+  if (!uid) throw new Error('Usuário não autenticado')
+  return firebase.firestore().collection('users').doc(uid).collection('media')
+}
+
+async function migrateLegacyData() {
   try {
-    const snapshot = await firebase.firestore().collection('media').get()
+    const legacySnap = await firebase.firestore().collection('media').get()
+    if (legacySnap.empty) return 0
+    const items = []
+    legacySnap.forEach(doc => items.push({ id: doc.id, ...doc.data() }))
+    const batch = firebase.firestore().batch()
+    const col = getMediaCollection()
+    items.forEach(item => {
+      const ref = col.doc(String(item.id))
+      batch.set(ref, item)
+    })
+    await batch.commit()
+    console.log(`Migrados ${items.length} itens da coleção raiz para o usuário.`)
+    return items.length
+  } catch (err) {
+    console.error('Erro na migração legada:', err)
+    return 0
+  }
+}
+
+async function loadCatalog() {
+  const uid = getUserUid()
+  if (!uid) return readLocalStorageFallback ? JSON.parse(readLocalStorageFallback() || '[]') : []
+  try {
+    const col = getMediaCollection()
+    const snapshot = await col.get()
     if (!snapshot.empty) {
       const data = []
       snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }))
-      console.log('Carregado do Firestore')
+      console.log('Carregado do Firestore (usuário)')
+      return data
+    }
+    const migrated = await migrateLegacyData()
+    if (migrated > 0) {
+      const snapshot = await col.get()
+      const data = []
+      snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }))
       return data
     }
   } catch (_) {}
@@ -32,7 +69,10 @@ async function loadCatalog() {
 }
 
 async function migrateIfNeeded() {
-  const snapshot = await firebase.firestore().collection('media').get()
+  const uid = getUserUid()
+  if (!uid) return
+  const col = getMediaCollection()
+  const snapshot = await col.get()
   if (!snapshot.empty) return
   const stored = readLocalStorageFallback()
   if (!stored) return
@@ -40,7 +80,7 @@ async function migrateIfNeeded() {
   console.log(`Migrando ${items.length} obras...`)
   const batch = firebase.firestore().batch()
   items.forEach(item => {
-    const ref = firebase.firestore().collection('media').doc(String(item.id))
+    const ref = col.doc(String(item.id))
     batch.set(ref, item)
   })
   await batch.commit()
@@ -48,7 +88,10 @@ async function migrateIfNeeded() {
 }
 
 function subscribeCatalog(onUpdate) {
-  return firebase.firestore().collection('media').onSnapshot(snapshot => {
+  const uid = getUserUid()
+  if (!uid) return null
+  const col = getMediaCollection()
+  return col.onSnapshot(snapshot => {
     const data = []
     snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }))
     onUpdate(data)
@@ -57,7 +100,8 @@ function subscribeCatalog(onUpdate) {
 
 async function saveItemToFirestore(item) {
   try {
-    await firebase.firestore().collection('media').doc(String(item.id)).set(item)
+    const col = getMediaCollection()
+    await col.doc(String(item.id)).set(item)
     console.log('Salvo no Firestore:', item.title)
     return true
   } catch (err) {
@@ -68,7 +112,8 @@ async function saveItemToFirestore(item) {
 
 async function deleteItemFromFirestore(id) {
   try {
-    await firebase.firestore().collection('media').doc(String(id)).delete()
+    const col = getMediaCollection()
+    await col.doc(String(id)).delete()
     console.log('Removido do Firestore:', id)
     return true
   } catch (err) {
@@ -79,9 +124,10 @@ async function deleteItemFromFirestore(id) {
 
 async function saveCatalogToFirestore(items) {
   try {
+    const col = getMediaCollection()
     const batch = firebase.firestore().batch()
     items.forEach(item => {
-      const ref = firebase.firestore().collection('media').doc(String(item.id))
+      const ref = col.doc(String(item.id))
       batch.set(ref, item)
     })
     await batch.commit()

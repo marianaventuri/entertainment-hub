@@ -9,6 +9,20 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig)
 
+const auth = firebase.auth()
+let currentUser = null
+
+function initAuth(onUserChanged) {
+  auth.onAuthStateChanged(user => {
+    currentUser = user
+    onUserChanged(user)
+  })
+}
+
+function getUserUid() {
+  return currentUser ? currentUser.uid : null
+}
+
 async function testFirestoreConnection() {
   try {
     const testRef = firebase.firestore().collection('teste').doc('validacao')
