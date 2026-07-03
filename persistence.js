@@ -112,7 +112,10 @@ function subscribeCatalog(onUpdate) {
 async function saveItemToFirestore(item) {
   try {
     const col = getMediaCollection()
-    await col.doc(String(item.id)).set(item)
+    // Strip undefined fields – Firestore rejects them
+    const clean = {}
+    Object.entries(item).forEach(([k, v]) => { if (v !== undefined) clean[k] = v })
+    await col.doc(String(item.id)).set(clean)
     console.log('Salvo no Firestore:', item.title)
     return true
   } catch (err) {

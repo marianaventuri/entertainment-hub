@@ -582,11 +582,13 @@ async function saveItem() {
     emotions,
     tags,
     fav:      favEdit,
-    addedAt:  editingId ? (db.find(x=>x.id===editingId)||{}).addedAt : new Date().toISOString(),
+    addedAt:  editingId ? (db.find(x=>x.id===editingId)||{}).addedAt || new Date().toISOString() : new Date().toISOString(),
     finishedAt: (document.getElementById('f-status').value==='Finalizado')
       ? (editingId ? (db.find(x=>x.id===editingId)||{}).finishedAt || new Date().toISOString() : new Date().toISOString())
       : null,
   };
+  // Ensure addedAt has a fallback (db.find may miss the item in race conditions)
+  if (!item.addedAt) item.addedAt = new Date().toISOString()
 
   if (editingId) {
     const idx = db.findIndex(x=>x.id===editingId);
