@@ -584,32 +584,32 @@ body {
   gap: var(--space-2);
 }
 
+/* ═══════════════════════════════════════════
+   CARDS — Premium (Netflix / Letterboxd style)
+═══════════════════════════════════════════ */
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(12px) scale(.96); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
 .card {
-  background: var(--surface);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
   overflow: hidden;
   cursor: pointer;
-  transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base);
   position: relative;
-}
-
-.card:hover {
-  border-color: var(--border2);
-  transform: translateY(-4px);
-  box-shadow: var(--shadow-lg);
+  background: var(--surface);
+  animation: cardIn .35s ease both;
 }
 
 .card-poster {
   width: 100%;
   aspect-ratio: 2/3;
+  position: relative;
+  overflow: hidden;
   background: var(--surface2);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 3rem;
-  position: relative;
-  overflow: hidden;
 }
 
 .card-poster img {
@@ -618,76 +618,203 @@ body {
   object-fit: cover;
   position: absolute;
   inset: 0;
+  transition: transform var(--transition-base);
 }
 
-.card-poster-placeholder {
+.card:hover .card-poster img {
+  transform: scale(1.06);
+}
+
+.card-placeholder {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
   color: var(--text3);
+  position: relative;
+  z-index: 1;
 }
 
-.card-poster-placeholder .type-icon { font-size: 2.5rem; }
-.card-poster-placeholder .type-label { font-size: 0.7rem; font-weight: 600; letter-spacing: 0.05em; }
+.card-placeholder .type-icon {
+  font-size: 2.8rem;
+  opacity: .7;
+}
 
-.card-badge {
+.card-placeholder .type-label {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  opacity: .5;
+}
+
+/* Status badge */
+.card-status {
   position: absolute;
-  top: var(--space-2); right: var(--space-2);
+  top: var(--space-2);
+  right: var(--space-2);
+  z-index: 5;
   font-size: var(--font-xs);
   font-weight: var(--weight-bold);
   padding: 3px 10px;
   border-radius: var(--radius-full);
   backdrop-filter: blur(8px);
   letter-spacing: .04em;
+  pointer-events: none;
 }
 
-.badge-assistindo  { background: rgba(59,130,246,.88); color: white; }
-.badge-finalizado  { background: rgba(52,211,153,.88); color: #052e1a; }
-.badge-abandonado  { background: rgba(107,114,128,.72);  color: #eef2fa; }
-.badge-quero       { background: rgba(168,85,247,.88); color: white; }
-
-.card-fav {
+/* Favorite button (always visible) */
+.card-fav-btn {
   position: absolute;
-  top: var(--space-2); left: var(--space-2);
-  color: var(--gold);
-  font-size: 1rem;
-  filter: drop-shadow(0 1px 3px rgba(0,0,0,.8));
+  top: var(--space-2);
+  left: var(--space-2);
+  z-index: 6;
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  cursor: pointer;
+  padding: 4px;
+  line-height: 1;
+  filter: drop-shadow(0 1px 4px rgba(0,0,0,.7));
+  transition: transform var(--transition-fast);
 }
 
-.card-body {
-  padding: var(--space-2) var(--space-3) var(--space-3);
+.card-fav-btn:hover {
+  transform: scale(1.2);
 }
 
-.card-title {
+.card-fav-btn:active {
+  transform: scale(.9);
+}
+
+/* Gradient overlay + info */
+.card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    transparent 40%,
+    rgba(0,0,0,.7) 72%,
+    rgba(0,0,0,.92) 100%
+  );
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: var(--space-3);
+  transition: opacity var(--transition-base);
+}
+
+.card-info {
+  transform: translateY(0);
+  transition: transform var(--transition-base);
+}
+
+.card-info-title {
   font-family: var(--font);
   font-weight: var(--weight-bold);
   font-size: var(--font-sm);
   line-height: 1.3;
-  margin-bottom: var(--space-1);
+  color: white;
   display: -webkit-box;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
+  text-shadow: 0 1px 4px rgba(0,0,0,.5);
+  margin-bottom: 2px;
 }
 
-.card-meta {
+.card-info-rating {
+  color: var(--gold);
+  font-size: var(--font-xs);
+  letter-spacing: 1px;
+  margin-top: 2px;
+}
+
+.card-info-details {
+  font-size: var(--font-xs);
+  color: rgba(255,255,255,.65);
+  font-weight: var(--weight-medium);
+  margin-top: 2px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 4px;
+  flex-wrap: wrap;
 }
 
-.card-type {
-  font-size: 0.7rem;
-  color: var(--text3);
-  font-weight: 600;
+.card-info-details .sep {
+  opacity: .4;
 }
 
-.card-stars {
-  color: var(--gold);
-  font-size: 0.72rem;
-  letter-spacing: 1px;
+.card-info-platform {
+  display: inline-block;
+  background: rgba(255,255,255,.12);
+  padding: 1px 7px;
+  border-radius: var(--radius-full);
+  font-size: .65rem;
+  font-weight: var(--weight-semibold);
+  backdrop-filter: blur(4px);
 }
+
+/* Desktop hover: reveal more */
+@media (hover: hover) {
+  .card-overlay {
+    opacity: .7;
+  }
+  .card:hover .card-overlay {
+    opacity: 1;
+  }
+  .card:hover .card-poster img {
+    transform: scale(1.06);
+  }
+  .card:hover {
+    box-shadow: 0 8px 32px rgba(0,0,0,.6);
+  }
+  .card:hover .card-info {
+    transform: translateY(0);
+  }
+}
+
+/* Mobile / touch: overlay always full-opacity */
+@media (hover: none) {
+  .card-overlay {
+    opacity: 1;
+  }
+  .card:active .card-poster img {
+    transform: scale(1.04);
+  }
+}
+
+/* Selection mode overlay */
+.card-select-overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+  transition: background var(--transition-fast);
+  pointer-events: none;
+}
+
+.card-select-circle {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-weight: bold;
+  font-size: 18px;
+  transition: all var(--transition-fast);
+}
+
+/* Status badge colors (used by card-status) */
+.badge-assistindo  { background: rgba(59,130,246,.88); color: white; }
+.badge-finalizado  { background: rgba(52,211,153,.88); color: #052e1a; }
+.badge-abandonado  { background: rgba(107,114,128,.72);  color: #eef2fa; }
+.badge-quero       { background: rgba(168,85,247,.88); color: white; }
 
 /* ═══════════════════════════════════════════
    EMPTY STATE
@@ -1520,8 +1647,6 @@ body {
   .stats-grid { grid-template-columns: repeat(3, 1fr); }
   .achievements-grid { grid-template-columns: repeat(3, 1fr); }
   .page-title { font-size: 1.6rem; }
-.card-body { padding: var(--space-3) var(--space-3) var(--space-3); }
-.card-title { font-size: var(--font-md); }
   .toast-container { align-items: flex-end; left: auto; }
   .toast { max-width: 360px; }
   .home-stats-grid { grid-template-columns: repeat(3, 1fr); }

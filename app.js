@@ -206,30 +206,37 @@ function renderCatalogo() {
 
   grid.innerHTML = items.map(item => {
     const t = TIPO[item.type]||{icon:'🎞️', color:'#555'};
-    const coverHtml = item.cover
+    const coverEl = item.cover
       ? `<img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()">`
-      : `<div class="card-poster-placeholder"><span class="type-icon">${t.icon}</span><span class="type-label">${esc(item.type)}</span></div>`;
+      : `<div class="card-placeholder"><span class="type-icon">${t.icon}</span><span class="type-label">${esc(item.type)}</span></div>`;
     const isSelected = isDeleteMode && selectedIds.has(item.id);
+    const ratingStars = item.rating ? `<div class="card-info-rating">${'★'.repeat(item.rating)}</div>` : '';
+    const favIcon = item.fav ? '❤️' : '🤍';
+    const platformHtml = item.platform ? `<span class="card-info-platform">${esc(item.platform)}</span>` : '';
+    const detailsParts = [esc(item.type), item.year].filter(Boolean);
     return `
-      <div class="card" onclick="${isDeleteMode ? `toggleSelection(${item.id}, event)` : `openDetail(${item.id})`}" style="--t-color:${t.color}; ${isSelected ? 'outline: 2px solid var(--red);' : ''}">
-        <div class="card-poster" style="border-bottom:2px solid ${t.color}22">
-          ${coverHtml}
-          <span class="card-badge ${statusBadgeClass(item.status)}">${esc(displayStatus(item.status, item.type))}</span>
-          ${item.fav ? '<span class="card-fav">⭐</span>' : ''}
+      <div class="card" onclick="${isDeleteMode ? `toggleSelection(${item.id}, event)` : `openDetail(${item.id})`}">
+        <div class="card-poster">
+          ${coverEl}
+          <span class="card-status ${statusBadgeClass(item.status)}">${esc(displayStatus(item.status, item.type))}</span>
+          <button class="card-fav-btn" onclick="event.stopPropagation();toggleCardFav('${item.id}')">${favIcon}</button>
+          <div class="card-overlay">
+            <div class="card-info">
+              <div class="card-info-title">${esc(item.title)}</div>
+              ${ratingStars}
+              <div class="card-info-details">
+                ${detailsParts.join('<span class="sep">·</span>')}
+                ${platformHtml}
+              </div>
+            </div>
+          </div>
           ${isDeleteMode ? `
-            <div style="position:absolute;inset:0;background:rgba(0,0,0,${isSelected ? '0.6' : '0.3'});display:flex;align-items:center;justify-content:center;z-index:10;transition:all 0.2s;">
-              <div style="width:32px;height:32px;border-radius:50%;border:2px solid white;background:${isSelected ? 'var(--red)' : 'transparent'};display:flex;align-items:center;justify-content:center;color:white;font-weight:bold;font-size:18px;">
+            <div class="card-select-overlay" style="background:rgba(0,0,0,${isSelected ? '0.6' : '0.3'})">
+              <div class="card-select-circle" style="background:${isSelected ? 'var(--red)' : 'transparent'}">
                 ${isSelected ? '✓' : ''}
               </div>
             </div>
           ` : ''}
-        </div>
-        <div class="card-body">
-          <div class="card-title">${esc(item.title)}</div>
-          <div class="card-meta">
-            <span class="card-type">${t.icon} ${esc(item.type)} ${item.year?'· '+item.year:''}</span>
-            ${item.rating ? `<span class="card-stars">${'★'.repeat(item.rating)}</span>` : ''}
-          </div>
         </div>
       </div>`;
   }).join('');
@@ -641,6 +648,16 @@ function toggleFav() {
 
 function toggleTag(btn) { btn.classList.toggle('active'); }
 
+function toggleCardFav(id) {
+  const item = db.find(x => x.id === id)
+  if (!item) return
+  item.fav = !item.fav
+  save()
+  saveItemToFirestore(item)
+  renderCatalogo()
+  renderHome()
+}
+
 /* ═══════════════════════════════════════════
    WISHLIST
 ═══════════════════════════════════════════ */
@@ -731,15 +748,20 @@ function renderHome() {
         <div class="home-hscroll">
           ${items.map(item => {
             const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
-            const coverHtml = item.cover
-              ? `<div class="hscroll-card-poster"><img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()"></div>`
-              : `<div class="hscroll-card-poster"><span class="hscroll-type-icon">${t.icon}</span></div>`;
+            const coverEl = item.cover
+              ? `<img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()">`
+              : `<div class="card-placeholder" style="gap:4px"><span class="type-icon" style="font-size:1.8rem">${t.icon}</span></div>`;
+            const ratingStars = item.rating ? `<div class="card-info-rating">${'★'.repeat(item.rating)}</div>` : '';
             return `
               <div class="card hscroll-card" onclick="openDetail(${item.id})">
-                ${coverHtml}
-                <div class="hscroll-card-body">
-                  <div class="hscroll-card-title">${esc(item.title)}</div>
-                  <div class="hscroll-card-meta">${t.icon} ${esc(item.type)}</div>
+                <div class="card-poster">
+                  ${coverEl}
+                  <div class="card-overlay">
+                    <div class="card-info">
+                      <div class="card-info-title" style="font-size:var(--font-xs)">${esc(item.title)}</div>
+                      ${ratingStars}
+                    </div>
+                  </div>
                 </div>
               </div>`;
           }).join('')}
@@ -802,15 +824,24 @@ function renderHome() {
       <div class="grid home-recent-grid">
         ${recent.map(item => {
           const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
-          const coverHtml = item.cover
+          const coverEl = item.cover
             ? `<img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()">`
-            : `<div class="card-poster-placeholder"><span class="type-icon">${t.icon}</span><span class="type-label">${esc(item.type)}</span></div>`;
+            : `<div class="card-placeholder"><span class="type-icon">${t.icon}</span><span class="type-label">${esc(item.type)}</span></div>`;
+          const ratingStars = item.rating ? `<div class="card-info-rating">${'★'.repeat(item.rating)}</div>` : '';
+          const favIcon = item.fav ? '❤️' : '🤍';
           return `
-            <div class="card" onclick="openDetail(${item.id})" style="--t-color:${t.color}">
-              <div class="card-poster" style="border-bottom:2px solid ${t.color}22">${coverHtml}</div>
-              <div class="card-body">
-                <div class="card-title">${esc(item.title)}</div>
-                <div class="card-meta"><span class="card-type">${t.icon} ${esc(item.type)}</span></div>
+            <div class="card" onclick="openDetail(${item.id})">
+              <div class="card-poster">
+                ${coverEl}
+                <span class="card-status ${statusBadgeClass(item.status)}">${esc(displayStatus(item.status, item.type))}</span>
+                <button class="card-fav-btn" onclick="event.stopPropagation();toggleCardFav('${item.id}')">${favIcon}</button>
+                <div class="card-overlay">
+                  <div class="card-info">
+                    <div class="card-info-title">${esc(item.title)}</div>
+                    ${ratingStars}
+                    <div class="card-info-details">${esc(item.type)}${item.year ? '<span class="sep">·</span>'+item.year : ''}</div>
+                  </div>
+                </div>
               </div>
             </div>`;
         }).join('')}
