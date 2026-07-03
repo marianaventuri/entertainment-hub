@@ -596,11 +596,15 @@ async function saveItem() {
 
   save();
   localSaveGuard = true;
-  await saveItemToFirestore(item);
+  const saved = await saveItemToFirestore(item);
   setTimeout(() => { localSaveGuard = false; }, 100);
   closeAddModal();
   renderCatalogo();
-  toast(editingId ? 'Obra atualizada!' : 'Obra adicionada!', editingId?'✏️':'🎉');
+  if (saved) {
+    toast(editingId ? '✏️ Obra atualizada!' : '🎉 Obra adicionada!');
+  } else {
+    toast('⚠️ Salvo localmente, mas erro no servidor. Recarregue com cuidado.', '⚠️');
+  }
   checkAchievements();
   editingId = null;
 }

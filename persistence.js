@@ -53,6 +53,23 @@ async function loadCatalog() {
       const data = []
       snapshot.forEach(doc => data.push({ id: doc.id, ...doc.data() }))
       console.log('Carregado do Firestore (usuário)')
+      // Merge with localStorage to recover items that failed to sync
+      const stored = readLocalStorageFallback()
+      if (stored) {
+        const localItems = JSON.parse(stored)
+        const firestoreIds = new Set(data.map(x => x.id))
+        const missing = localItems.filter(x => !firestoreIds.has(x.id))
+        if (missing.length) {
+          console.log(`Mesclando ${missing.length} itens do localStorage perdidos no Firestore`)
+          const batch = firebase.firestore().batch()
+          missing.forEach(item => {
+            const ref = col.doc(String(item.id))
+            batch.set(ref, item)
+          })
+          await batch.commit()
+          data.push(...missing)
+        }
+      }
       return data
     }
     const migrated = await migrateLegacyData()
@@ -106,6 +123,7 @@ async function saveItemToFirestore(item) {
     return true
   } catch (err) {
     console.error('Erro ao salvar no Firestore:', err)
+    toast('❌ Erro ao salvar no servidor: ' + (err.message || err.code || 'verifique regras de segurança'), '❌')
     return false
   }
 }
