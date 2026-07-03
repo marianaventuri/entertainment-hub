@@ -1,7 +1,466 @@
 <!DOCTYPE html>
 <html lang="pt-br">
-<meta charset="UTF-8">
-<meta http-equiv="refresh" content="0;url=biblioteca-v2.html">
-<script>location.href = 'biblioteca-v2.html'</script>
-<a href="biblioteca-v2.html">Acessar Biblioteca</a>
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Minha Biblioteca</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
+</head>
+<body>
+
+<!-- SIDEBAR OVERLAY (mobile) -->
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <div class="logo-icon">📚</div>
+      <span>Biblioteca</span>
+    </div>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Principal</div>
+    <button class="nav-item active" onclick="navigate('catalogo')">
+      <span class="nav-icon">🏠</span> Catálogo
+      <span class="nav-count" id="nc-total">0</span>
+    </button>
+    <button class="nav-item" onclick="navigate('dashboard')">
+      <span class="nav-icon">📊</span> Estatísticas
+    </button>
+    <button class="nav-item" onclick="navigate('timeline')">
+      <span class="nav-icon">📅</span> Linha do tempo
+    </button>
+    <button class="nav-item" onclick="navigate('wishlist')">
+      <span class="nav-icon">❤️</span> Lista de desejos
+      <span class="nav-count" id="nc-wish">0</span>
+    </button>
+    <button class="nav-item" onclick="navigate('conquistas')">
+      <span class="nav-icon">🏆</span> Conquistas
+    </button>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Por tipo</div>
+    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Filme')">
+      <span class="nav-icon">🎬</span> Filmes
+      <span class="nav-count" id="nc-Filme">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Série')">
+      <span class="nav-icon">📺</span> Séries
+      <span class="nav-count" id="nc-Série">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Anime')">
+      <span class="nav-icon">⛩️</span> Animes
+      <span class="nav-count" id="nc-Anime">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Mangá')">
+      <span class="nav-icon">📖</span> Mangás
+      <span class="nav-count" id="nc-Mangá">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Dorama')">
+      <span class="nav-icon">🎭</span> Doramas
+      <span class="nav-count" id="nc-Dorama">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Jogo')">
+      <span class="nav-icon">🎮</span> Jogos
+      <span class="nav-count" id="nc-Jogo">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Livro')">
+      <span class="nav-icon">📕</span> Livros
+      <span class="nav-count" id="nc-Livro">0</span>
+    </button>
+  </div>
+
+  <div class="sidebar-section">
+    <div class="sidebar-label">Por status</div>
+    <button class="nav-item" onclick="navigateFilter('catalogo','status','Assistindo')">
+      <span class="nav-icon">▶️</span> Assistindo
+      <span class="nav-count" id="nc-Assistindo">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','status','Finalizado')">
+      <span class="nav-icon">✅</span> Finalizados
+      <span class="nav-count" id="nc-Finalizado">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','status','Abandonado')">
+      <span class="nav-icon">❌</span> Abandonados
+      <span class="nav-count" id="nc-Abandonado">0</span>
+    </button>
+    <button class="nav-item" onclick="navigateFilter('catalogo','status','Quero assistir')">
+      <span class="nav-icon">🔖</span> Quero assistir
+      <span class="nav-count" id="nc-Quero">0</span>
+    </button>
+  </div>
+</nav>
+
+<!-- BOTTOM NAV (mobile) -->
+<div class="bottom-nav" id="bottomNav">
+  <button class="bottom-nav-item active" onclick="navigate('catalogo')" id="bn-catalogo">
+    <span class="bottom-nav-icon">🏠</span>
+    Catálogo
+  </button>
+  <button class="bottom-nav-item" onclick="navigate('dashboard')" id="bn-dashboard">
+    <span class="bottom-nav-icon">📊</span>
+    Status
+  </button>
+  <button class="bottom-nav-item" onclick="navigate('wishlist')" id="bn-wishlist">
+    <span class="bottom-nav-icon">❤️</span>
+    Desejos
+  </button>
+  <button class="bottom-nav-item" onclick="navigate('conquistas')" id="bn-conquistas">
+    <span class="bottom-nav-icon">🏆</span>
+    Prêmios
+  </button>
+</div>
+
+<!-- MAIN -->
+<div class="main">
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" id="searchInput" placeholder="Buscar no catálogo…" oninput="renderCatalogo()"/>
+    </div>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" onclick="openImportModal()" title="Importar lista (CSV ou texto)">⬆ Importar</button>
+      <button class="btn btn-ghost" onclick="openWishModal()">+ Lista de desejos</button>
+      <button class="btn btn-primary" onclick="openAddModal()">+ Adicionar obra</button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div class="content">
+
+    <!-- ── CATÁLOGO ── -->
+    <div class="page active" id="page-catalogo">
+      <div class="page-header">
+        <div>
+          <div class="page-title" id="catalogoTitle">Catálogo</div>
+          <div class="page-subtitle" id="catalogoSubtitle">Todas as obras</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-ghost" id="btnConfirmDelete" onclick="confirmDeleteSelected()" style="display:none;color:white;background:var(--red);border:none;">Excluir (0)</button>
+          <button class="btn btn-ghost" id="btnToggleDelete" onclick="toggleDeleteMode()" style="color:var(--red);border-color:rgba(248,113,113,0.3);">🗑 Excluir Vários</button>
+          <select class="filter-select" id="filterStatus" onchange="renderCatalogo()">
+            <option value="">Todos os status</option>
+            <option>Quero assistir</option>
+            <option>Assistindo</option>
+            <option>Finalizado</option>
+            <option>Abandonado</option>
+          </select>
+          <select class="filter-select" id="filterOrder" onchange="renderCatalogo()">
+            <option value="recent">Mais recentes</option>
+            <option value="title">A → Z</option>
+            <option value="rating">Melhor nota</option>
+            <option value="fav">Favoritos primeiro</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="filter-bar" id="tipoFilters">
+        <button class="filter-pill active" data-tipo="" onclick="setTipoFilter('',this)">Todos</button>
+        <button class="filter-pill" data-tipo="Filme" onclick="setTipoFilter('Filme',this)">🎬 Filmes</button>
+        <button class="filter-pill" data-tipo="Série" onclick="setTipoFilter('Série',this)">📺 Séries</button>
+        <button class="filter-pill" data-tipo="Anime" onclick="setTipoFilter('Anime',this)">⛩️ Animes</button>
+        <button class="filter-pill" data-tipo="Mangá" onclick="setTipoFilter('Mangá',this)">📖 Mangás</button>
+        <button class="filter-pill" data-tipo="Dorama" onclick="setTipoFilter('Dorama',this)">🎭 Doramas</button>
+        <button class="filter-pill" data-tipo="Jogo" onclick="setTipoFilter('Jogo',this)">🎮 Jogos</button>
+        <button class="filter-pill" data-tipo="Livro" onclick="setTipoFilter('Livro',this)">📕 Livros</button>
+      </div>
+
+      <div class="grid" id="catalogoGrid"></div>
+      <div class="empty hidden" id="catalogoEmpty">
+        <span class="empty-icon">🎞️</span>
+        <h3>Nenhuma obra encontrada</h3>
+        <p>Tente outro filtro ou adicione sua primeira obra!</p>
+      </div>
+    </div>
+
+    <!-- ── DASHBOARD ── -->
+    <div class="page" id="page-dashboard">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Estatísticas</div>
+          <div class="page-subtitle">Sua jornada em números</div>
+        </div>
+      </div>
+      <div class="stats-grid" id="statsGrid"></div>
+      <div class="dash-row">
+        <div class="dash-card">
+          <div class="dash-card-title">Status geral</div>
+          <div class="donut-list" id="statusList"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title">Top 5 obras</div>
+          <div class="top-list" id="topList"></div>
+        </div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-card">
+          <div class="dash-card-title">Gêneros favoritos</div>
+          <div class="genre-list" id="genreList"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title">Por tipo</div>
+          <div class="genre-list" id="tipoList"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── TIMELINE ── -->
+    <div class="page" id="page-timeline">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Linha do tempo</div>
+          <div class="page-subtitle">Obras finalizadas mês a mês</div>
+        </div>
+      </div>
+      <div class="timeline" id="timelineEl"></div>
+      <div class="empty hidden" id="timelineEmpty">
+        <span class="empty-icon">📅</span>
+        <h3>Nada por aqui ainda</h3>
+        <p>Finalize algumas obras para vê-las na linha do tempo.</p>
+      </div>
+    </div>
+
+    <!-- ── WISHLIST ── -->
+    <div class="page" id="page-wishlist">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Lista de desejos</div>
+          <div class="page-subtitle">O que você quer ver em seguida</div>
+        </div>
+        <button class="btn btn-primary" onclick="openWishModal()">+ Adicionar</button>
+      </div>
+      <div class="wish-list" id="wishList"></div>
+      <div class="empty hidden" id="wishEmpty">
+        <span class="empty-icon">❤️</span>
+        <h3>Lista vazia</h3>
+        <p>Adicione obras que você quer assistir, ler ou jogar em breve.</p>
+      </div>
+    </div>
+
+    <!-- ── CONQUISTAS ── -->
+    <div class="page" id="page-conquistas">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Conquistas</div>
+          <div class="page-subtitle" id="achieveSubtitle">0 desbloqueadas</div>
+        </div>
+      </div>
+      <div class="achievements-grid" id="achievementsGrid"></div>
+    </div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<!-- ═══════════════════════════════════════════
+     MODAL: ADICIONAR / EDITAR
+═══════════════════════════════════════════ -->
+<div class="overlay" id="addOverlay" onclick="closeAddModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-close"><button class="btn-close" onclick="closeAddModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-title" id="addModalTitle">Nova obra</div>
+
+      <div class="form-grid">
+        <div class="form-field full">
+          <label class="form-label">Título *</label>
+          <input class="form-input" id="f-title" placeholder="Nome da obra…" oninput="clearApiStatus()"/>
+          <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
+            <button type="button" class="btn btn-ghost" id="btnBuscarOnline" onclick="buscarOnline()" style="padding:7px 14px;font-size:0.83rem">🔍 Buscar online</button>
+            <span id="apiStatus" style="font-size:0.8rem;color:var(--text2)"></span>
+          </div>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" id="f-type" onchange="updateStatusOptions()">
+            <option>Filme</option>
+            <option>Série</option>
+            <option>Anime</option>
+            <option>Mangá</option>
+            <option>Dorama</option>
+            <option>Jogo</option>
+            <option>Livro</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Status</label>
+          <select class="form-select" id="f-status">
+            <option>Quero assistir</option>
+            <option>Assistindo</option>
+            <option>Finalizado</option>
+            <option>Abandonado</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Ano</label>
+          <input class="form-input" id="f-year" type="number" placeholder="2024" min="1900" max="2099"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Onde assisti / joguei</label>
+          <input class="form-input" id="f-platform" placeholder="Netflix, Crunchyroll…"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Episódios / Capítulos</label>
+          <input class="form-input" id="f-episodes" type="number" placeholder="12"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Duração (horas)</label>
+          <input class="form-input" id="f-hours" type="number" step="0.5" placeholder="5.5"/>
+        </div>
+        <div class="form-field full">
+          <label class="form-label">Gêneros <span style="text-transform:none;font-weight:400;color:var(--text3)">(separados por vírgula)</span></label>
+          <input class="form-input" id="f-genres" placeholder="Fantasia, Aventura, Drama"/>
+        </div>
+        <div class="form-field full">
+          <label class="form-label">Sinopse</label>
+          <textarea class="form-textarea" id="f-synopsis" placeholder="Breve descrição da obra…"></textarea>
+        </div>
+        <div class="form-field full">
+          <label class="form-label">Minha opinião / diário</label>
+          <textarea class="form-textarea" id="f-opinion" placeholder="O que você achou? Como estava quando assistiu?"></textarea>
+        </div>
+        <div class="form-field full">
+          <label class="form-label">URL da capa <span style="text-transform:none;font-weight:400;color:var(--text3)">(opcional)</span></label>
+          <input class="form-input" id="f-cover" placeholder="https://…"/>
+        </div>
+      </div>
+
+      <div class="form-section-title">Avaliação geral</div>
+      <div class="star-input" id="starInput" data-val="0">
+        <button class="star-btn" data-star="1" onclick="setStar(1)">★</button>
+        <button class="star-btn" data-star="2" onclick="setStar(2)">★</button>
+        <button class="star-btn" data-star="3" onclick="setStar(3)">★</button>
+        <button class="star-btn" data-star="4" onclick="setStar(4)">★</button>
+        <button class="star-btn" data-star="5" onclick="setStar(5)">★</button>
+      </div>
+
+      <div class="form-section-title">Nota emocional <span style="text-transform:none;font-weight:400;font-size:0.75rem;color:var(--text3)">(além da nota técnica)</span></div>
+      <div class="emotion-grid" id="emotionGrid">
+        <!-- rendered by JS -->
+      </div>
+
+      <div class="form-section-title">Tags pessoais</div>
+      <div class="tags-wrap" id="tagsWrap">
+        <!-- rendered by JS -->
+      </div>
+
+      <div class="form-section-title">Favorito</div>
+      <div style="display:flex;align-items:center;gap:10px;">
+        <button class="star-btn" id="favBtn" onclick="toggleFav()" style="font-size:1.6rem;">☆</button>
+        <span style="font-size:0.82rem;color:var(--text2)">Marcar como favorito</span>
+      </div>
+
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeAddModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveItem()">Salvar obra</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: DETALHE
+═══════════════════════════════════════════ -->
+<div class="overlay" id="detailOverlay" onclick="closeDetailModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-close"><button class="btn-close" onclick="closeDetailModal()">✕</button></div>
+    <div class="modal-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: WISH
+═══════════════════════════════════════════ -->
+<div class="overlay" id="wishOverlay" onclick="closeWishModal(event)">
+  <div class="modal" style="max-width:420px" onclick="event.stopPropagation()">
+    <div class="modal-close"><button class="btn-close" onclick="closeWishModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-title">Adicionar à lista de desejos</div>
+      <div class="form-grid" style="grid-template-columns:1fr">
+        <div class="form-field">
+          <label class="form-label">Título *</label>
+          <input class="form-input" id="w-title" placeholder="Nome da obra…"/>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Tipo</label>
+          <select class="form-select" id="w-type">
+            <option>Filme</option><option>Série</option><option>Anime</option>
+            <option>Mangá</option><option>Dorama</option><option>Jogo</option><option>Livro</option>
+          </select>
+        </div>
+        <div class="form-field">
+          <label class="form-label">Nota / motivo <span style="text-transform:none;font-weight:400;color:var(--text3)">(opcional)</span></label>
+          <input class="form-input" id="w-note" placeholder="Recomendação de alguém, trailer incrível…"/>
+        </div>
+      </div>
+      <div class="form-actions">
+        <button class="btn btn-ghost" onclick="closeWishModal()">Cancelar</button>
+        <button class="btn btn-primary" onclick="saveWish()">Adicionar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════
+     MODAL: IMPORTAR
+═══════════════════════════════════════════ -->
+<div class="overlay" id="importOverlay" onclick="closeImportModal(event)">
+  <div class="modal" style="max-width:520px" onclick="event.stopPropagation()">
+    <div class="modal-close"><button class="btn-close" onclick="closeImportModal()">✕</button></div>
+    <div class="modal-body">
+      <div class="modal-title">⬆ Importar obras</div>
+
+      <!-- TABS -->
+      <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;">
+        <button id="import-tab-csv" class="btn btn-primary" style="flex:1" onclick="switchImportTab('csv')">📄 CSV / Excel</button>
+        <button id="import-tab-paste" class="btn btn-ghost" style="flex:1" onclick="switchImportTab('paste')">📋 Colar lista</button>
+      </div>
+
+      <!-- TAB: CSV -->
+      <div id="import-panel-csv">
+        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;line-height:1.6">
+          Seu arquivo CSV deve ter as colunas: <strong>title, type, status, rating</strong><br>
+          Exemplo:<br>
+          <code style="font-size:0.78rem;background:var(--bg3);padding:4px 8px;border-radius:6px;display:inline-block;margin-top:4px">title,type,status,rating<br>Frieren,Anime,Finalizado,5<br>Interstellar,Filme,Finalizado,5</code>
+        </p>
+        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none" onchange="handleCsvImport(event)">
+        <button class="btn btn-primary" style="width:100%;padding:14px" onclick="document.getElementById('csvFileInput').click()">📂 Selecionar arquivo CSV</button>
+        <div id="csvFeedback" style="margin-top:12px;font-size:0.85rem;color:var(--accent)"></div>
+      </div>
+
+      <!-- TAB: PASTE -->
+      <div id="import-panel-paste" style="display:none">
+        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;line-height:1.6">
+          Cole uma obra por linha no formato:<br>
+          <code style="font-size:0.78rem;background:var(--bg3);padding:4px 8px;border-radius:6px;display:inline-block;margin-top:4px">Título | Tipo | Status | Nota</code><br>
+          <span style="font-size:0.78rem">Tipo: Filme, Série, Anime, Mangá, Dorama, Jogo, Livro<br>Status: Finalizado, Assistindo, Quero assistir, Abandonado<br>Nota: 1–5 (opcional)</span>
+        </p>
+        <textarea id="pasteInput" class="form-textarea" rows="8" placeholder="Frieren | Anime | Finalizado | 5&#10;Breaking Bad | Série | Finalizado | 5&#10;Interstellar | Filme | Finalizado | 5"></textarea>
+        <div id="pasteFeedback" style="margin-top:8px;font-size:0.85rem;color:var(--accent)"></div>
+        <div class="form-actions" style="margin-top:12px">
+          <button class="btn btn-ghost" onclick="closeImportModal()">Cancelar</button>
+          <button class="btn btn-primary" onclick="handlePasteImport()">⬆ Importar lista</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- TOASTS -->
+<div class="toast-container" id="toastContainer"></div>
+
+<script src="firebase.js"></script>
+<script src="persistence.js"></script>
+<script src="app.js"></script>
+</body>
 </html>

@@ -6,9 +6,8 @@ App monolítico (HTML + CSS + JS) para catalogar filmes, séries, animes, mangá
 
 | Arquivo | Função |
 |---|---|
-| `biblioteca-v2.html` | App completo (~3080 linhas) — HTML+CSS+JS inline (funciona sem servidor) |
-| `app.js` + `style.css` | Versão antiga (não usada, index.html redireciona para v2) |
-| `index.html` | Redireciona para `biblioteca-v2.html` |
+| `index.html` | App completo (~3080 linhas) — HTML+CSS+JS inline (funciona sem servidor, página principal) |
+| `app.js` + `style.css` | Versão antiga (não usada) |
 
 ## Status Atual
 
