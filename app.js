@@ -664,8 +664,8 @@ function editItem(id) {
 async function deleteItem(id) {
   if (!confirm('Remover esta obra do catálogo?')) return;
   db = db.filter(x => x.id === id || String(x.id) === String(id));
-  await deleteItemFromFirestore(id);
   save();
+  await deleteItemFromFirestore(id);
   document.getElementById('detailOverlay').classList.remove('open');
   renderCatalogo();
   toast('Obra removida');
@@ -712,8 +712,8 @@ function confirmDeleteSelected() {
   // Normalize: stringify all IDs for comparison
   const delSet = new Set(deletedIds.map(String));
   db = db.filter(x => !delSet.has(String(x.id)));
-  deletedIds.forEach(id => deleteItemFromFirestore(id));
   save();
+  deletedIds.forEach(id => deleteItemFromFirestore(id));
   toggleDeleteMode();
   renderCatalogo();
   toast(`${size} obra(s) removida(s)`);
