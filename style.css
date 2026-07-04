@@ -1590,6 +1590,213 @@ html { scroll-behavior: smooth; }
 .hist-event { font-size: var(--font-base); color: var(--text); }
 .hist-date { font-size: var(--font-xs); color: var(--text3); margin-top: 2px; }
 
+/* ═══════════════════════════════════════════
+   JORNADA DA OBRA
+═══════════════════════════════════════════ */
+.jor-loading { color: var(--text3); font-size: var(--font-sm); padding: var(--space-6) 0; text-align: center; }
+
+.jor-header { margin-bottom: var(--space-5); }
+
+.jor-franchise {
+  font-family: var(--font);
+  font-size: var(--font-2xl);
+  font-weight: var(--weight-extrabold);
+  color: var(--text);
+  margin-bottom: var(--space-3);
+  letter-spacing: -.03em;
+}
+
+.jor-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: var(--surface3);
+  border-radius: 99px;
+  overflow: hidden;
+  margin-bottom: var(--space-1);
+}
+
+.jor-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--accent), var(--accent2));
+  border-radius: 99px;
+  transition: width .6s ease;
+}
+
+.jor-progress-text {
+  font-size: var(--font-xs);
+  color: var(--text3);
+  font-weight: var(--weight-medium);
+}
+
+/* ── Next recommended ── */
+.jor-next-card {
+  background: linear-gradient(135deg, var(--surface), rgba(108,92,231,.06));
+  border: 1px solid var(--border2);
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-4);
+  margin-bottom: var(--space-5);
+}
+
+.jor-next-label {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-bold);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  margin-bottom: var(--space-2);
+}
+
+.jor-next-inner {
+  display: flex;
+  gap: var(--space-3);
+  cursor: pointer;
+  padding: var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.jor-next-inner:hover { background: var(--surface2); }
+
+.jor-next-poster {
+  width: 60px;
+  min-width: 60px;
+  height: 85px;
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.jor-next-poster img { width: 100%; height: 100%; object-fit: cover; }
+
+.jor-next-info { flex: 1; min-width: 0; }
+
+.jor-next-title {
+  font-size: var(--font-sm);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jor-next-meta { font-size: var(--font-xs); color: var(--text3); margin-top: 2px; }
+
+.jor-next-status { font-size: var(--font-xs); font-weight: var(--weight-bold); margin-top: var(--space-1); }
+.jor-next-status.done { color: var(--green, #4ade80); }
+.jor-next-add {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-bold);
+  color: var(--accent);
+  margin-top: var(--space-1);
+}
+
+/* ── Categories ── */
+.jor-categories { display: flex; flex-direction: column; gap: var(--space-3); }
+
+.jor-category {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  background: var(--surface);
+}
+
+.jor-category[open] { border-color: var(--border2); }
+
+.jor-category-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-3) var(--space-3);
+  cursor: pointer;
+  font-size: var(--font-sm);
+  font-weight: var(--weight-bold);
+  color: var(--text);
+  background: var(--surface2);
+  transition: background var(--transition-fast);
+  user-select: none;
+}
+
+.jor-category-header:hover { background: var(--surface3); }
+
+.jor-category-icon { font-size: 1rem; }
+.jor-category-name { flex: 1; }
+.jor-category-count { font-size: var(--font-xs); color: var(--text3); }
+
+.jor-category-items { padding: var(--space-1) var(--space-3) var(--space-3); }
+
+.jor-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-2);
+  border-radius: var(--radius-sm);
+  transition: background var(--transition-fast);
+}
+
+.jor-item:hover { background: var(--surface2); }
+.jor-item.current { background: rgba(108,92,231,.06); }
+
+.jor-badge {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 11px;
+  flex-shrink: 0;
+}
+
+.jor-badge.done { background: rgba(74,222,128,.15); color: #4ade80; }
+.jor-badge.watching { background: rgba(59,130,246,.15); color: #3b82f6; }
+.jor-badge.todo { background: rgba(168,85,247,.15); color: #a855f7; }
+.jor-badge.missing { background: var(--surface3); color: var(--text3); }
+
+.jor-item-title {
+  flex: 1;
+  font-size: var(--font-sm);
+  color: var(--text);
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.jor-item.current .jor-item-title { font-weight: var(--weight-bold); color: var(--accent); }
+
+.jor-rel-tag {
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 10px;
+  background: var(--surface3);
+  color: var(--text3);
+  white-space: nowrap;
+}
+
+.jor-item-link, .jor-item-add {
+  width: 28px;
+  height: 28px;
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 12px;
+  flex-shrink: 0;
+  transition: all var(--transition-fast);
+}
+
+.jor-item-link { background: var(--surface2); color: var(--text2); }
+.jor-item-link:hover { background: var(--surface3); color: var(--text); }
+
+.jor-item-add { background: var(--accent); color: white; font-size: 16px; font-weight: var(--weight-bold); }
+.jor-item-add:hover { transform: scale(1.1); }
+
 /* ── Tag picker (reused) ── */
 .tag-picker {
   display: flex;
