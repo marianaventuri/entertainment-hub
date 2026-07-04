@@ -263,7 +263,7 @@ async function quickUpdate(id, field, value) {
 ═══════════════════════════════════════════ */
 function openDetail(id) {
   const item = db.find(x=>x.id===id);
-  if (!item) return;
+  if (!item) { console.warn('openDetail: item not found', id, typeof id); return; }
   const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
 
   const emotionBars = EMOTIONS.map(e => {
