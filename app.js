@@ -336,16 +336,82 @@ async function quickUpdate(id, field, value) {
 /* ═══════════════════════════════════════════
    DETAIL MODAL
 ═══════════════════════════════════════════ */
+/* ═══════════════════════════════════════════
+   DETAIL MODAL — REDESIGNED
+═══════════════════════════════════════════ */
+
+// ── State ──
+let detailId = null;
+let detailDirty = false;
+let detailUnsaved = {};
+
 function openDetail(id) {
   const item = findInDb(id);
-  if (!item) {
-    console.warn('openDetail: item not found', id, typeof id,
-      'db[0].id:', db[0]?.id, typeof db[0]?.id,
-      'db[119].id:', db[119]?.id, typeof db[119]?.id,
-      'db.length:', db.length)
-    return;
+  if (!item) { console.warn('openDetail: item not found', id); return; }
+  detailId = id;
+  detailDirty = false;
+  detailUnsaved = {};
+
+  const overlay = document.getElementById('detailOverlay');
+  overlay.classList.add('open');
+  renderDetailModal(item);
+}
+
+function renderDetailModal(item) {
+  const body = document.getElementById('detailBody');
+  body.innerHTML = `
+    <div class="dmodal-header">
+      <button class="dmodal-back" onclick="closeDetailModal()">←</button>
+      <div class="dmodal-title" id="dmodalTitle">${esc(item.title)}</div>
+      <div class="dmodal-actions">
+        <span class="dmodal-unsaved hidden" id="dmodalUnsaved" title="Alterações não salvas">●</span>
+        <button class="btn btn-primary dmodal-save hidden" id="dmodalSave" onclick="saveDetailChanges()">Salvar</button>
+      </div>
+    </div>
+    <div class="dmodal-tabs">
+      <button class="dmodal-tab active" onclick="switchDetailTab('info')">Informações</button>
+      <button class="dmodal-tab" onclick="switchDetailTab('avaliacao')">Avaliação</button>
+      <button class="dmodal-tab" onclick="switchDetailTab('universo')">Universo</button>
+      <button class="dmodal-tab" onclick="switchDetailTab('historico')">Histórico</button>
+    </div>
+    <div class="dmodal-content" id="dmodalContent">
+      ${renderInfoTab(item)}
+    </div>
+  `;
+}
+
+/* ── Tab navigation ── */
+function switchDetailTab(tab) {
+  document.querySelectorAll('.dmodal-tab').forEach(t => t.classList.remove('active'));
+  document.querySelector(`.dmodal-tab[onclick*="${tab}"]`).classList.add('active');
+  const item = findInDb(detailId);
+  if (!item) return;
+  const c = document.getElementById('dmodalContent');
+
+  if (tab === 'info')         c.innerHTML = renderInfoTab(item);
+  else if (tab === 'avaliacao') c.innerHTML = renderAvaliacaoTab(item);
+  else if (tab === 'universo') {
+    c.innerHTML = renderUniversoTab(item);
+    fetchUniverso(item);
   }
+  else if (tab === 'historico') c.innerHTML = renderHistoricoTab(item);
+
+  c.scrollTop = 0;
+}
+
+/* ── Info tab ── */
+function renderInfoTab(item) {
   const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
+  const coverHtml = item.cover
+    ? `<img src="${esc(item.cover)}" alt="" onerror="this.parentNode.innerHTML='${t.icon}'">`
+    : t.icon;
+
+  const genresHtml = (item.genres||'').split(',').filter(Boolean)
+    .map(g => `<span class="detail-badge">${esc(g.trim())}</span>`).join('');
+
+  let metaExtra = '';
+  if (item.episodes) metaExtra += `<div class="detail-meta-item"><span class="detail-meta-label">Episódios</span><span class="detail-meta-val">${esc(item.episodes)}</span></div>`;
+  if (item.hours)    metaExtra += `<div class="detail-meta-item"><span class="detail-meta-label">Tempo gasto</span><span class="detail-meta-val">${item.hours}h</span></div>`;
 
   const emotionBars = EMOTIONS.map(e => {
     const v = item.emotions?.[e.key]||0;
@@ -356,17 +422,149 @@ function openDetail(id) {
     </div>`;
   }).join('');
 
-  const genresHtml = (item.genres||'').split(',').filter(Boolean)
-    .map(g=>`<span class="detail-badge">${esc(g.trim())}</span>`).join('');
+  return `
+    <div class="detail-header">
+      <div class="detail-poster">${coverHtml}</div>
+      <div class="detail-info">
+        <div class="detail-title">${esc(item.title)}</div>
+        <div class="detail-badges">
+          <span class="detail-badge">${t.icon} ${esc(item.type)}</span>
+          ${item.year?`<span class="detail-badge">${item.year}</span>`:''}
+        </div>
+        <div class="detail-meta-row">
+          ${metaExtra}
+          <div class="detail-meta-item">
+            <span class="detail-meta-label">Plataforma</span>
+            <span class="detail-meta-val">${item.platform ? esc(item.platform) : '—'}</span>
+          </div>
+          <div class="detail-meta-item">
+            <span class="detail-meta-label">Status</span>
+            <span class="detail-meta-val">${displayStatus(item.status, item.type)}</span>
+          </div>
+          ${item.rating ? `<div class="detail-meta-item"><span class="detail-meta-label">Nota</span><span class="detail-meta-val">${'★'.repeat(item.rating)}</span></div>` : ''}
+        </div>
+        ${genresHtml ? `<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">${genresHtml}</div>` : ''}
+      </div>
+    </div>
 
-  const coverHtml = item.cover
-    ? `<img src="${esc(item.cover)}" alt="" onerror="this.parentNode.innerHTML='${t.icon}'">`
-    : t.icon;
+    ${item.synopsis ? `<div class="dmodal-section">
+      <div class="dmodal-section-title">Sinopse</div>
+      <div class="detail-synopsis">${esc(item.synopsis)}</div>
+    </div>` : ''}
 
-  let metaExtra = '';
-  if (item.episodes) metaExtra += `<div class="detail-meta-item"><span class="detail-meta-label">Episódios</span><span class="detail-meta-val">${esc(item.episodes)}</span></div>`;
-  if (item.hours)    metaExtra += `<div class="detail-meta-item"><span class="detail-meta-label">Tempo gasto</span><span class="detail-meta-val">${item.hours}h</span></div>`;
+    ${item.opinion ? `<div class="dmodal-section">
+      <div class="dmodal-section-title">Minha opinião</div>
+      <div class="detail-opinion">${esc(item.opinion)}</div>
+    </div>` : ''}
 
+    <div class="dmodal-section">
+      <div class="dmodal-section-title">Nota emocional</div>
+      <div class="emotion-bars">${emotionBars}</div>
+    </div>
+
+    <div class="dmodal-section">
+      <div class="dmodal-section-title">Tags pessoais</div>
+      <div class="detail-tags">${(item.tags||[]).length
+        ? item.tags.map(t => `<span class="detail-tag">${esc(t)}</span>`).join('')
+        : '<span style="color:var(--text3);font-size:0.8rem">Nenhuma tag</span>'}
+      </div>
+    </div>
+
+    <div class="detail-actions">
+      <button class="btn btn-ghost" onclick="editItem('${item.id}')">✏️ Editar completo</button>
+      <button class="btn btn-ghost" onclick="switchDetailTab('avaliacao')">⭐ Avaliar</button>
+      <button class="btn btn-ghost" style="color:var(--red);margin-left:auto" onclick="deleteItem('${item.id}')">🗑 Remover</button>
+    </div>
+  `;
+}
+
+/* ── Avaliação tab ── */
+const ALL_TAGS = [
+  'Favorito da vida', 'Recomendo', 'Obra-prima', 'Chorei',
+  'Rolou um boom', 'Pra esquecer', 'Pode melhorar',
+  'Amei', 'Gostei', 'Tanto faz', 'Horroroso',
+  'Vício', 'Maratonei', 'Dropado', 'Relendo',
+  'Aguardando', 'Hiatus', 'Lançamento', 'Clássico',
+  'Subestimado', 'Superestimado'
+];
+
+function renderAvaliacaoTab(item) {
+  return `
+    <div class="dmodal-section">
+      <div class="aval-field">
+        <div class="aval-label">Status</div>
+        <div class="aval-status-opts">
+          ${['Quero assistir', 'Assistindo', 'Finalizado', 'Abandonado'].map(s => {
+            const label = s === 'Quero assistir'
+              ? (item.type === 'Livro' || item.type === 'Mangá' ? 'Quero ler' : item.type === 'Jogo' ? 'Quero jogar' : 'Quero')
+              : displayStatus(s, item.type);
+            const cls = s === item.status ? 'active ' + statusBadgeClass(s) : '';
+            return `<button class="aval-status-opt ${cls}" data-status="${s}" onclick="selectAvalStatus(this)">${label}</button>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="aval-field">
+        <div class="aval-label">Nota</div>
+        <div class="aval-stars" id="avalStars">
+          ${[1,2,3,4,5].map(i => `<span class="aval-star${i <= (item.rating||0) ? ' on' : ''}" data-val="${i}" onclick="selectAvalStar(this)">★</span>`).join('')}
+        </div>
+      </div>
+
+      <div class="aval-field">
+        <div class="aval-label">Favorito</div>
+        <button class="aval-fav-btn${item.fav ? ' on' : ''}" onclick="toggleAvalFav(this)">${item.fav ? '⭐ Favorito' : '☆ Favoritar'}</button>
+      </div>
+
+      <div class="aval-field">
+        <div class="aval-label">Tags</div>
+        <div class="aval-tags" id="avalTags">
+          ${ALL_TAGS.map(t => {
+            const active = (item.tags||[]).includes(t);
+            return `<button class="aval-tag${active ? ' active' : ''}" onclick="toggleAvalTag(this)">${t}</button>`;
+          }).join('')}
+        </div>
+      </div>
+
+      <div class="aval-field">
+        <div class="aval-label">Comentário / Opinião</div>
+        <textarea class="aval-textarea" id="avalOpinion" oninput="markDetailDirty()" placeholder="O que você achou dessa obra?">${esc(item.opinion||'')}</textarea>
+      </div>
+
+      <div class="detail-actions">
+        <button class="btn btn-primary" onclick="saveDetailChanges()">💾 Salvar alterações</button>
+        <button class="btn btn-ghost" onclick="switchDetailTab('info')">← Voltar</button>
+      </div>
+    </div>
+  `;
+}
+
+function selectAvalStatus(btn) {
+  markDetailDirty();
+  document.querySelectorAll('.aval-status-opt').forEach(b => { b.classList.remove('active','badge-assistindo','badge-finalizado','badge-abandonado','badge-quero'); });
+  btn.classList.add('active');
+  btn.classList.add(statusBadgeClass(btn.dataset.status));
+}
+
+function selectAvalStar(star) {
+  markDetailDirty();
+  const val = parseInt(star.dataset.val);
+  document.querySelectorAll('.aval-star').forEach(s => s.classList.toggle('on', parseInt(s.dataset.val) <= val));
+}
+
+function toggleAvalFav(btn) {
+  markDetailDirty();
+  btn.classList.toggle('on');
+  btn.innerHTML = btn.classList.contains('on') ? '⭐ Favorito' : '☆ Favoritar';
+}
+
+function toggleAvalTag(btn) {
+  markDetailDirty();
+  btn.classList.toggle('active');
+}
+
+/* ── Universo tab ── */
+function renderUniversoTab(item) {
   const titleLower = item.title.toLowerCase();
   const existingTypes = new Set(db.filter(x => x.title.toLowerCase() === titleLower).map(x => x.type));
 
@@ -375,218 +573,203 @@ function openDetail(id) {
   else if (['Filme', 'Série'].includes(item.type)) typesToShow = ['Filme', 'Série', 'Livro', 'Jogo'];
   else if (item.type === 'Livro') typesToShow = ['Livro', 'Filme', 'Série', 'Mangá'];
   else typesToShow = ['Jogo', 'Filme', 'Série', 'Anime', 'Livro'];
-
   if (!typesToShow.includes(item.type)) typesToShow.unshift(item.type);
 
-  const relatedHtml = typesToShow.map(rt => {
+  const mediaHtml = typesToShow.map(rt => {
     const hasIt = existingTypes.has(rt);
     const label = rt === 'Livro' && ['Anime','Mangá'].includes(item.type) ? 'Light Novel' : rt;
     if (hasIt) {
-       const relatedItem = db.find(x => x.title.toLowerCase() === titleLower && x.type === rt);
-       return `<button class="related-pill has-it" onclick="openDetail('${relatedItem.id}')" title="Ver detalhes de ${label}">${typeIcon(rt)} ${label} ✔</button>`;
+      const ri = db.find(x => x.title.toLowerCase() === titleLower && x.type === rt);
+      return `<div class="uno-card" onclick="openDetail('${ri.id}')">
+        <div class="uno-card-poster" style="font-size:2rem;color:${(TIPO[rt]||{}).color||'#555'}">${typeIcon(rt)}</div>
+        <div class="uno-card-info">
+          <div class="uno-card-title">${esc(label)}</div>
+          <div class="uno-card-meta">${rt} ✔</div>
+        </div>
+      </div>`;
     } else {
-       return `<button class="related-pill missing" onclick="addRelated('${esc(item.title).replace(/'/g,"\\'")}','${rt}','${item.cover ? esc(item.cover).replace(/'/g,"\\'") : ''}', '${item.id}')" title="Adicionar ${label} ao catálogo">${typeIcon(rt)} ${label} ❌</button>`;
+      return `<div class="uno-card" onclick="addRelated('${esc(item.title).replace(/'/g,"\\'")}','${rt}','${item.cover ? esc(item.cover).replace(/'/g,"\\'") : ''}','${item.id}')">
+        <div class="uno-card-poster" style="font-size:2rem;color:${(TIPO[rt]||{}).color||'#555'}">${typeIcon(rt)}</div>
+        <div class="uno-card-info">
+          <div class="uno-card-title">${esc(label)}</div>
+          <div class="uno-card-meta">Adicionar</div>
+        </div>
+      </div>`;
     }
   }).join('');
 
-  const statusOptions = ['Quero assistir', 'Assistindo', 'Finalizado', 'Abandonado'];
-  const displayMap = { 'Quero assistir': 'Quero', 'Assistindo': '▶', 'Finalizado': '✓', 'Abandonado': '✕' };
-  if (item.type === 'Livro' || item.type === 'Mangá') {
-    displayMap['Quero assistir'] = 'Quero';
-    displayMap['Assistindo'] = '📖';
-  }
-  if (item.type === 'Jogo') {
-    displayMap['Quero assistir'] = 'Quero';
-    displayMap['Assistindo'] = '🎮';
-  }
-
-  const tagsHtml = (item.tags||[]).length
-    ? item.tags.map(tg =>
-      `<span class="detail-tag" onclick="quickRemoveTag('${id}','${esc(tg).replace(/'/g,"\\'")}')">${esc(tg)} ✕</span>`
-    ).join('')
-    : '<span style="color:var(--text3);font-size:0.8rem">Nenhuma tag</span>';
-
-  document.getElementById('detailBody').innerHTML = `
-    <div class="detail-header">
-      <div class="detail-poster">${coverHtml}</div>
-      <div class="detail-info">
-        <div class="detail-title-row">
-          <div class="detail-title">${esc(item.title)}</div>
-          <button class="detail-fav-btn" onclick="quickUpdate('${id}','fav',${!item.fav})">${item.fav ? '❤️' : '🤍'}</button>
-        </div>
-        <div class="detail-badges">
-          <span class="detail-badge">${t.icon} ${esc(item.type)}</span>
-          ${item.year?`<span class="detail-badge">${item.year}</span>`:''}
-        </div>
-
-        ${/* Status inline selector */''}
-        <div class="status-selector">
-          ${statusOptions.map(s => {
-            const cls = s === item.status ? 'active ' + statusBadgeClass(s) : '';
-            const label = s === 'Quero assistir'
-              ? (item.type === 'Livro' || item.type === 'Mangá' ? 'Quero ler' : item.type === 'Jogo' ? 'Quero jogar' : 'Quero')
-              : displayStatus(s, item.type);
-            return `<button class="status-opt ${cls}" onclick="quickUpdate('${id}','status','${s}')">${label}</button>`;
-          }).join('')}
-        </div>
-
-        ${/* Rating inline */''}
-        <div class="stars-inline" onclick="quickSetStar(event,'${id}')" data-rating="${item.rating||0}">
-          ${[1,2,3,4,5].map(i =>
-            `<span class="star${i <= (item.rating||0) ? ' on' : ''}" data-val="${i}">★</span>`
-          ).join('')}
-        </div>
-
-        ${/* Platform inline */''}
-        <div class="detail-meta-row">
-          ${metaExtra}
-          <div class="detail-meta-item">
-            <span class="detail-meta-label">Plataforma</span>
-            <span class="detail-meta-val inline-editable" onclick="inlineEditText(this,'platform','${id}')">${item.platform ? esc(item.platform) : '<span style="color:var(--text3)">—</span>'}</span>
-          </div>
-        </div>
-        ${genresHtml?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">${genresHtml}</div>`:''}
-      </div>
+  return `
+    <div class="uno-section">
+      <div class="uno-section-title">Mesma obra, outras mídias</div>
+      <div class="uno-scroll">${mediaHtml}</div>
     </div>
 
-    ${item.synopsis?`<div class="detail-section">
-      <div class="detail-section-title">Sinopse</div>
-      <div class="detail-synopsis">${esc(item.synopsis)}</div>
-    </div>`:''}
-
-    ${item.opinion?`<div class="detail-section">
-      <div class="detail-section-title">Minha opinião</div>
-      <div class="detail-opinion">${esc(item.opinion)}</div>
-    </div>`:''}
-
-    <div class="detail-section">
-      <div class="detail-section-title">Nota emocional</div>
-      <div class="emotion-bars">${emotionBars}</div>
-    </div>
-
-    <div class="detail-section">
-      <div class="detail-section-title">
-        Tags pessoais
-        <button class="btn btn-ghost btn-xs" onclick="inlineAddTag('${id}')" style="margin-left:auto">+</button>
-      </div>
-      <div class="detail-tags">${tagsHtml}</div>
-    </div>
-
-    <div class="detail-section">
-      <div class="detail-section-title">Obras Relacionadas</div>
-      <div style="display:flex;flex-wrap:wrap;gap:8px;margin-top:6px">${relatedHtml}</div>
-    </div>
-
-    <div class="detail-actions">
-      <button class="btn btn-ghost" onclick="editItem('${id}')">✏️ Editar completo</button>
-      <button class="btn btn-ghost" style="color:var(--red)" onclick="deleteItem('${id}')">🗑 Remover</button>
+    <div class="uno-section">
+      <div class="uno-section-title">Relacionados por API</div>
+      <div id="unoApiResults" class="uno-loading">🔍 Buscando obras relacionadas…</div>
     </div>
   `;
-
-  document.getElementById('detailBody').dataset.currentId = id;
-  document.getElementById('detailOverlay').classList.add('open');
 }
 
-/* ═══════════════════════════════════════════
-   INLINE HELPERS
-═══════════════════════════════════════════ */
-function quickSetStar(e, id) {
-  const star = e.target.closest('.star')
-  if (!star) return
-  const val = parseInt(star.dataset.val)
-  quickUpdate(id, 'rating', val)
-}
+async function fetchUniverso(item) {
+  const el = document.getElementById('unoApiResults');
+  if (!el) return;
 
-function inlineEditText(el, field, id) {
-  const current = el.textContent === '—' ? '' : el.textContent
-  const input = document.createElement('input')
-  input.className = 'inline-input'
-  input.value = current
-  input.style.width = Math.max(current.length * 10, 80) + 'px'
-  el.textContent = ''
-  el.appendChild(input)
-  input.focus()
-  input.select()
-  const save = () => {
-    quickUpdate(id, field, input.value.trim())
+  try {
+    let results = [];
+    const type = item.type;
+
+    if (type === 'Anime' || type === 'Mangá') {
+      results = await fetchAniListRelated(item.title, type);
+    } else if (type === 'Filme' || type === 'Série' || type === 'Dorama') {
+      results = await fetchTMDBRelated(item.title, type);
+    } else if (type === 'Jogo') {
+      results = await fetchRAWGRelated(item.title);
+    } else if (type === 'Livro') {
+      results = await fetchBookRelated(item.title);
+    }
+
+    if (!results || !results.length) {
+      el.innerHTML = '<div style="color:var(--text3);font-size:var(--font-sm)">Nenhuma obra relacionada encontrada.</div>';
+      return;
+    }
+
+    el.innerHTML = `<div class="uno-scroll">${results.map(r => {
+      const alreadyInDb = db.some(x => x.title.toLowerCase() === r.title.toLowerCase());
+      const actionHtml = alreadyInDb
+        ? '<div class="uno-card-action done">✔ Já adicionado</div>'
+        : `<div class="uno-card-action" onclick="event.stopPropagation();addRelatedFromApi('${esc(r.title).replace(/'/g,"\\'")}','${r.type}','${r.cover ? esc(r.cover).replace(/'/g,"\\'") : ''}','${item.id}')">+ Adicionar</div>`;
+      return `<div class="uno-card" onclick="searchAndOpenDetail('${esc(r.title).replace(/'/g,"\\'")}')">
+        <div class="uno-card-poster">
+          ${r.cover ? `<img src="${esc(r.cover)}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='${typeIcon(r.type)}'">` : `<span style="font-size:2rem">${typeIcon(r.type)}</span>`}
+        </div>
+        <div class="uno-card-info">
+          <div class="uno-card-title">${esc(r.title)}</div>
+          <div class="uno-card-meta">${r.year || ''} ${r.relation ? '· ' + r.relation : ''}</div>
+        </div>
+        ${actionHtml}
+      </div>`;
+    }).join('')}</div>`;
+  } catch (err) {
+    console.error(err);
+    el.innerHTML = '<div style="color:var(--text3);font-size:var(--font-sm)">Erro ao buscar relacionadas.</div>';
   }
-  input.addEventListener('blur', save)
-  input.addEventListener('keydown', e => {
-    if (e.key === 'Enter') { input.blur() }
-    if (e.key === 'Escape') { el.textContent = current || '—'; }
-  })
 }
 
-async function quickRemoveTag(id, tag) {
-  const item = findInDb(id)
-  if (!item) return
-  item.tags = (item.tags||[]).filter(t => t !== tag)
-  save()
-  saveItemToFirestore(item)
-  openDetail(id)
-  renderCatalogo()
+async function fetchAniListRelated(title, type) {
+  const mediaType = type === 'Mangá' ? 'MANGA' : 'ANIME';
+  const query = `
+    query($search: String, $type: MediaType) {
+      Media(search: $search, type: $type, sort: SEARCH_MATCH) {
+        title { romaji english }
+        relations { edges { relationType(version:2) node { title { romaji english } type coverImage { large } startDate { year } } } }
+      }
+    }`;
+  const res = await fetch('https://graphql.anilist.co', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+    body: JSON.stringify({ query, variables: { search: title, type: mediaType } })
+  });
+  const data = await res.json();
+  const media = data.data?.Media;
+  if (!media?.relations?.edges) return [];
+
+  const relMap = { PREQUEL:'Prequel', SEQUEL:'Sequência', SIDE_STORY:'História paralela', SPIN_OFF:'Spin-off', ADAPTATION:'Adaptação', SUMMARY:'Resumo', COMPILATION:'Compilação', CONTAINS:'Contém', CHARACTER:'Personagem', OTHER:'Outro', SOURCE:'Fonte', ALTERNATIVE:'Alternativo', PARENT:'Original' };
+
+  return media.relations.edges.map(e => {
+    const n = e.node;
+    const t = n.title?.romaji || n.title?.english || '';
+    const resultType = n.type === 'MANGA' ? 'Mangá' : n.type === 'ANIME' ? 'Anime' : type;
+    return {
+      title: t,
+      type: resultType,
+      cover: n.coverImage?.large || '',
+      year: n.startDate?.year ? String(n.startDate.year) : '',
+      relation: relMap[e.relationType] || e.relationType
+    };
+  }).filter(r => r.title);
 }
 
-function inlineAddTag(id) {
-  const allTags = [
-    'Favorito da vida', 'Recomendo', 'Obra-prima', 'Chorei',
-    'Rolou um boom', 'Pra esquecer', 'Pode melhorar',
-    'Amei', 'Gostei', 'Tanto faz', 'Horroroso',
-    'Vício', 'Maratonei', 'Dropado', 'Relendo',
-    'Aguardando', 'Hiatus', 'Lançamento', 'Clássico',
-    'Subestimado', 'Superestimado'
-  ]
-  const item = findInDb(id)
-  const used = new Set(item.tags || [])
-  
-  // Create a floating tag picker
-  let picker = document.getElementById('tagPicker')
-  if (picker) picker.remove()
-  
-  picker = document.createElement('div')
-  picker.id = 'tagPicker'
-  picker.className = 'tag-picker'
-  picker.innerHTML = allTags
-    .filter(t => !used.has(t))
-    .map(t => `<button class="tag-picker-opt" onclick="pickTag('${id}','${t}')">${t}</button>`)
-    .join('') || '<div style="color:var(--text3);padding:8px">Todas já adicionadas</div>'
-  
-  document.getElementById('detailBody').appendChild(picker)
-  setTimeout(() => picker.classList.add('open'), 10)
-  
-  // Close on click outside
-  const close = (e) => {
-    if (!picker.contains(e.target)) {
-      picker.classList.remove('open')
-      setTimeout(() => picker.remove(), 200)
-      document.removeEventListener('click', close)
+async function fetchTMDBRelated(title, type) {
+  const mediaType = (type === 'Filme') ? 'movie' : 'tv';
+  const url = `https://api.themoviedb.org/3/search/${mediaType}?query=${encodeURIComponent(title)}&api_key=${TMDB_KEY}&language=pt-BR`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data.results?.length) return [];
+
+  // Get first result's details for collection
+  const first = data.results[0];
+  const detUrl = `https://api.themoviedb.org/3/${mediaType}/${first.id}?api_key=${TMDB_KEY}&language=pt-BR`;
+  const detRes = await fetch(detUrl);
+  const det = await detRes.json();
+
+  let collectionItems = [];
+  if (det.belongs_to_collection) {
+    const colUrl = `https://api.themoviedb.org/3/collection/${det.belongs_to_collection.id}?api_key=${TMDB_KEY}&language=pt-BR`;
+    const colRes = await fetch(colUrl);
+    const col = await colRes.json();
+    if (col.parts) {
+      collectionItems = col.parts.map(p => ({
+        title: p.title || p.name || '',
+        type: p.media_type === 'tv' ? 'Série' : 'Filme',
+        cover: p.poster_path ? TMDB_IMG + p.poster_path : '',
+        year: (p.release_date || p.first_air_date || '').slice(0,4),
+        relation: 'Coleção'
+      })).filter(r => r.title);
     }
   }
-  setTimeout(() => document.addEventListener('click', close), 100)
+
+  // If no collection, show search results as related
+  if (!collectionItems.length) {
+    collectionItems = data.results.slice(0, 8).map(p => ({
+      title: p.title || p.name || '',
+      type: mediaType === 'movie' ? 'Filme' : 'Série',
+      cover: p.poster_path ? TMDB_IMG + p.poster_path : '',
+      year: (p.release_date || p.first_air_date || '').slice(0,4),
+      relation: ''
+    })).filter(r => r.title);
+  }
+
+  return collectionItems;
 }
 
-async function pickTag(id, tag) {
-  const item = findInDb(id)
-  if (!item) return
-  if (!item.tags) item.tags = []
-  if (item.tags.includes(tag)) return
-  item.tags.push(tag)
-  save()
-  saveItemToFirestore(item)
-  const picker = document.getElementById('tagPicker')
-  if (picker) { picker.classList.remove('open'); setTimeout(() => picker.remove(), 200) }
-  openDetail(id)
-  renderCatalogo()
+async function fetchRAWGRelated(title) {
+  const url = `https://api.rawg.io/api/games?key=${RAWG_KEY}&search=${encodeURIComponent(title)}&page_size=5`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data.results?.length) return [];
+
+  return data.results.slice(0, 8).map(p => ({
+    title: p.name || '',
+    type: 'Jogo',
+    cover: p.background_image || '',
+    year: (p.released || '').slice(0,4),
+    relation: ''
+  })).filter(r => r.title);
 }
 
-async function addRelated(title, type, cover, originalId) {
+async function fetchBookRelated(title) {
+  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(title)}&limit=5`;
+  const res = await fetch(url);
+  const data = await res.json();
+  if (!data.docs?.length) return [];
+
+  return data.docs.slice(0, 8).map(p => ({
+    title: p.title || '',
+    type: 'Livro',
+    cover: p.cover_i ? `https://covers.openlibrary.org/b/id/${p.cover_i}-L.jpg` : '',
+    year: p.first_publish_year ? String(p.first_publish_year) : '',
+    relation: ''
+  })).filter(r => r.title);
+}
+
+async function addRelatedFromApi(title, type, cover, originalId) {
   const item = {
     id: String(Date.now() + Math.random()),
     title, type, cover: cover || '',
     status: 'Quero assistir',
-    rating: 0,
-    year:'', platform:'', episodes:'', hours:'',
-    genres:'', synopsis:'', opinion:'', cover:'',
+    rating: 0, year: '', platform: '', episodes: '', hours: '',
+    genres: '', synopsis: '', opinion: '',
     emotions: {}, tags: [], fav: false,
     addedAt: new Date().toISOString()
   };
@@ -600,9 +783,105 @@ async function addRelated(title, type, cover, originalId) {
   openDetail(originalId);
 }
 
+function searchAndOpenDetail(title) {
+  const found = db.find(x => x.title.toLowerCase() === title.toLowerCase());
+  if (found) { openDetail(found.id); return; }
+  toast('Obra não encontrada no catálogo.', '🔍');
+}
+
+/* ── Histórico tab ── */
+function renderHistoricoTab(item) {
+  const entries = [];
+  if (item.addedAt) {
+    entries.push({ icon: '➕', event: 'Adicionado ao catálogo', date: item.addedAt });
+  }
+  if (item.finishedAt) {
+    entries.push({ icon: '✅', event: 'Finalizado', date: item.finishedAt });
+  }
+  // Show last modified from localStorage save timestamps
+  const saved = localStorage.getItem('catalogo_saved');
+  if (saved) {
+    entries.push({ icon: '💾', event: 'Última modificação', date: saved });
+  }
+
+  // Sort newest first
+  entries.sort((a, b) => new Date(b.date) - new Date(a.date));
+
+  if (!entries.length) {
+    return `<div style="color:var(--text3);font-size:var(--font-sm);padding:var(--space-4) 0;text-align:center">Nenhum histórico disponível.</div>`;
+  }
+
+  return entries.map(e => {
+    const d = new Date(e.date);
+    const formatted = d.toLocaleString('pt-BR', { dateStyle: 'long', timeStyle: 'short' });
+    return `<div class="hist-item">
+      <div class="hist-icon">${e.icon}</div>
+      <div class="hist-info">
+        <div class="hist-event">${e.event}</div>
+        <div class="hist-date">${formatted}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+/* ── Dirty state ── */
+function markDetailDirty() {
+  if (detailDirty) return;
+  detailDirty = true;
+  document.getElementById('dmodalUnsaved').classList.remove('hidden');
+  document.getElementById('dmodalSave').classList.remove('hidden');
+}
+
+function saveDetailChanges() {
+  const item = findInDb(detailId);
+  if (!item) return;
+
+  const activeStatus = document.querySelector('.aval-status-opt.active');
+  if (activeStatus) {
+    item.status = activeStatus.dataset.status;
+  }
+
+  const allOn = document.querySelectorAll('.aval-star.on');
+  if (allOn.length) item.rating = allOn.length;
+
+  const favBtn = document.querySelector('.aval-fav-btn');
+  if (favBtn) item.fav = favBtn.classList.contains('on');
+
+  const activeTags = [...document.querySelectorAll('.aval-tag.active')].map(b => b.textContent.trim());
+  item.tags = activeTags;
+
+  const opinionEl = document.getElementById('avalOpinion');
+  if (opinionEl) item.opinion = opinionEl.value.trim();
+
+  if (item.status === 'Finalizado' && !item.finishedAt) {
+    item.finishedAt = new Date().toISOString();
+  } else if (item.status !== 'Finalizado') {
+    item.finishedAt = null;
+  }
+
+  save();
+  saveItemToFirestore(item);
+  renderCatalogo();
+
+  detailDirty = false;
+  detailUnsaved = {};
+  const unsaved = document.getElementById('dmodalUnsaved');
+  const saveBtn = document.getElementById('dmodalSave');
+  if (unsaved) unsaved.classList.add('hidden');
+  if (saveBtn) saveBtn.classList.add('hidden');
+
+  toast('💾 Alterações salvas!');
+}
+
+/* ── Modal lifecycle ── */
 function closeDetailModal(e) {
   if (e && e.target !== document.getElementById('detailOverlay')) return;
+  if (detailDirty) {
+    if (!confirm('Há alterações não salvas. Deseja realmente fechar?')) return;
+  }
   document.getElementById('detailOverlay').classList.remove('open');
+  detailDirty = false;
+  detailUnsaved = {};
 }
 
 /* ═══════════════════════════════════════════
