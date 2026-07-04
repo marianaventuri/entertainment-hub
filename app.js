@@ -319,6 +319,10 @@ async function quickUpdate(id, field, value) {
   const item = findInDb(id)
   if (!item) return
   item[field] = value
+  if (field === 'status') {
+    if (value === 'Finalizado' && !item.finishedAt) item.finishedAt = new Date().toISOString();
+    else if (value !== 'Finalizado') item.finishedAt = null;
+  }
   save()
   saveItemToFirestore(item)
   const overlay = document.getElementById('detailOverlay')
@@ -1193,42 +1197,74 @@ function renderDashboard() {
 /* ═══════════════════════════════════════════
    TIMELINE
 ═══════════════════════════════════════════ */
+function timelineItem(item) {
+  return `<div class="tl-work" onclick="openDetail('${item.id}')">
+    <span class="tl-work-icon">${typeIcon(item.type)}</span>
+    <span class="tl-work-title">${esc(item.title)}</span>
+    ${item.rating ? `<span class="tl-work-stars">${'★'.repeat(item.rating)}</span>` : ''}
+  </div>`;
+}
+
 function renderTimeline() {
-  const finished = db.filter(x=>x.status==='Finalizado'&&x.finishedAt);
+  const finished = db.filter(x => x.status === 'Finalizado' && x.finishedAt);
   const tl = document.getElementById('timelineEl');
   const empty = document.getElementById('timelineEmpty');
 
-  if (!finished.length) { tl.innerHTML=''; empty.classList.remove('hidden'); return; }
+  if (!finished.length) { tl.innerHTML = ''; empty.classList.remove('hidden'); return; }
   empty.classList.add('hidden');
 
-  // group by year → month
-  const byYear = {};
-  finished.forEach(item=>{
+  const now = new Date();
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const yesterday = new Date(today);
+  yesterday.setDate(yesterday.getDate() - 1);
+  const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+
+  const groups = { today: [], yesterday: [], thisMonth: [], older: {} };
+
+  // Sort finished newest first for consistent order within groups
+  finished.sort((a, b) => new Date(b.finishedAt) - new Date(a.finishedAt));
+
+  finished.forEach(item => {
     const d = new Date(item.finishedAt);
-    const y = d.getFullYear();
-    const m = d.toLocaleString('pt-BR',{month:'long'});
-    if (!byYear[y]) byYear[y]={};
-    if (!byYear[y][m]) byYear[y][m]=[];
-    byYear[y][m].push(item);
+    const itemDay = new Date(d.getFullYear(), d.getMonth(), d.getDate());
+
+    if (itemDay.getTime() === today.getTime()) {
+      groups.today.push(item);
+    } else if (itemDay.getTime() === yesterday.getTime()) {
+      groups.yesterday.push(item);
+    } else if (d >= thisMonthStart) {
+      groups.thisMonth.push(item);
+    } else {
+      const key = d.getFullYear() + '-' + String(d.getMonth()).padStart(2, '0');
+      if (!groups.older[key]) groups.older[key] = [];
+      groups.older[key].push(item);
+    }
   });
 
-  const MONTHS_PT = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const olderKeys = Object.keys(groups.older).sort((a, b) => b.localeCompare(a));
 
-  tl.innerHTML = Object.keys(byYear).sort((a,b)=>b-a).map(y=>`
-    <div class="timeline-year">${y}</div>
-    ${MONTHS_PT.filter(m=>byYear[y][m]).reverse().map(m=>`
-      <div class="timeline-month">
-        <div class="timeline-month-name">${m}</div>
-        <div class="timeline-works">
-          ${byYear[y][m].map(item=>`
-            <div class="timeline-work" onclick="openDetail('${item.id}')">
-              <span class="timeline-work-icon">${typeIcon(item.type)}</span>
-              <span class="timeline-work-title">${esc(item.title)}</span>
-              ${item.rating?`<span class="timeline-work-stars">${'★'.repeat(item.rating)}</span>`:''}
-            </div>`).join('')}
-        </div>
-      </div>`).join('')}
-  `).join('');
+  let html = '';
+  if (groups.today.length) {
+    html += '<div class="tl-group"><div class="tl-group-title">Hoje</div>' +
+      groups.today.map(timelineItem).join('') + '</div>';
+  }
+  if (groups.yesterday.length) {
+    html += '<div class="tl-group"><div class="tl-group-title">Ontem</div>' +
+      groups.yesterday.map(timelineItem).join('') + '</div>';
+  }
+  if (groups.thisMonth.length) {
+    html += '<div class="tl-group"><div class="tl-group-title">Este mês</div>' +
+      groups.thisMonth.map(timelineItem).join('') + '</div>';
+  }
+  olderKeys.forEach(key => {
+    const [y, m] = key.split('-').map(Number);
+    const date = new Date(y, m);
+    const monthName = date.toLocaleString('pt-BR', { month: 'long' });
+    html += '<div class="tl-group"><div class="tl-group-title">' + monthName + ' ' + y + '</div>' +
+      groups.older[key].map(timelineItem).join('') + '</div>';
+  });
+
+  tl.innerHTML = html;
 }
 
 /* ═══════════════════════════════════════════
@@ -1564,7 +1600,8 @@ function parseImportRow(cells) {
     year: '', platform: '', episodes: '', hours: '',
     genres: '', synopsis: '', opinion: '', cover: '',
     emotions: {}, tags: [], fav: false,
-    addedAt: new Date().toISOString()
+    addedAt: new Date().toISOString(),
+    finishedAt: status === 'Finalizado' ? new Date().toISOString() : null
   };
 }
 
@@ -1751,12 +1788,13 @@ async function initApp() {
       content.insertBefore(div, content.firstChild);
     }
   }
-  // Sync sidebar + bottom nav active state
-  document.querySelectorAll('.nav-item.active').forEach(n => n.classList.remove('active'));
-  const homeNav = document.querySelector('.nav-item[onclick*="navigate(\'home\'"]');
-  if (homeNav) homeNav.classList.add('active');
-  const bnHome = document.getElementById('bn-home');
-  if (bnHome) bnHome.classList.add('active');
+  // Sync sidebar + bottom nav active state to Bibliotea
+  document.querySelectorAll('.nav-item.active, .bottom-nav-item.active').forEach(n => n.classList.remove('active'));
+  const bnBiblio = document.getElementById('bn-biblioteca');
+  if (bnBiblio) bnBiblio.classList.add('active');
+  // sidebar: keep both home and biblioteca visible; mark biblioteca as active
+  const biblioNav = document.querySelector('.nav-item[onclick*="navigate(\'biblioteca\'"]');
+  if (biblioNav) biblioNav.classList.add('active');
   if (unsubscribeSync) unsubscribeSync()
   unsubscribeSync = subscribeCatalog(updatedData => {
     if (localSaveGuard || revertGuard) return;
