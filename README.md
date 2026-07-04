@@ -10,7 +10,9 @@ Catálogo pessoal de filmes, séries, animes, mangás, doramas, jogos e livros c
 - Cards premium (capa + overlay gradiente, hover scale, favoritar direto)
 - Edição inline no modal de detalhes (status, estrelas, favorito, plataforma, tags)
 - Home com saudação, "Continue consumindo", estatísticas e atalhos
-- Busca, filtros por tipo/status, ordenação
+- Busca fixa no topo
+- Filtros rápidos: chips horizontais por tipo e status (combináveis)
+- Ordenação (recentes, A-Z, nota, favoritos)
 - Dashboard com gráficos, top 5, gêneros
 - Linha do tempo mensal de obras finalizadas
 - Wishlist
@@ -18,7 +20,7 @@ Catálogo pessoal de filmes, séries, animes, mangás, doramas, jogos e livros c
 - Obras relacionadas (mesmo título em tipos diferentes)
 - Nota emocional (6 dimensões) e tags personalizadas (20)
 - Importação CSV e colar texto (com dedup automático)
-- Favoritos
+- Favoritos com filtro dedicado
 - Responsivo (desktop sidebar + bottom nav mobile)
 - PWA — instalável como app no celular/desktop
 

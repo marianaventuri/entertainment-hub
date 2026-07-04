@@ -7,8 +7,8 @@ App para catalogar filmes, séries, animes, mangás, doramas, jogos e livros com
 | Arquivo | Função |
 |---|---|
 | `index.html` | Estrutura HTML (~510 linhas) |
-| `style.css` | Todos os estilos (~1885 linhas) |
-| `app.js` | Lógica principal: estado, navegação, home, CRUD, dashboard, conquistas (~1726 linhas) |
+| `style.css` | Todos os estilos (~1930 linhas) |
+| `app.js` | Lógica principal: estado, navegação, home, CRUD, dashboard, conquistas, filtros rápidos (~1787 linhas) |
 | `persistence.js` | Persistência: localStorage + Firestore CRUD + merge + migração (~175 linhas) |
 | `firebase.js` | Config Firebase + Auth (53 linhas) |
 | `firestore.rules` | Regras de segurança Firestore |
@@ -27,7 +27,7 @@ App para catalogar filmes, séries, animes, mangás, doramas, jogos e livros com
 - CRUD completo (adicionar/editar/excluir/exclusão em lote)
 - 7 tipos: Filme, Série, Anime, Mangá, Dorama, Jogo, Livro
 - 4 status com adaptação por tipo
-- Busca, filtros (tipo, status), ordenação
+- **Busca fixa** na topbar + **filtros rápidos** combináveis (chips horizontais de tipo e status, ordenação)
 - Dashboard com stats, status, top 5, gêneros, tipos
 - Linha do tempo mensal de obras finalizadas
 - Wishlist com check
@@ -105,6 +105,17 @@ Bottom nav (mobile): Home → Catálogo → Wishlist → Conquistas
 - `localSaveGuard`: impede echo loop durante escrita local (100ms)
 - `revertGuard`: após falha do Firestore, ignora snapshots por 3s (impede que dados revertam)
 - Merge preserva versão localStorage quando Firestore tem dados desatualizados
+
+## Filtros (Sprint UI/UX 5)
+
+- **Busca fixa** na topbar (sempre visível, sticky)
+- **Chips horizontais** com `overflow-x: auto` (sem scrollbar):
+  - Tipo: Todos · Filmes · Séries · Animes · Mangás · Doramas · Jogos · Livros
+  - Status: Todos os status · Favoritos · Assistindo · Finalizados · Quero assistir
+- **Filtros combináveis**: tipo + status + busca simultaneamente (AND)
+- **statusFilter**: variável global `statusFilter` substituiu o `<select id="filterStatus">` oculto, que perdia o valor `'fav'` por não existir `<option>` correspondente
+- **Tags ativas**: barra entre header e chips mostra filtros ativos com ✕ para remover
+- **Empty state específico**: "Nenhum favorito ainda — clique no ❤️" quando filtro fav não acha resultados
 
 ## Segurança
 
@@ -185,6 +196,8 @@ Sistema de tokens CSS no `:root` (`style.css:4-85`). Mobile-first (base 360px+; 
 5. **Dados revertiam no F5:** `loadCatalog` foi alterado para priorizar localStorage no merge; `onSnapshot` faz merge em vez de substituir `db`.
 6. **Deleção com race condition:** `deleteItem()` e `confirmDeleteSelected()` salvam no localStorage ANTES de deletar do Firestore, e usam `revertGuard` para bloquear `onSnapshot` durante a operação — impede que o merge re-adicione itens deletados a partir de dados stale do Firestore.
 7. **Filtro invertido em deleteItem:** `db.filter(x => x.id === id || String(x.id) === String(id))` mantinha o item deletado e removia todos os outros — corrigido para `!==`.
+8. **toggleCardFav sem localSaveGuard:** `toggleCardFav()` não usava `localSaveGuard`, então o `onSnapshot` do Firestore revertia o `fav` para o valor anterior — corrigido com `await saveItemToFirestore` + `localSaveGuard`.
+9. **statusFilter via DOM select vs variável:** o filtro `fav` usava `select.value = 'fav'` mas o select `<option>` não tinha esse valor, fazendo o valor ser ignorado silenciosamente — migrado para variável global `statusFilter`.
 
 ## Pendências
 
