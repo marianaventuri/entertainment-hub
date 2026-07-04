@@ -701,10 +701,13 @@ function confirmDeleteSelected() {
   
   const size = selectedIds.size;
   const deletedIds = [...selectedIds];
-  db = db.filter(x => !selectedIds.has(x.id) && !selectedIds.has(String(x.id)));
+  // Normalize: stringify all IDs for comparison
+  const delSet = new Set(deletedIds.map(String));
+  db = db.filter(x => !delSet.has(String(x.id)));
   deletedIds.forEach(id => deleteItemFromFirestore(id));
   save();
   toggleDeleteMode();
+  renderCatalogo();
   toast(`${size} obra(s) removida(s)`);
 }
 
