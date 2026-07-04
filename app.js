@@ -878,12 +878,14 @@ function toggleFav() {
 
 function toggleTag(btn) { btn.classList.toggle('active'); }
 
-function toggleCardFav(id) {
+async function toggleCardFav(id) {
   const item = findInDb(id)
   if (!item) return
   item.fav = !item.fav
   save()
-  saveItemToFirestore(item)
+  localSaveGuard = true
+  await saveItemToFirestore(item)
+  setTimeout(() => { localSaveGuard = false; }, 100)
   renderCatalogo()
   renderHome()
 }
