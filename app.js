@@ -6,6 +6,7 @@ let wishdb = load(WISH_KEY, []);
 
 let currentPage = 'catalogo';
 let tipoFilter  = '';
+let statusFilter = '';
 let editingId   = null;
 let favEdit     = false;
 
@@ -57,7 +58,7 @@ const STATUS_COLORS = {
 ═══════════════════════════════════════════ */
 function navigate(page, resetFilters = true) {
   currentPage = page;
-  if (resetFilters) tipoFilter = '';
+  if (resetFilters) { tipoFilter = ''; statusFilter = ''; }
 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('page-' + page).classList.add('active');
@@ -84,7 +85,7 @@ function navigateFilter(page, dim, val) {
   if (dim === 'tipo')   tipoFilter = val;
   if (dim === 'status') {
     tipoFilter = '';
-    document.getElementById('filterStatus').value = val;
+    statusFilter = val;
   }
   navigate(page, false);
   // sync tipo chips
@@ -92,9 +93,8 @@ function navigateFilter(page, dim, val) {
     b.classList.toggle('active', b.dataset.tipo === tipoFilter);
   });
   // sync status chips
-  const sv = document.getElementById('filterStatus').value;
   document.querySelectorAll('#statusFilters .chip').forEach(b => {
-    b.classList.toggle('active', b.dataset.status === sv);
+    b.classList.toggle('active', b.dataset.status === statusFilter);
   });
 }
 
@@ -181,14 +181,14 @@ function setTipoFilter(tipo, btn) {
 }
 
 function setStatusFilter(status, btn) {
-  document.getElementById('filterStatus').value = status;
+  statusFilter = status;
   document.querySelectorAll('#statusFilters .chip').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderCatalogo();
 }
 
 function setFavFilter(btn) {
-  document.getElementById('filterStatus').value = 'fav';
+  statusFilter = 'fav';
   document.querySelectorAll('#statusFilters .chip').forEach(b=>b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   renderCatalogo();
@@ -198,9 +198,8 @@ function updateActiveFilters() {
   const container = document.getElementById('activeFilters');
   const tags = [];
   if (tipoFilter) tags.push({ label: tipoFilter, onRemove: "setTipoFilter('', document.querySelector('#tipoFilters .chip:first-child'))" });
-  const status = document.getElementById('filterStatus').value;
-  if (status === 'fav') tags.push({ label: '⭐ Favoritos', onRemove: "setStatusFilter('', document.querySelector('#statusFilters .chip:first-child'))" });
-  else if (status) tags.push({ label: status, onRemove: "setStatusFilter('', document.querySelector('#statusFilters .chip:first-child'))" });
+  if (statusFilter === 'fav') tags.push({ label: '⭐ Favoritos', onRemove: "setStatusFilter('', document.querySelector('#statusFilters .chip:first-child'))" });
+  else if (statusFilter) tags.push({ label: statusFilter, onRemove: "setStatusFilter('', document.querySelector('#statusFilters .chip:first-child'))" });
   container.innerHTML = tags.map(t => `<span class="active-filter-tag">${esc(t.label)} <span class="remove" onclick="${esc(t.onRemove)};event.stopPropagation()">✕</span></span>`).join('');
   document.getElementById('resultCount').textContent = document.querySelectorAll('#catalogoGrid .card').length 
     ? document.querySelectorAll('#catalogoGrid .card').length + ' obra' + (document.querySelectorAll('#catalogoGrid .card').length !== 1 ? 's' : '')
@@ -209,7 +208,7 @@ function updateActiveFilters() {
 
 function renderCatalogo() {
   const search  = (document.getElementById('searchInput').value||'').toLowerCase();
-  const status  = document.getElementById('filterStatus').value;
+  const status  = statusFilter;
   const order   = document.getElementById('filterOrder').value;
 
   // sync status chips
@@ -244,8 +243,7 @@ function renderCatalogo() {
   if (!items.length) {
     grid.innerHTML='';
     empty.classList.remove('hidden');
-    const status = document.getElementById('filterStatus').value;
-    if (status === 'fav') {
+    if (statusFilter === 'fav') {
       empty.querySelector('h3').textContent = 'Nenhum favorito ainda';
       empty.querySelector('p').textContent = 'Clique no ❤️ de um card para marcar como favorito';
     } else {
@@ -880,8 +878,9 @@ function toggleTag(btn) { btn.classList.toggle('active'); }
 
 async function toggleCardFav(id) {
   const item = findInDb(id)
-  if (!item) return
+  if (!item) { console.log('toggleCardFav: item not found', id); return; }
   item.fav = !item.fav
+  console.log('toggleCardFav:', item.title, 'fav agora:', item.fav);
   save()
   localSaveGuard = true
   await saveItemToFirestore(item)
