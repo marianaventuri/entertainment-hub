@@ -1439,16 +1439,21 @@ function parseImportRow(cells) {
   else status = 'Finalizado';
 
   return {
-    id:     Date.now() + Math.random(),
+    id:     String(Date.now() + Math.random()),
     title,
     type,
     status,
     rating: Math.min(5, Math.max(0, rating)),
     year: '', platform: '', episodes: '', hours: '',
     genres: '', synopsis: '', opinion: '', cover: '',
-    emotion: '', tags: [], fav: false,
-    createdAt: new Date().toISOString()
+    emotions: {}, tags: [], fav: false,
+    addedAt: new Date().toISOString()
   };
+}
+
+function alreadyInDb(title, type) {
+  const lower = title.toLowerCase()
+  return db.some(x => x.title.toLowerCase() === lower && x.type === type)
 }
 
 function handleCsvImport(event) {
@@ -1463,10 +1468,14 @@ function handleCsvImport(event) {
     const delimiter = lines[0].includes(';') ? ';' : ',';
     
     const startIdx = lines[0].toLowerCase().includes('title') ? 1 : 0;
+    let dupes = 0;
     lines.slice(startIdx).forEach(line => {
       const cells = line.split(delimiter);
       const item = parseImportRow(cells);
-      if (item) { db.push(item); imported++; }
+      if (item) {
+        if (alreadyInDb(item.title, item.type)) { dupes++; return }
+        db.push(item); imported++;
+      }
       else skipped++;
     });
     save();
@@ -1475,9 +1484,15 @@ function handleCsvImport(event) {
     updateCounts();
     checkAchievements();
     const fb = document.getElementById('csvFeedback');
-    fb.textContent = `✅ ${imported} obra(s) importada(s)` + (skipped ? ` · ${skipped} linha(s) ignorada(s)` : '');
+    const parts = []
+    if (imported) parts.push(`${imported} importada(s)`)
+    if (dupes) parts.push(`${dupes} duplicata(s) ignorada(s)`)
+    if (skipped) parts.push(`${skipped} linha(s) inválida(s)`)
+    fb.textContent = `✅ ${parts.join(', ')}`;
     fb.style.color = 'var(--accent)';
-    toast(`✅ ${imported} obra(s) importada(s) com sucesso!`, '✅');
+    const toastMsg = imported ? `${imported} obra(s) importada(s)` : 'Nenhuma obra nova'
+    const toastExtra = dupes ? ` · ${dupes} duplicata(s)` : ''
+    toast(`✅ ${toastMsg}${toastExtra}`, '✅');
   };
   reader.readAsText(file, 'UTF-8');
 }
@@ -1485,11 +1500,14 @@ function handleCsvImport(event) {
 function handlePasteImport() {
   const text = document.getElementById('pasteInput').value;
   const lines = text.split(/\r?\n/).filter(l => l.trim());
-  let imported = 0, skipped = 0;
+  let imported = 0, skipped = 0, dupes = 0;
   lines.forEach(line => {
     const cells = line.split('|');
     const item = parseImportRow(cells);
-    if (item) { db.push(item); imported++; }
+    if (item) {
+      if (alreadyInDb(item.title, item.type)) { dupes++; return }
+      db.push(item); imported++;
+    }
     else skipped++;
   });
   save();
@@ -1498,14 +1516,20 @@ function handlePasteImport() {
   updateCounts();
   checkAchievements();
   const fb = document.getElementById('pasteFeedback');
-  if (imported === 0) {
+  if (imported === 0 && dupes === 0) {
     fb.textContent = '⚠️ Nenhuma linha válida encontrada. Verifique o formato.';
     fb.style.color = 'var(--warning, #f59e0b)';
     return;
   }
-  fb.textContent = `✅ ${imported} obra(s) importada(s)` + (skipped ? ` · ${skipped} linha(s) ignorada(s)` : '');
+  const parts = []
+  if (imported) parts.push(`${imported} importada(s)`)
+  if (dupes) parts.push(`${dupes} duplicata(s) ignorada(s)`)
+  if (skipped) parts.push(`${skipped} inválida(s)`)
+  fb.textContent = `✅ ${parts.join(', ')}`;
   fb.style.color = 'var(--accent)';
-  toast(`✅ ${imported} obra(s) importada(s) com sucesso!`, '✅');
+  const toastMsg = imported ? `${imported} obra(s) importada(s)` : 'Nenhuma obra nova'
+  const toastExtra = dupes ? ` · ${dupes} duplicata(s)` : ''
+  toast(`✅ ${toastMsg}${toastExtra}`, '✅');
   setTimeout(() => document.getElementById('importOverlay').classList.remove('open'), 1500);
 }
 
