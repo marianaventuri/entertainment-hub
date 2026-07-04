@@ -4,7 +4,7 @@
 let db = load(STORAGE_KEY, []);
 let wishdb = load(WISH_KEY, []);
 
-let currentPage = 'catalogo';
+let currentPage = 'biblioteca';
 let tipoFilter  = '';
 let statusFilter = '';
 let editingId   = null;
@@ -58,14 +58,23 @@ const STATUS_COLORS = {
 ═══════════════════════════════════════════ */
 function navigate(page, resetFilters = true) {
   currentPage = page;
-  if (resetFilters) { tipoFilter = ''; statusFilter = ''; }
+
+  // Map virtual pages to actual DOM pages
+  let domPage = page;
+  if (page === 'favoritos') {
+    statusFilter = 'fav';
+    domPage = 'biblioteca';
+  } else if (resetFilters) {
+    tipoFilter = '';
+    statusFilter = '';
+  }
 
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.getElementById('page-' + page).classList.add('active');
+  document.getElementById('page-' + domPage).classList.add('active');
 
   document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
   document.querySelectorAll('.bottom-nav-item').forEach(n => n.classList.remove('active'));
-  
+
   const bnEl = document.getElementById('bn-' + page);
   if (bnEl) bnEl.classList.add('active');
 
@@ -73,12 +82,13 @@ function navigate(page, resetFilters = true) {
 
   closeSidebar();
 
-  if      (page === 'home')      { renderHome(); }
-  else if (page === 'catalogo')  { renderCatalogo(); }
-  else if (page === 'dashboard')  { renderDashboard(); }
-  else if (page === 'timeline')   { renderTimeline(); }
-  else if (page === 'wishlist')   { renderWishlist(); }
-  else if (page === 'conquistas') { renderConquistas(); }
+  if      (domPage === 'biblioteca') { renderCatalogo(); }
+  else if (page === 'home')          { renderHome(); }
+  else if (page === 'dashboard')     { renderDashboard(); }
+  else if (page === 'timeline')      { renderTimeline(); }
+  else if (page === 'wishlist')      { renderWishlist(); }
+  else if (page === 'conquistas')    { renderConquistas(); }
+  else if (page === 'config')        { renderConfig(); }
 }
 
 function navigateFilter(page, dim, val) {
@@ -233,7 +243,7 @@ function renderCatalogo() {
   // title
   const title = tipoFilter
     ? (typeIcon(tipoFilter)+' '+tipoFilter+'s')
-    : (status === 'fav' ? '⭐ Favoritos' : (status || 'Catálogo'));
+    : (status === 'fav' ? '⭐ Favoritos' : (status || 'Biblioteca'));
   document.getElementById('catalogoTitle').textContent = title;
   document.getElementById('catalogoSubtitle').textContent = items.length + ' obra' + (items.length!==1?'s':'');
 
@@ -996,7 +1006,7 @@ function renderHome() {
                 </div>
               </div>`;
           }).join('')}
-          ${items.length ? `<button class="hscroll-more" onclick="navigateFilter('catalogo','status','Assistindo')">Ver todos →</button>` : ''}
+          ${items.length ? `<button class="hscroll-more" onclick="navigateFilter('biblioteca','status','Assistindo')">Ver todos →</button>` : ''}
         </div>
       </div>`;
   }).join('');
@@ -1027,7 +1037,7 @@ function renderHome() {
       <h2 class="home-section-title">📚 Minha Biblioteca</h2>
       <div class="home-type-grid">
         ${typeCounts.map(t => `
-          <button class="home-type-card" onclick="navigateFilter('catalogo','tipo','${t.type}')">
+          <button class="home-type-card" onclick="navigateFilter('biblioteca','tipo','${t.type}')">
             <span class="home-type-icon">${t.icon}</span>
             <span class="home-type-name">${t.type}</span>
             <span class="home-type-count">${t.n}</span>
@@ -1086,7 +1096,7 @@ function renderHome() {
         <button class="btn btn-primary home-action-btn" onclick="openAddModal()">➕ Adicionar obra</button>
         <button class="btn btn-ghost home-action-btn" onclick="openImportModal()">⬆ Importar</button>
         <button class="btn btn-ghost home-action-btn" onclick="openWishModal()">❤️ Lista de desejos</button>
-        <button class="btn btn-ghost home-action-btn" onclick="navigate('catalogo')">📋 Ver catálogo</button>
+        <button class="btn btn-ghost home-action-btn" onclick="navigate('biblioteca')">📋 Ver catálogo</button>
       </div>
     </div>
   `;
@@ -1269,6 +1279,36 @@ function renderConquistas() {
       <div class="achievement-desc">${a.desc}</div>
     </div>`;
   }).join('');
+}
+
+function renderConfig() {
+  const ua = document.getElementById('userAvatar');
+  const avatar = ua ? ua.style.backgroundImage || '' : '';
+  document.getElementById('configContent').innerHTML = `
+    <div class="config-card">
+      <div class="config-section">
+        <div class="config-user">
+          <div class="config-avatar" style="background:${avatar || 'var(--surface2)'}">
+            <span id="configAvatar">${auth.currentUser ? auth.currentUser.displayName?.charAt(0) || '👤' : '👤'}</span>
+          </div>
+          <div class="config-user-info">
+            <div class="config-name">${auth.currentUser ? (auth.currentUser.displayName || 'Usuário') : 'Visitante'}</div>
+            <div class="config-email">${auth.currentUser ? (auth.currentUser.email || '') : 'Não logado'}</div>
+          </div>
+        </div>
+      </div>
+      <div class="config-section">
+        <button class="config-btn" onclick="navigate('wishlist')">❤️ Lista de desejos</button>
+        <button class="config-btn" onclick="openImportModal()">📥 Importar lista</button>
+        <button class="config-btn" onclick="navigate('timeline')">📅 Linha do tempo</button>
+        <button class="config-btn" onclick="navigate('conquistas')">🏆 Conquistas</button>
+      </div>
+      <div class="config-section">
+        <button class="config-btn config-danger" onclick="signOutUser()">🚪 Sair</button>
+      </div>
+      <div class="config-version">Minha Biblioteca v3.0</div>
+    </div>
+  `;
 }
 
 /* ═══════════════════════════════════════════

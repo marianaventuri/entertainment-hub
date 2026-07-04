@@ -49,8 +49,8 @@
     <button class="nav-item active" onclick="navigate('home')">
       <span class="nav-icon">🏠</span> Home
     </button>
-    <button class="nav-item" onclick="navigate('catalogo')">
-      <span class="nav-icon">📋</span> Catálogo
+    <button class="nav-item" onclick="navigate('biblioteca')">
+      <span class="nav-icon">📋</span> Biblioteca
       <span class="nav-count" id="nc-total">0</span>
     </button>
     <button class="nav-item" onclick="navigate('dashboard')">
@@ -70,31 +70,31 @@
 
   <div class="sidebar-section">
     <div class="sidebar-label">Por tipo</div>
-    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Filme')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Filme')">
       <span class="nav-icon">🎬</span> Filmes
       <span class="nav-count" id="nc-Filme">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Série')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Série')">
       <span class="nav-icon">📺</span> Séries
       <span class="nav-count" id="nc-Série">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Anime')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Anime')">
       <span class="nav-icon">⛩️</span> Animes
       <span class="nav-count" id="nc-Anime">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Mangá')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Mangá')">
       <span class="nav-icon">📖</span> Mangás
       <span class="nav-count" id="nc-Mangá">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Dorama')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Dorama')">
       <span class="nav-icon">🎭</span> Doramas
       <span class="nav-count" id="nc-Dorama">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Jogo')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Jogo')">
       <span class="nav-icon">🎮</span> Jogos
       <span class="nav-count" id="nc-Jogo">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','tipo','Livro')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Livro')">
       <span class="nav-icon">📕</span> Livros
       <span class="nav-count" id="nc-Livro">0</span>
     </button>
@@ -102,19 +102,19 @@
 
   <div class="sidebar-section">
     <div class="sidebar-label">Por status</div>
-    <button class="nav-item" onclick="navigateFilter('catalogo','status','Assistindo')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','status','Assistindo')">
       <span class="nav-icon">▶️</span> Assistindo
       <span class="nav-count" id="nc-Assistindo">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','status','Finalizado')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','status','Finalizado')">
       <span class="nav-icon">✅</span> Finalizados
       <span class="nav-count" id="nc-Finalizado">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','status','Abandonado')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','status','Abandonado')">
       <span class="nav-icon">❌</span> Abandonados
       <span class="nav-count" id="nc-Abandonado">0</span>
     </button>
-    <button class="nav-item" onclick="navigateFilter('catalogo','status','Quero assistir')">
+    <button class="nav-item" onclick="navigateFilter('biblioteca','status','Quero assistir')">
       <span class="nav-icon">🔖</span> Quero assistir
       <span class="nav-count" id="nc-Quero">0</span>
     </button>
@@ -123,25 +123,24 @@
 
 <!-- BOTTOM NAV (mobile) -->
 <div class="bottom-nav" id="bottomNav">
-  <button class="bottom-nav-item active" onclick="navigate('home')" id="bn-home">
+  <button class="bottom-nav-item active" onclick="navigate('biblioteca')" id="bn-biblioteca">
     <span class="bottom-nav-icon">🏠</span>
-    Home
+    <span class="bottom-nav-label">Biblioteca</span>
   </button>
-  <button class="bottom-nav-item" onclick="navigate('catalogo')" id="bn-catalogo">
-    <span class="bottom-nav-icon">📋</span>
-    Catálogo
+  <button class="bottom-nav-item" onclick="navigate('favoritos')" id="bn-favoritos">
+    <span class="bottom-nav-icon">❤️</span>
+    <span class="bottom-nav-label">Favoritos</span>
+  </button>
+  <button class="bottom-nav-fab" onclick="openAddModal()" id="bn-add" aria-label="Adicionar obra">
+    <span class="fab-icon">+</span>
   </button>
   <button class="bottom-nav-item" onclick="navigate('dashboard')" id="bn-dashboard">
     <span class="bottom-nav-icon">📊</span>
-    Status
+    <span class="bottom-nav-label">Dashboard</span>
   </button>
-  <button class="bottom-nav-item" onclick="navigate('wishlist')" id="bn-wishlist">
-    <span class="bottom-nav-icon">❤️</span>
-    Desejos
-  </button>
-  <button class="bottom-nav-item" onclick="navigate('conquistas')" id="bn-conquistas">
-    <span class="bottom-nav-icon">🏆</span>
-    Prêmios
+  <button class="bottom-nav-item" onclick="navigate('config')" id="bn-config">
+    <span class="bottom-nav-icon">⚙️</span>
+    <span class="bottom-nav-label">Config</span>
   </button>
 </div>
 
@@ -174,7 +173,7 @@
     </div>
 
     <!-- ── CATÁLOGO ── -->
-    <div class="page" id="page-catalogo">
+    <div class="page active" id="page-biblioteca">
       <div class="page-header">
         <div>
           <div class="page-title" id="catalogoTitle">Catálogo</div>
@@ -311,6 +310,17 @@
         </div>
       </div>
       <div class="achievements-grid" id="achievementsGrid"></div>
+    </div>
+
+    <!-- ── CONFIGURAÇÕES ── -->
+    <div class="page" id="page-config">
+      <div class="page-header">
+        <div>
+          <div class="page-title">⚙️ Configurações</div>
+          <div class="page-subtitle">Conta e preferências</div>
+        </div>
+      </div>
+      <div id="configContent"></div>
     </div>
 
   </div><!-- /content -->
