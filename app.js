@@ -89,6 +89,7 @@ function navigate(page, resetFilters = true) {
   else if (page === 'wishlist')      { renderWishlist(); }
   else if (page === 'conquistas')    { renderConquistas(); }
   else if (page === 'config')        { renderConfig(); }
+  else if (page === 'experiencia')   { renderExperiencia(); }
 }
 
 function navigateFilter(page, dim, val) {
@@ -1337,6 +1338,7 @@ function renderConfig() {
         <button class="config-btn" onclick="navigate('wishlist')">❤️ Lista de desejos</button>
         <button class="config-btn" onclick="openImportModal()">📥 Importar lista</button>
         <button class="config-btn" onclick="navigate('timeline')">📅 Linha do tempo</button>
+        <button class="config-btn" onclick="navigate('experiencia')">✨ Experiência</button>
         <button class="config-btn" onclick="navigate('conquistas')">🏆 Conquistas</button>
       </div>
       <div class="config-section">
@@ -1345,6 +1347,194 @@ function renderConfig() {
       <div class="config-version">Minha Biblioteca v3.0</div>
     </div>
   `;
+}
+
+/* ═══════════════════════════════════════════
+   EXPERIÊNCIA
+═══════════════════════════════════════════ */
+function renderExperiencia() {
+  const c = document.getElementById('experienciaContent');
+
+  // ── Collect unique genres ──
+  const allGenres = [...new Set(
+    db.flatMap(x => (x.genres||'').split(',').map(g => g.trim()).filter(Boolean))
+  )].sort();
+
+  const watching = db.filter(x => x.status === 'Assistindo');
+
+  c.innerHTML = `
+    <div class="exp-section">
+      <div class="exp-section-title">🎯 O que fazer hoje?</div>
+      <p class="exp-section-desc">Filtre obras pelo tempo disponível, gênero e tipo.</p>
+
+      <div class="exp-filters">
+        <div class="exp-filter-group">
+          <label class="exp-filter-label">Quanto tempo tenho?</label>
+          <div class="exp-chip-group" id="expTimeChips">
+            ${['30min','1h','2h','3h+','Tanto faz'].map((v,i) =>
+              `<button class="exp-chip ${i===4?'active':''}" data-value="${v}" onclick="selectExpTime('${v}')">${v}</button>`
+            ).join('')}
+          </div>
+        </div>
+
+        <div class="exp-filter-group">
+          <label class="exp-filter-label">Gênero</label>
+          <select class="exp-select" id="expGenre">
+            <option value="">Todos</option>
+            ${allGenres.map(g => `<option value="${esc(g)}">${esc(g)}</option>`).join('')}
+          </select>
+        </div>
+
+        <div class="exp-filter-group">
+          <label class="exp-filter-label">Tipo</label>
+          <select class="exp-select" id="expType">
+            <option value="">Todos</option>
+            ${Object.keys(TIPO).map(t => `<option value="${t}">${t}</option>`).join('')}
+          </select>
+        </div>
+
+        <button class="btn btn-primary exp-suggest-btn" onclick="suggestWorks()">🔍 Sugerir</button>
+      </div>
+
+      <div id="expResults" class="exp-results hidden"></div>
+    </div>
+
+    <div class="exp-section">
+      <div class="exp-section-title">🎲 Me surpreenda</div>
+      <p class="exp-section-desc">Escolha aleatória do catálogo.</p>
+      <button class="btn btn-primary" onclick="surpriseMe()">🎲 Sortear</button>
+      <div id="expSurprise" class="exp-surprise hidden"></div>
+    </div>
+
+    <div class="exp-section">
+      <div class="exp-section-title">▶️ Continue consumindo</div>
+      <p class="exp-section-desc">${watching.length} obra(s) em andamento.</p>
+      <div id="expWatching" class="exp-watching-grid">
+        ${watching.length
+          ? watching.map(item => {
+              const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
+              const coverEl = item.cover
+                ? `<img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()">`
+                : `<div class="card-placeholder" style="gap:4px"><span class="type-icon" style="font-size:1.8rem">${t.icon}</span></div>`;
+              const ratingStars = item.rating ? `<div class="card-info-rating">${'★'.repeat(item.rating)}</div>` : '';
+              return `
+                <div class="card" onclick="openDetail('${item.id}')">
+                  <div class="card-poster">
+                    ${coverEl}
+                    <div class="card-overlay">
+                      <div class="card-info">
+                        <div class="card-info-title">${esc(item.title)}</div>
+                        ${ratingStars}
+                      </div>
+                    </div>
+                  </div>
+                </div>`;
+            }).join('')
+          : '<div class="exp-empty">Nenhuma obra em andamento.</div>'
+        }
+      </div>
+    </div>
+  `;
+}
+
+// ── Helpers ──
+
+let expTime = 'Tanto faz';
+
+function selectExpTime(val) {
+  expTime = val;
+  document.querySelectorAll('#expTimeChips .exp-chip').forEach(b => b.classList.toggle('active', b.dataset.value === val));
+}
+
+function suggestWorks() {
+  const genre = document.getElementById('expGenre').value.toLowerCase();
+  const type = document.getElementById('expType').value;
+  const results = document.getElementById('expResults');
+
+  let filtered = [...db];
+
+  // Time filter
+  if (expTime !== 'Tanto faz') {
+    const maxHours = expTime === '30min' ? 0.5 : expTime === '1h' ? 1 : expTime === '2h' ? 2 : Infinity;
+    if (maxHours < Infinity) {
+      filtered = filtered.filter(x => parseFloat(x.hours) > 0 && parseFloat(x.hours) <= maxHours);
+    } else {
+      filtered = filtered.filter(x => parseFloat(x.hours) >= 3 || !x.hours);
+    }
+  }
+
+  // Genre filter
+  if (genre) {
+    filtered = filtered.filter(x => (x.genres||'').toLowerCase().includes(genre));
+  }
+
+  // Type filter
+  if (type) {
+    filtered = filtered.filter(x => x.type === type);
+  }
+
+  // Shuffle and take top 12
+  const shuffled = filtered.sort(() => Math.random() - 0.5).slice(0, 12);
+
+  if (!shuffled.length) {
+    results.innerHTML = '<div class="exp-empty">Nenhuma obra encontrada com esses filtros. Tente outros!</div>';
+    results.classList.remove('hidden');
+    return;
+  }
+
+  results.innerHTML = `<div class="exp-results-grid">
+    ${shuffled.map(item => {
+      const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
+      const coverEl = item.cover
+        ? `<img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()">`
+        : `<div class="card-placeholder" style="gap:4px"><span class="type-icon" style="font-size:1.8rem">${t.icon}</span></div>`;
+      const ratingStars = item.rating ? `<div class="card-info-rating">${'★'.repeat(item.rating)}</div>` : '';
+      return `
+        <div class="card" onclick="openDetail('${item.id}')">
+          <div class="card-poster">
+            ${coverEl}
+            <div class="card-overlay">
+              <div class="card-info">
+                <div class="card-info-title">${esc(item.title)}</div>
+                ${ratingStars}
+              </div>
+            </div>
+          </div>
+        </div>`;
+    }).join('')}
+  </div>`;
+  results.classList.remove('hidden');
+}
+
+function surpriseMe() {
+  const el = document.getElementById('expSurprise');
+  const available = db.filter(x => x.status !== 'Quero assistir');
+  if (!available.length) {
+    el.innerHTML = '<div class="exp-empty">Nenhuma obra disponível para sortear.</div>';
+    el.classList.remove('hidden');
+    return;
+  }
+  const item = available[Math.floor(Math.random() * available.length)];
+  const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
+  const coverEl = item.cover
+    ? `<img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()">`
+    : `<div class="card-placeholder" style="font-size:2rem"><span class="type-icon">${t.icon}</span></div>`;
+  const genresHtml = (item.genres||'').split(',').filter(Boolean).map(g =>
+    `<span class="detail-badge">${esc(g.trim())}</span>`
+  ).join('');
+
+  el.innerHTML = `
+    <div class="exp-surprise-card" onclick="openDetail('${item.id}')">
+      <div class="exp-surprise-poster">${coverEl}</div>
+      <div class="exp-surprise-info">
+        <div class="exp-surprise-type" style="color:${t.color}">${t.icon} ${item.type}</div>
+        <div class="exp-surprise-title">${esc(item.title)}</div>
+        ${item.rating ? `<div class="exp-surprise-rating">${'★'.repeat(item.rating)}</div>` : ''}
+        <div class="exp-surprise-genres">${genresHtml}</div>
+        ${item.opinion ? `<div class="exp-surprise-opinion">${esc(item.opinion)}</div>` : ''}
+      </div>
+    </div>`;
+  el.classList.remove('hidden');
 }
 
 /* ═══════════════════════════════════════════
