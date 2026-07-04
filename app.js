@@ -244,7 +244,7 @@ function renderCatalogo() {
   if (!items.length) { grid.innerHTML=''; empty.classList.remove('hidden'); updateActiveFilters(); return; }
   empty.classList.add('hidden');
 
-  grid.className = 'grid grid-fade';
+  grid.className = 'grid';
   grid.innerHTML = items.map(item => {
     const t = TIPO[item.type]||{icon:'🎞️', color:'#555'};
     const coverEl = item.cover
@@ -282,7 +282,6 @@ function renderCatalogo() {
       </div>`;
   }).join('');
   updateActiveFilters();
-  setTimeout(() => { const g = document.getElementById('catalogoGrid'); if (g) g.classList.remove('grid-fade'); }, 400);
 }
 
 /* ═══════════════════════════════════════════

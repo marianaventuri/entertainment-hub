@@ -443,23 +443,6 @@ body {
   white-space: nowrap;
 }
 
-/* ── Grid fade animation ── */
-.grid-fade .card { animation: cardFadeIn .35s ease both; }
-.grid-fade .card:nth-child(1)  { animation-delay: 0s; }
-.grid-fade .card:nth-child(2)  { animation-delay: .03s; }
-.grid-fade .card:nth-child(3)  { animation-delay: .06s; }
-.grid-fade .card:nth-child(4)  { animation-delay: .09s; }
-.grid-fade .card:nth-child(5)  { animation-delay: .12s; }
-.grid-fade .card:nth-child(6)  { animation-delay: .15s; }
-.grid-fade .card:nth-child(7)  { animation-delay: .18s; }
-.grid-fade .card:nth-child(8)  { animation-delay: .21s; }
-.grid-fade .card:nth-child(n+9){ animation-delay: .24s; }
-
-@keyframes cardFadeIn {
-  from { opacity: 0; transform: translateY(8px) scale(.97); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
 /* ═══════════════════════════════════════════
    HOME PAGE
 ═══════════════════════════════════════════ */
@@ -633,18 +616,12 @@ body {
 /* ═══════════════════════════════════════════
    CARDS — Premium (Netflix / Letterboxd style)
 ═══════════════════════════════════════════ */
-@keyframes cardIn {
-  from { opacity: 0; transform: translateY(12px) scale(.96); }
-  to   { opacity: 1; transform: translateY(0) scale(1); }
-}
-
 .card {
   border-radius: var(--radius);
   overflow: hidden;
   cursor: pointer;
   position: relative;
   background: var(--surface);
-  animation: cardIn .35s ease both;
 }
 
 .card-poster {
