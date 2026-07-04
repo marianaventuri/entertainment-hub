@@ -215,7 +215,7 @@ function renderCatalogo() {
     const platformHtml = item.platform ? `<span class="card-info-platform">${esc(item.platform)}</span>` : '';
     const detailsParts = [esc(item.type), item.year].filter(Boolean);
     return `
-      <div class="card" onclick="${isDeleteMode ? `toggleSelection(${item.id}, event)` : `openDetail(${item.id})`}">
+      <div class="card" onclick="${isDeleteMode ? `toggleSelection('${item.id}', event)` : `openDetail('${item.id}')`}">
         <div class="card-poster">
           ${coverEl}
           <span class="card-status ${statusBadgeClass(item.status)}">${esc(displayStatus(item.status, item.type))}</span>
@@ -291,9 +291,9 @@ function openDetail(id) {
     const label = rt === 'Livro' && ['Anime','Mangá'].includes(item.type) ? 'Light Novel' : rt;
     if (hasIt) {
        const relatedItem = db.find(x => x.title.toLowerCase() === titleLower && x.type === rt);
-       return `<button class="related-pill has-it" onclick="openDetail(${relatedItem.id})" title="Ver detalhes de ${label}">${typeIcon(rt)} ${label} ✔</button>`;
+       return `<button class="related-pill has-it" onclick="openDetail('${relatedItem.id}')" title="Ver detalhes de ${label}">${typeIcon(rt)} ${label} ✔</button>`;
     } else {
-       return `<button class="related-pill missing" onclick="addRelated('${esc(item.title).replace(/'/g,"\\'")}','${rt}','${item.cover ? esc(item.cover).replace(/'/g,"\\'") : ''}', ${item.id})" title="Adicionar ${label} ao catálogo">${typeIcon(rt)} ${label} ❌</button>`;
+       return `<button class="related-pill missing" onclick="addRelated('${esc(item.title).replace(/'/g,"\\'")}','${rt}','${item.cover ? esc(item.cover).replace(/'/g,"\\'") : ''}', '${item.id}')" title="Adicionar ${label} ao catálogo">${typeIcon(rt)} ${label} ❌</button>`;
     }
   }).join('');
 
@@ -342,8 +342,8 @@ function openDetail(id) {
     </div>
 
     <div class="detail-actions">
-      <button class="btn btn-ghost" onclick="editItem(${id})">✏️ Editar</button>
-      <button class="btn btn-ghost" style="color:var(--red)" onclick="deleteItem(${id})">🗑 Remover</button>
+      <button class="btn btn-ghost" onclick="editItem('${id}')">✏️ Editar</button>
+      <button class="btn btn-ghost" style="color:var(--red)" onclick="deleteItem('${id}')">🗑 Remover</button>
     </div>
   `;
 
@@ -753,7 +753,7 @@ function renderHome() {
               : `<div class="card-placeholder" style="gap:4px"><span class="type-icon" style="font-size:1.8rem">${t.icon}</span></div>`;
             const ratingStars = item.rating ? `<div class="card-info-rating">${'★'.repeat(item.rating)}</div>` : '';
             return `
-              <div class="card hscroll-card" onclick="openDetail(${item.id})">
+              <div class="card hscroll-card" onclick="openDetail('${item.id}')">
                 <div class="card-poster">
                   ${coverEl}
                   <div class="card-overlay">
@@ -830,7 +830,7 @@ function renderHome() {
           const ratingStars = item.rating ? `<div class="card-info-rating">${'★'.repeat(item.rating)}</div>` : '';
           const favIcon = item.fav ? '❤️' : '🤍';
           return `
-            <div class="card" onclick="openDetail(${item.id})">
+            <div class="card" onclick="openDetail('${item.id}')">
               <div class="card-poster">
                 ${coverEl}
                 <span class="card-status ${statusBadgeClass(item.status)}">${esc(displayStatus(item.status, item.type))}</span>
@@ -980,7 +980,7 @@ function renderTimeline() {
         <div class="timeline-month-name">${m}</div>
         <div class="timeline-works">
           ${byYear[y][m].map(item=>`
-            <div class="timeline-work" onclick="openDetail(${item.id})">
+            <div class="timeline-work" onclick="openDetail('${item.id}')">
               <span class="timeline-work-icon">${typeIcon(item.type)}</span>
               <span class="timeline-work-title">${esc(item.title)}</span>
               ${item.rating?`<span class="timeline-work-stars">${'★'.repeat(item.rating)}</span>`:''}
