@@ -246,7 +246,7 @@ function renderCatalogo() {
    INLINE EDIT
 ═══════════════════════════════════════════ */
 async function quickUpdate(id, field, value) {
-  const item = db.find(x => x.id === id)
+  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
   if (!item) return
   item[field] = value
   save()
@@ -262,8 +262,14 @@ async function quickUpdate(id, field, value) {
    DETAIL MODAL
 ═══════════════════════════════════════════ */
 function openDetail(id) {
-  const item = db.find(x=>x.id===id);
-  if (!item) { console.warn('openDetail: item not found', id, typeof id); return; }
+  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id));
+  if (!item) {
+    console.warn('openDetail: item not found', id, typeof id,
+      'db[0].id:', db[0]?.id, typeof db[0]?.id,
+      'db[119].id:', db[119]?.id, typeof db[119]?.id,
+      'db.length:', db.length)
+    return;
+  }
   const t = TIPO[item.type]||{icon:'🎞️',color:'#555'};
 
   const emotionBars = EMOTIONS.map(e => {
@@ -437,7 +443,7 @@ function inlineEditText(el, field, id) {
 }
 
 async function quickRemoveTag(id, tag) {
-  const item = db.find(x => x.id === id)
+  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
   if (!item) return
   item.tags = (item.tags||[]).filter(t => t !== tag)
   save()
@@ -485,7 +491,7 @@ function inlineAddTag(id) {
 }
 
 async function pickTag(id, tag) {
-  const item = db.find(x => x.id === id)
+  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
   if (!item) return
   if (!item.tags) item.tags = []
   if (item.tags.includes(tag)) return
@@ -607,7 +613,7 @@ function closeAddModal(e) {
 
 function editItem(id) {
   document.getElementById('detailOverlay').classList.remove('open');
-  const item = db.find(x=>x.id===id);
+  const item = db.find(x=>x.id===id) || db.find(x => String(x.id) === String(id));
   if (!item) return;
 
   editingId = id;
@@ -649,7 +655,7 @@ function editItem(id) {
 
 async function deleteItem(id) {
   if (!confirm('Remover esta obra do catálogo?')) return;
-  db = db.filter(x=>x.id!==id);
+  db = db.filter(x => x.id === id || String(x.id) === String(id));
   await deleteItemFromFirestore(id);
   save();
   document.getElementById('detailOverlay').classList.remove('open');
@@ -695,7 +701,7 @@ function confirmDeleteSelected() {
   
   const size = selectedIds.size;
   const deletedIds = [...selectedIds];
-  db = db.filter(x => !selectedIds.has(x.id));
+  db = db.filter(x => !selectedIds.has(x.id) && !selectedIds.has(String(x.id)));
   deletedIds.forEach(id => deleteItemFromFirestore(id));
   save();
   toggleDeleteMode();
@@ -797,7 +803,7 @@ function toggleFav() {
 function toggleTag(btn) { btn.classList.toggle('active'); }
 
 function toggleCardFav(id) {
-  const item = db.find(x => x.id === id)
+  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
   if (!item) return
   item.fav = !item.fav
   save()
