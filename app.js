@@ -243,6 +243,22 @@ function renderCatalogo() {
 }
 
 /* ═══════════════════════════════════════════
+   INLINE EDIT
+═══════════════════════════════════════════ */
+async function quickUpdate(id, field, value) {
+  const item = db.find(x => x.id === id)
+  if (!item) return
+  item[field] = value
+  save()
+  saveItemToFirestore(item)
+  const overlay = document.getElementById('detailOverlay')
+  if (overlay.classList.contains('open') && document.getElementById('detailBody').dataset.currentId === id) {
+    openDetail(id)
+  }
+  renderCatalogo()
+}
+
+/* ═══════════════════════════════════════════
    DETAIL MODAL
 ═══════════════════════════════════════════ */
 function openDetail(id) {
@@ -259,10 +275,6 @@ function openDetail(id) {
     </div>`;
   }).join('');
 
-  const tagsHtml = (item.tags||[]).length
-    ? item.tags.map(tg=>`<span class="detail-tag">${esc(tg)}</span>`).join('')
-    : '<span style="color:var(--text3);font-size:0.8rem">Nenhuma tag</span>';
-
   const genresHtml = (item.genres||'').split(',').filter(Boolean)
     .map(g=>`<span class="detail-badge">${esc(g.trim())}</span>`).join('');
 
@@ -273,17 +285,16 @@ function openDetail(id) {
   let metaExtra = '';
   if (item.episodes) metaExtra += `<div class="detail-meta-item"><span class="detail-meta-label">Episódios</span><span class="detail-meta-val">${esc(item.episodes)}</span></div>`;
   if (item.hours)    metaExtra += `<div class="detail-meta-item"><span class="detail-meta-label">Tempo gasto</span><span class="detail-meta-val">${item.hours}h</span></div>`;
-  if (item.platform) metaExtra += `<div class="detail-meta-item"><span class="detail-meta-label">Plataforma</span><span class="detail-meta-val">${esc(item.platform)}</span></div>`;
 
   const titleLower = item.title.toLowerCase();
   const existingTypes = new Set(db.filter(x => x.title.toLowerCase() === titleLower).map(x => x.type));
-  
+
   let typesToShow = [];
   if (['Anime', 'Mangá'].includes(item.type)) typesToShow = ['Anime', 'Mangá', 'Livro', 'Filme', 'Jogo'];
   else if (['Filme', 'Série'].includes(item.type)) typesToShow = ['Filme', 'Série', 'Livro', 'Jogo'];
   else if (item.type === 'Livro') typesToShow = ['Livro', 'Filme', 'Série', 'Mangá'];
   else typesToShow = ['Jogo', 'Filme', 'Série', 'Anime', 'Livro'];
-  
+
   if (!typesToShow.includes(item.type)) typesToShow.unshift(item.type);
 
   const relatedHtml = typesToShow.map(rt => {
@@ -297,20 +308,61 @@ function openDetail(id) {
     }
   }).join('');
 
+  const statusOptions = ['Quero assistir', 'Assistindo', 'Finalizado', 'Abandonado'];
+  const displayMap = { 'Quero assistir': 'Quero', 'Assistindo': '▶', 'Finalizado': '✓', 'Abandonado': '✕' };
+  if (item.type === 'Livro' || item.type === 'Mangá') {
+    displayMap['Quero assistir'] = 'Quero';
+    displayMap['Assistindo'] = '📖';
+  }
+  if (item.type === 'Jogo') {
+    displayMap['Quero assistir'] = 'Quero';
+    displayMap['Assistindo'] = '🎮';
+  }
+
+  const tagsHtml = (item.tags||[]).length
+    ? item.tags.map(tg =>
+      `<span class="detail-tag" onclick="quickRemoveTag('${id}','${esc(tg).replace(/'/g,"\\'")}')">${esc(tg)} ✕</span>`
+    ).join('')
+    : '<span style="color:var(--text3);font-size:0.8rem">Nenhuma tag</span>';
+
   document.getElementById('detailBody').innerHTML = `
     <div class="detail-header">
       <div class="detail-poster">${coverHtml}</div>
       <div class="detail-info">
-        ${item.fav?'<div style="color:var(--gold);margin-bottom:6px;font-size:0.8rem">⭐ Favorito</div>':''}
-        <div class="detail-title">${esc(item.title)}</div>
+        <div class="detail-title-row">
+          <div class="detail-title">${esc(item.title)}</div>
+          <button class="detail-fav-btn" onclick="quickUpdate('${id}','fav',${!item.fav})">${item.fav ? '❤️' : '🤍'}</button>
+        </div>
         <div class="detail-badges">
           <span class="detail-badge">${t.icon} ${esc(item.type)}</span>
           ${item.year?`<span class="detail-badge">${item.year}</span>`:''}
-          <span class="detail-badge ${statusBadgeClass(item.status)}" style="border-color:transparent">${esc(displayStatus(item.status, item.type))}</span>
         </div>
-        ${item.rating?`<div class="detail-stars-main">${stars(item.rating)}</div>`:''}
+
+        ${/* Status inline selector */''}
+        <div class="status-selector">
+          ${statusOptions.map(s => {
+            const cls = s === item.status ? 'active ' + statusBadgeClass(s) : '';
+            const label = s === 'Quero assistir'
+              ? (item.type === 'Livro' || item.type === 'Mangá' ? 'Quero ler' : item.type === 'Jogo' ? 'Quero jogar' : 'Quero')
+              : displayStatus(s, item.type);
+            return `<button class="status-opt ${cls}" onclick="quickUpdate('${id}','status','${s}')">${label}</button>`;
+          }).join('')}
+        </div>
+
+        ${/* Rating inline */''}
+        <div class="stars-inline" onclick="quickSetStar(event,'${id}')" data-rating="${item.rating||0}">
+          ${[1,2,3,4,5].map(i =>
+            `<span class="star${i <= (item.rating||0) ? ' on' : ''}" data-val="${i}">★</span>`
+          ).join('')}
+        </div>
+
+        ${/* Platform inline */''}
         <div class="detail-meta-row">
           ${metaExtra}
+          <div class="detail-meta-item">
+            <span class="detail-meta-label">Plataforma</span>
+            <span class="detail-meta-val inline-editable" onclick="inlineEditText(this,'platform','${id}')">${item.platform ? esc(item.platform) : '<span style="color:var(--text3)">—</span>'}</span>
+          </div>
         </div>
         ${genresHtml?`<div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">${genresHtml}</div>`:''}
       </div>
@@ -332,7 +384,10 @@ function openDetail(id) {
     </div>
 
     <div class="detail-section">
-      <div class="detail-section-title">Tags pessoais</div>
+      <div class="detail-section-title">
+        Tags pessoais
+        <button class="btn btn-ghost btn-xs" onclick="inlineAddTag('${id}')" style="margin-left:auto">+</button>
+      </div>
       <div class="detail-tags">${tagsHtml}</div>
     </div>
 
@@ -342,12 +397,105 @@ function openDetail(id) {
     </div>
 
     <div class="detail-actions">
-      <button class="btn btn-ghost" onclick="editItem('${id}')">✏️ Editar</button>
+      <button class="btn btn-ghost" onclick="editItem('${id}')">✏️ Editar completo</button>
       <button class="btn btn-ghost" style="color:var(--red)" onclick="deleteItem('${id}')">🗑 Remover</button>
     </div>
   `;
 
+  document.getElementById('detailBody').dataset.currentId = id;
   document.getElementById('detailOverlay').classList.add('open');
+}
+
+/* ═══════════════════════════════════════════
+   INLINE HELPERS
+═══════════════════════════════════════════ */
+function quickSetStar(e, id) {
+  const star = e.target.closest('.star')
+  if (!star) return
+  const val = parseInt(star.dataset.val)
+  quickUpdate(id, 'rating', val)
+}
+
+function inlineEditText(el, field, id) {
+  const current = el.textContent === '—' ? '' : el.textContent
+  const input = document.createElement('input')
+  input.className = 'inline-input'
+  input.value = current
+  input.style.width = Math.max(current.length * 10, 80) + 'px'
+  el.textContent = ''
+  el.appendChild(input)
+  input.focus()
+  input.select()
+  const save = () => {
+    quickUpdate(id, field, input.value.trim())
+  }
+  input.addEventListener('blur', save)
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter') { input.blur() }
+    if (e.key === 'Escape') { el.textContent = current || '—'; }
+  })
+}
+
+async function quickRemoveTag(id, tag) {
+  const item = db.find(x => x.id === id)
+  if (!item) return
+  item.tags = (item.tags||[]).filter(t => t !== tag)
+  save()
+  saveItemToFirestore(item)
+  openDetail(id)
+  renderCatalogo()
+}
+
+function inlineAddTag(id) {
+  const allTags = [
+    'Favorito da vida', 'Recomendo', 'Obra-prima', 'Chorei',
+    'Rolou um boom', 'Pra esquecer', 'Pode melhorar',
+    'Amei', 'Gostei', 'Tanto faz', 'Horroroso',
+    'Vício', 'Maratonei', 'Dropado', 'Relendo',
+    'Aguardando', 'Hiatus', 'Lançamento', 'Clássico',
+    'Subestimado', 'Superestimado'
+  ]
+  const item = db.find(x => x.id === id)
+  const used = new Set(item.tags || [])
+  
+  // Create a floating tag picker
+  let picker = document.getElementById('tagPicker')
+  if (picker) picker.remove()
+  
+  picker = document.createElement('div')
+  picker.id = 'tagPicker'
+  picker.className = 'tag-picker'
+  picker.innerHTML = allTags
+    .filter(t => !used.has(t))
+    .map(t => `<button class="tag-picker-opt" onclick="pickTag('${id}','${t}')">${t}</button>`)
+    .join('') || '<div style="color:var(--text3);padding:8px">Todas já adicionadas</div>'
+  
+  document.getElementById('detailBody').appendChild(picker)
+  setTimeout(() => picker.classList.add('open'), 10)
+  
+  // Close on click outside
+  const close = (e) => {
+    if (!picker.contains(e.target)) {
+      picker.classList.remove('open')
+      setTimeout(() => picker.remove(), 200)
+      document.removeEventListener('click', close)
+    }
+  }
+  setTimeout(() => document.addEventListener('click', close), 100)
+}
+
+async function pickTag(id, tag) {
+  const item = db.find(x => x.id === id)
+  if (!item) return
+  if (!item.tags) item.tags = []
+  if (item.tags.includes(tag)) return
+  item.tags.push(tag)
+  save()
+  saveItemToFirestore(item)
+  const picker = document.getElementById('tagPicker')
+  if (picker) { picker.classList.remove('open'); setTimeout(() => picker.remove(), 200) }
+  openDetail(id)
+  renderCatalogo()
 }
 
 async function addRelated(title, type, cover, originalId) {

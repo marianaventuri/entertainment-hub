@@ -1092,6 +1092,8 @@ body {
   margin-bottom: var(--space-2);
   padding-bottom: 6px;
   border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
 }
 
 .detail-synopsis {
@@ -1120,6 +1122,14 @@ body {
   background: var(--accent2-dim);
   border: 1px solid color-mix(in srgb, var(--accent2), transparent 75%);
   color: var(--accent2);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.detail-tag:hover {
+  background: color-mix(in srgb, var(--red), transparent 70%);
+  border-color: var(--red);
+  color: var(--red);
 }
 
 /* Emotion bars */
@@ -1163,10 +1173,157 @@ body {
 }
 
 .detail-actions {
-  margin-top: var(--space-5);
+  margin-top: var(--space-6);
   display: flex;
+  gap: var(--space-3);
+}
+
+/* ── Inline status selector ── */
+.status-selector {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-bottom: var(--space-3);
+}
+
+.status-opt {
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  padding: 3px 10px;
+  border-radius: var(--radius-full);
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.status-opt:hover {
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.status-opt.active {
+  border-color: transparent;
+  color: white;
+}
+
+/* ── Inline stars ── */
+.stars-inline {
+  display: flex;
+  gap: 2px;
+  margin-bottom: var(--space-2);
+  cursor: pointer;
+}
+
+.stars-inline .star {
+  font-size: 1.4rem;
+  color: var(--border2);
+  transition: color var(--transition-fast), transform var(--transition-fast);
+}
+
+.stars-inline .star.on {
+  color: var(--gold);
+  text-shadow: 0 0 8px rgba(255, 200, 0, .3);
+}
+
+.stars-inline:hover .star {
+  color: var(--border2);
+}
+
+.stars-inline .star:hover,
+.stars-inline .star:hover ~ .star {
+  color: var(--gold);
+}
+
+.stars-inline .star:hover {
+  transform: scale(1.15);
+}
+
+/* ── Inline editable text ── */
+.detail-meta-val.inline-editable {
+  cursor: text;
+  border-bottom: 1px dashed var(--border2);
+  transition: border-color var(--transition-fast);
+}
+
+.detail-meta-val.inline-editable:hover {
+  border-color: var(--accent);
+}
+
+.inline-input {
+  background: var(--surface2);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-size: var(--font-base);
+  font-weight: var(--weight-medium);
+  padding: 2px 6px;
+  outline: none;
+  min-width: 60px;
+}
+
+/* ── Detail title row (title + fav) ── */
+.detail-title-row {
+  display: flex;
+  align-items: flex-start;
   gap: var(--space-2);
 }
+
+.detail-fav-btn {
+  background: none;
+  border: none;
+  font-size: 1.3rem;
+  cursor: pointer;
+  padding: 2px;
+  flex-shrink: 0;
+  transition: transform var(--transition-fast);
+  margin-top: 2px;
+}
+
+.detail-fav-btn:hover {
+  transform: scale(1.2);
+}
+
+/* ── Tag picker ── */
+.tag-picker {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: var(--space-3);
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  margin-top: var(--space-2);
+  opacity: 0;
+  transform: translateY(-4px);
+  transition: all var(--transition-fast);
+  pointer-events: none;
+}
+
+.tag-picker.open {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.tag-picker-opt {
+  font-size: var(--font-sm);
+  padding: 4px 12px;
+  border-radius: var(--radius-full);
+  background: var(--accent2-dim);
+  border: 1px solid color-mix(in srgb, var(--accent2), transparent 75%);
+  color: var(--text);
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.tag-picker-opt:hover {
+  background: var(--accent2);
+  border-color: var(--accent2);
+  color: white;
+}
+
 
 /* ═══════════════════════════════════════════
    DASHBOARD / STATS
