@@ -6,17 +6,17 @@ App para catalogar filmes, séries, animes, mangás, doramas, jogos e livros com
 
 | Arquivo | Função |
 |---|---|
-| `index.html` | Estrutura HTML (~510 linhas) — página principal |
-| `style.css` | Todos os estilos (~1620 linhas) |
-| `app.js` | Lógica principal: estado, navegação, home, CRUD, dashboard, conquistas (~1490 linhas) |
-| `persistence.js` | Persistência: localStorage + Firestore CRUD + merge + migração (~172 linhas) |
+| `index.html` | Estrutura HTML (~510 linhas) |
+| `style.css` | Todos os estilos (~1885 linhas) |
+| `app.js` | Lógica principal: estado, navegação, home, CRUD, dashboard, conquistas (~1726 linhas) |
+| `persistence.js` | Persistência: localStorage + Firestore CRUD + merge + migração (~175 linhas) |
 | `firebase.js` | Config Firebase + Auth (53 linhas) |
 | `firestore.rules` | Regras de segurança Firestore |
 | `firebase.json` | Config Firebase Hosting + Firestore |
 | `.firebaserc` | Vincula ao projeto `entertainment-hub-7777a` |
 | `.github/workflows/deploy.yml` | GitHub Actions: deploy automático no push |
 | `manifest.json` | PWA manifest (standalone, theme #07090f, SVG icon) |
-| `sw.js` | Service Worker (cache v2, cache-first assets, navegação via rede) |
+| `sw.js` | Service Worker (cache v3, cache-first assets, navegação via rede) |
 | `icon.svg` | Ícone PWA (livro gradiente, `purpose: any maskable`) |
 | `migrate.html` | Script de migração avulso (não carregado pelo app) |
 | `firestore-crud.js` | Versão antiga com ES modules (não usado) |

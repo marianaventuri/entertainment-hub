@@ -7,6 +7,8 @@ Catálogo pessoal de filmes, séries, animes, mangás, doramas, jogos e livros c
 ## Funcionalidades
 
 - CRUD completo com 7 tipos de mídia e 4 status
+- Cards premium (capa + overlay gradiente, hover scale, favoritar direto)
+- Edição inline no modal de detalhes (status, estrelas, favorito, plataforma, tags)
 - Home com saudação, "Continue consumindo", estatísticas e atalhos
 - Busca, filtros por tipo/status, ordenação
 - Dashboard com gráficos, top 5, gêneros
@@ -15,7 +17,7 @@ Catálogo pessoal de filmes, séries, animes, mangás, doramas, jogos e livros c
 - 15 conquistas com verificação automática
 - Obras relacionadas (mesmo título em tipos diferentes)
 - Nota emocional (6 dimensões) e tags personalizadas (20)
-- Importação CSV
+- Importação CSV e colar texto (com dedup automático)
 - Favoritos
 - Responsivo (desktop sidebar + bottom nav mobile)
 - PWA — instalável como app no celular/desktop
