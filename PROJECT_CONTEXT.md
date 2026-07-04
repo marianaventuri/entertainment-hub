@@ -183,6 +183,8 @@ Sistema de tokens CSS no `:root` (`style.css:4-85`). Mobile-first (base 360px+; 
 3. **Security Rules:** regras bloqueavam escritas (modo locked) — resolvido com `firestore.rules` permitindo `read, write` por uid.
 4. **Campos undefined:** `item.addedAt` podia ser `undefined` quando `db.find()` não encontrava o item — resolvido limpando undefined antes do `set()` e com fallback `|| new Date().toISOString()`.
 5. **Dados revertiam no F5:** `loadCatalog` foi alterado para priorizar localStorage no merge; `onSnapshot` faz merge em vez de substituir `db`.
+6. **Deleção com race condition:** `deleteItem()` e `confirmDeleteSelected()` salvam no localStorage ANTES de deletar do Firestore, e usam `revertGuard` para bloquear `onSnapshot` durante a operação — impede que o merge re-adicione itens deletados a partir de dados stale do Firestore.
+7. **Filtro invertido em deleteItem:** `db.filter(x => x.id === id || String(x.id) === String(id))` mantinha o item deletado e removia todos os outros — corrigido para `!==`.
 
 ## Pendências
 
