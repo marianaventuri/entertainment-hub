@@ -663,12 +663,17 @@ function editItem(id) {
 
 async function deleteItem(id) {
   if (!confirm('Remover esta obra do catálogo?')) return;
-  db = db.filter(x => x.id === id || String(x.id) === String(id));
+  db = db.filter(x => x.id !== id && String(x.id) !== String(id));
   save();
-  await deleteItemFromFirestore(id);
-  document.getElementById('detailOverlay').classList.remove('open');
-  renderCatalogo();
-  toast('Obra removida');
+  revertGuard = true;
+  try {
+    await deleteItemFromFirestore(id);
+  } finally {
+    revertGuard = false;
+    document.getElementById('detailOverlay').classList.remove('open');
+    renderCatalogo();
+    toast('Obra removida');
+  }
 }
 
 function toggleDeleteMode() {
@@ -703,7 +708,7 @@ function toggleSelection(id, e) {
   renderCatalogo();
 }
 
-function confirmDeleteSelected() {
+async function confirmDeleteSelected() {
   if (selectedIds.size === 0) return;
   if (!confirm(`Remover ${selectedIds.size} obra(s) do catálogo?`)) return;
   
@@ -713,7 +718,12 @@ function confirmDeleteSelected() {
   const delSet = new Set(deletedIds.map(String));
   db = db.filter(x => !delSet.has(String(x.id)));
   save();
-  deletedIds.forEach(id => deleteItemFromFirestore(id));
+  revertGuard = true;
+  try {
+    await Promise.all(deletedIds.map(id => deleteItemFromFirestore(id)));
+  } finally {
+    revertGuard = false;
+  }
   toggleDeleteMode();
   renderCatalogo();
   toast(`${size} obra(s) removida(s)`);
