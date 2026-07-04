@@ -87,9 +87,14 @@ function navigateFilter(page, dim, val) {
     document.getElementById('filterStatus').value = val;
   }
   navigate(page, false);
-  // sync pill
-  document.querySelectorAll('[data-tipo]').forEach(b => {
+  // sync tipo chips
+  document.querySelectorAll('#tipoFilters .chip').forEach(b => {
     b.classList.toggle('active', b.dataset.tipo === tipoFilter);
+  });
+  // sync status chips
+  const sv = document.getElementById('filterStatus').value;
+  document.querySelectorAll('#statusFilters .chip').forEach(b => {
+    b.classList.toggle('active', b.dataset.status === sv);
   });
 }
 
@@ -170,9 +175,36 @@ function toast(msg, icon='✅') {
 ═══════════════════════════════════════════ */
 function setTipoFilter(tipo, btn) {
   tipoFilter = tipo;
-  document.querySelectorAll('[data-tipo]').forEach(b=>b.classList.remove('active'));
+  document.querySelectorAll('#tipoFilters .chip').forEach(b=>b.classList.remove('active'));
   btn.classList.add('active');
   renderCatalogo();
+}
+
+function setStatusFilter(status, btn) {
+  document.getElementById('filterStatus').value = status;
+  document.querySelectorAll('#statusFilters .chip').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderCatalogo();
+}
+
+function setFavFilter(btn) {
+  document.getElementById('filterStatus').value = 'fav';
+  document.querySelectorAll('#statusFilters .chip').forEach(b=>b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+  renderCatalogo();
+}
+
+function updateActiveFilters() {
+  const container = document.getElementById('activeFilters');
+  const tags = [];
+  if (tipoFilter) tags.push({ label: tipoFilter, onRemove: "setTipoFilter('', document.querySelector('#tipoFilters .chip:first-child'))" });
+  const status = document.getElementById('filterStatus').value;
+  if (status === 'fav') tags.push({ label: '⭐ Favoritos', onRemove: "setStatusFilter('', document.querySelector('#statusFilters .chip:first-child'))" });
+  else if (status) tags.push({ label: status, onRemove: "setStatusFilter('', document.querySelector('#statusFilters .chip:first-child'))" });
+  container.innerHTML = tags.map(t => `<span class="active-filter-tag">${esc(t.label)} <span class="remove" onclick="${esc(t.onRemove)};event.stopPropagation()">✕</span></span>`).join('');
+  document.getElementById('resultCount').textContent = document.querySelectorAll('#catalogoGrid .card').length 
+    ? document.querySelectorAll('#catalogoGrid .card').length + ' obra' + (document.querySelectorAll('#catalogoGrid .card').length !== 1 ? 's' : '')
+    : '';
 }
 
 function renderCatalogo() {
@@ -180,9 +212,17 @@ function renderCatalogo() {
   const status  = document.getElementById('filterStatus').value;
   const order   = document.getElementById('filterOrder').value;
 
+  // sync status chips
+  document.querySelectorAll('#statusFilters .chip').forEach(b => {
+    b.classList.toggle('active', b.dataset.status === status);
+  });
+
   let items = [...db];
   if (tipoFilter) items = items.filter(x=>x.type===tipoFilter);
-  if (status)     items = items.filter(x=>x.status===status);
+  if (status) {
+    if (status === 'fav') items = items.filter(x => x.fav);
+    else items = items.filter(x=>x.status===status);
+  }
   if (search)     items = items.filter(x=>x.title.toLowerCase().includes(search)||
                            (x.genres||'').toLowerCase().includes(search));
 
@@ -194,16 +234,17 @@ function renderCatalogo() {
   // title
   const title = tipoFilter
     ? (typeIcon(tipoFilter)+' '+tipoFilter+'s')
-    : (status || 'Catálogo');
+    : (status === 'fav' ? '⭐ Favoritos' : (status || 'Catálogo'));
   document.getElementById('catalogoTitle').textContent = title;
   document.getElementById('catalogoSubtitle').textContent = items.length + ' obra' + (items.length!==1?'s':'');
 
   const grid  = document.getElementById('catalogoGrid');
   const empty = document.getElementById('catalogoEmpty');
 
-  if (!items.length) { grid.innerHTML=''; empty.classList.remove('hidden'); return; }
+  if (!items.length) { grid.innerHTML=''; empty.classList.remove('hidden'); updateActiveFilters(); return; }
   empty.classList.add('hidden');
 
+  grid.className = 'grid grid-fade';
   grid.innerHTML = items.map(item => {
     const t = TIPO[item.type]||{icon:'🎞️', color:'#555'};
     const coverEl = item.cover
@@ -240,6 +281,8 @@ function renderCatalogo() {
         </div>
       </div>`;
   }).join('');
+  updateActiveFilters();
+  setTimeout(() => { const g = document.getElementById('catalogoGrid'); if (g) g.classList.remove('grid-fade'); }, 400);
 }
 
 /* ═══════════════════════════════════════════

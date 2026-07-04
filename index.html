@@ -183,32 +183,52 @@
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-ghost" id="btnConfirmDelete" onclick="confirmDeleteSelected()" style="display:none;color:white;background:var(--red);border:none;">Excluir (0)</button>
           <button class="btn btn-ghost" id="btnToggleDelete" onclick="toggleDeleteMode()" style="color:var(--red);border-color:rgba(248,113,113,0.3);">🗑 Excluir Vários</button>
-          <select class="filter-select" id="filterStatus" onchange="renderCatalogo()">
-            <option value="">Todos os status</option>
-            <option>Quero assistir</option>
-            <option>Assistindo</option>
-            <option>Finalizado</option>
-            <option>Abandonado</option>
-          </select>
-          <select class="filter-select" id="filterOrder" onchange="renderCatalogo()">
-            <option value="recent">Mais recentes</option>
-            <option value="title">A → Z</option>
-            <option value="rating">Melhor nota</option>
-            <option value="fav">Favoritos primeiro</option>
-          </select>
         </div>
       </div>
 
-      <div class="filter-bar" id="tipoFilters">
-        <button class="filter-pill active" data-tipo="" onclick="setTipoFilter('',this)">Todos</button>
-        <button class="filter-pill" data-tipo="Filme" onclick="setTipoFilter('Filme',this)">🎬 Filmes</button>
-        <button class="filter-pill" data-tipo="Série" onclick="setTipoFilter('Série',this)">📺 Séries</button>
-        <button class="filter-pill" data-tipo="Anime" onclick="setTipoFilter('Anime',this)">⛩️ Animes</button>
-        <button class="filter-pill" data-tipo="Mangá" onclick="setTipoFilter('Mangá',this)">📖 Mangás</button>
-        <button class="filter-pill" data-tipo="Dorama" onclick="setTipoFilter('Dorama',this)">🎭 Doramas</button>
-        <button class="filter-pill" data-tipo="Jogo" onclick="setTipoFilter('Jogo',this)">🎮 Jogos</button>
-        <button class="filter-pill" data-tipo="Livro" onclick="setTipoFilter('Livro',this)">📕 Livros</button>
+      <!-- Active filters -->
+      <div class="active-filters" id="activeFilters"></div>
+
+      <!-- Filter chips - Tipo -->
+      <div class="filter-chips" id="tipoFilters">
+        <button class="chip active" data-tipo="" onclick="setTipoFilter('',this)">Todos</button>
+        <button class="chip" data-tipo="Filme" onclick="setTipoFilter('Filme',this)">🎬 Filmes</button>
+        <button class="chip" data-tipo="Série" onclick="setTipoFilter('Série',this)">📺 Séries</button>
+        <button class="chip" data-tipo="Anime" onclick="setTipoFilter('Anime',this)">⛩️ Animes</button>
+        <button class="chip" data-tipo="Mangá" onclick="setTipoFilter('Mangá',this)">📖 Mangás</button>
+        <button class="chip" data-tipo="Dorama" onclick="setTipoFilter('Dorama',this)">🎭 Doramas</button>
+        <button class="chip" data-tipo="Jogo" onclick="setTipoFilter('Jogo',this)">🎮 Jogos</button>
+        <button class="chip" data-tipo="Livro" onclick="setTipoFilter('Livro',this)">📕 Livros</button>
       </div>
+
+      <!-- Filter chips - Status -->
+      <div class="filter-chips" id="statusFilters">
+        <button class="chip active" data-status="" onclick="setStatusFilter('',this)">Todos</button>
+        <button class="chip" data-status="fav" onclick="setFavFilter(this)">⭐ Favoritos</button>
+        <button class="chip" data-status="Assistindo" onclick="setStatusFilter('Assistindo',this)">▶️ Assistindo</button>
+        <button class="chip" data-status="Finalizado" onclick="setStatusFilter('Finalizado',this)">✅ Finalizados</button>
+        <button class="chip" data-status="Quero assistir" onclick="setStatusFilter('Quero assistir',this)">📋 Quero assistir</button>
+      </div>
+
+      <!-- Sort row -->
+      <div class="sort-row">
+        <select class="sort-select" id="filterOrder" onchange="renderCatalogo()">
+          <option value="recent">Mais recentes</option>
+          <option value="title">A → Z</option>
+          <option value="rating">Melhor nota</option>
+          <option value="fav">Favoritos primeiro</option>
+        </select>
+        <span class="result-count" id="resultCount"></span>
+      </div>
+
+      <!-- Hidden: kept for existing logic -->
+      <select id="filterStatus" style="display:none" onchange="renderCatalogo()">
+        <option value="">Todos os status</option>
+        <option>Quero assistir</option>
+        <option>Assistindo</option>
+        <option>Finalizado</option>
+        <option>Abandonado</option>
+      </select>
 
       <div class="grid" id="catalogoGrid"></div>
       <div class="empty hidden" id="catalogoEmpty">

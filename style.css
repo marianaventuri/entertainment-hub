@@ -338,17 +338,21 @@ body {
 }
 
 /* ═══════════════════════════════════════════
-   FILTER BAR
+   FILTERS
 ═══════════════════════════════════════════ */
-.filter-bar {
+.filter-chips {
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-5);
-  flex-wrap: wrap;
-  align-items: center;
+  gap: 8px;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  padding: 4px 0 8px;
+  flex-shrink: 0;
 }
+.filter-chips::-webkit-scrollbar { display: none; }
 
-.filter-pill {
+.chip {
+  flex-shrink: 0;
   padding: 7px 16px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
@@ -357,34 +361,104 @@ body {
   font-size: var(--font-sm);
   font-weight: var(--weight-semibold);
   cursor: pointer;
-  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast);
   font-family: var(--font-body);
   min-height: 36px;
+  white-space: nowrap;
+  transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
+  user-select: none;
+}
+.chip:hover { border-color: var(--accent); color: var(--text); background: var(--accent-dim); }
+.chip:active { transform: scale(.96); }
+.chip.active { background: var(--accent); border-color: var(--accent); color: white; }
+.chip.active:hover { background: color-mix(in srgb, var(--accent), white 10%); }
+
+.active-filters {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  min-height: 0;
+  margin-bottom: 8px;
+  transition: min-height .2s ease, opacity .2s ease;
+}
+.active-filters:empty { min-height: 0; }
+
+.active-filter-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  background: var(--accent-dim);
+  border: 1px solid var(--accent);
+  color: var(--accent);
+  font-size: var(--font-xs);
+  font-weight: var(--weight-semibold);
+  animation: tagIn .2s ease;
+}
+.active-filter-tag .remove {
+  cursor: pointer;
+  opacity: .6;
+  font-size: 12px;
+  line-height: 1;
+}
+.active-filter-tag .remove:hover { opacity: 1; }
+
+@keyframes tagIn {
+  from { opacity: 0; transform: scale(.85); }
+  to   { opacity: 1; transform: scale(1); }
 }
 
-.filter-pill:hover { border-color: var(--accent); color: var(--text); }
-.filter-pill.active { background: var(--accent); border-color: var(--accent); color: white; }
+.sort-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-5);
+  gap: 8px;
+}
 
-.filter-select {
-  padding: 7px 32px 7px 14px;
+.sort-select {
+  padding: 6px 28px 6px 12px;
   border-radius: var(--radius-full);
   border: 1px solid var(--border);
   background: var(--surface2);
   color: var(--text2);
-  font-size: var(--font-sm);
+  font-size: var(--font-xs);
   font-weight: var(--weight-medium);
   cursor: pointer;
   font-family: var(--font-body);
   appearance: none;
-  min-height: 36px;
+  min-height: 32px;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 10 10'%3E%3Cpath fill='%236b7a99' d='M5 7L1 3h8z'/%3E%3C/svg%3E");
   background-repeat: no-repeat;
-  background-position: right 12px center;
-  background-size: 10px;
+  background-position: right 10px center;
+  background-size: 9px;
   transition: border-color var(--transition-fast);
 }
+.sort-select:focus { outline: none; border-color: var(--accent); }
 
-.filter-select:focus { outline: none; }
+.result-count {
+  font-size: var(--font-xs);
+  color: var(--text3);
+  font-weight: var(--weight-medium);
+  white-space: nowrap;
+}
+
+/* ── Grid fade animation ── */
+.grid-fade .card { animation: cardFadeIn .35s ease both; }
+.grid-fade .card:nth-child(1)  { animation-delay: 0s; }
+.grid-fade .card:nth-child(2)  { animation-delay: .03s; }
+.grid-fade .card:nth-child(3)  { animation-delay: .06s; }
+.grid-fade .card:nth-child(4)  { animation-delay: .09s; }
+.grid-fade .card:nth-child(5)  { animation-delay: .12s; }
+.grid-fade .card:nth-child(6)  { animation-delay: .15s; }
+.grid-fade .card:nth-child(7)  { animation-delay: .18s; }
+.grid-fade .card:nth-child(8)  { animation-delay: .21s; }
+.grid-fade .card:nth-child(n+9){ animation-delay: .24s; }
+
+@keyframes cardFadeIn {
+  from { opacity: 0; transform: translateY(8px) scale(.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
 
 /* ═══════════════════════════════════════════
    HOME PAGE
