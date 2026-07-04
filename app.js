@@ -241,7 +241,20 @@ function renderCatalogo() {
   const grid  = document.getElementById('catalogoGrid');
   const empty = document.getElementById('catalogoEmpty');
 
-  if (!items.length) { grid.innerHTML=''; empty.classList.remove('hidden'); updateActiveFilters(); return; }
+  if (!items.length) {
+    grid.innerHTML='';
+    empty.classList.remove('hidden');
+    const status = document.getElementById('filterStatus').value;
+    if (status === 'fav') {
+      empty.querySelector('h3').textContent = 'Nenhum favorito ainda';
+      empty.querySelector('p').textContent = 'Clique no ❤️ de um card para marcar como favorito';
+    } else {
+      empty.querySelector('h3').textContent = 'Nenhuma obra encontrada';
+      empty.querySelector('p').textContent = 'Tente outro filtro ou adicione sua primeira obra!';
+    }
+    updateActiveFilters();
+    return;
+  }
   empty.classList.add('hidden');
 
   grid.className = 'grid';
