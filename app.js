@@ -1452,8 +1452,10 @@ function parseImportRow(cells) {
 }
 
 function alreadyInDb(title, type) {
-  const lower = title.toLowerCase()
-  return db.some(x => x.title.toLowerCase() === lower && x.type === type)
+  const norm = s => s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim()
+  const tNorm = norm(title)
+  const typeNorm = norm(type)
+  return db.some(x => norm(x.title) === tNorm && norm(x.type) === typeNorm)
 }
 
 function handleCsvImport(event) {
