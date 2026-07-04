@@ -245,8 +245,15 @@ function renderCatalogo() {
 /* ═══════════════════════════════════════════
    INLINE EDIT
 ═══════════════════════════════════════════ */
+function findInDb(id) {
+  return db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
+}
+function findIdxInDb(id) {
+  const i = db.findIndex(x => x.id === id)
+  return i !== -1 ? i : db.findIndex(x => String(x.id) === String(id))
+}
 async function quickUpdate(id, field, value) {
-  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
+  const item = findInDb(id)
   if (!item) return
   item[field] = value
   save()
@@ -262,7 +269,7 @@ async function quickUpdate(id, field, value) {
    DETAIL MODAL
 ═══════════════════════════════════════════ */
 function openDetail(id) {
-  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id));
+  const item = findInDb(id);
   if (!item) {
     console.warn('openDetail: item not found', id, typeof id,
       'db[0].id:', db[0]?.id, typeof db[0]?.id,
@@ -443,7 +450,7 @@ function inlineEditText(el, field, id) {
 }
 
 async function quickRemoveTag(id, tag) {
-  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
+  const item = findInDb(id)
   if (!item) return
   item.tags = (item.tags||[]).filter(t => t !== tag)
   save()
@@ -461,7 +468,7 @@ function inlineAddTag(id) {
     'Aguardando', 'Hiatus', 'Lançamento', 'Clássico',
     'Subestimado', 'Superestimado'
   ]
-  const item = db.find(x => x.id === id)
+  const item = findInDb(id)
   const used = new Set(item.tags || [])
   
   // Create a floating tag picker
@@ -491,7 +498,7 @@ function inlineAddTag(id) {
 }
 
 async function pickTag(id, tag) {
-  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
+  const item = findInDb(id)
   if (!item) return
   if (!item.tags) item.tags = []
   if (item.tags.includes(tag)) return
@@ -511,8 +518,9 @@ async function addRelated(title, type, cover, originalId) {
     status: 'Quero assistir',
     rating: 0,
     year:'', platform:'', episodes:'', hours:'',
-    genres:'', synopsis:'', opinion:'', emotion:'', tags:[], fav:false,
-    createdAt: new Date().toISOString()
+    genres:'', synopsis:'', opinion:'', cover:'',
+    emotions: {}, tags: [], fav: false,
+    addedAt: new Date().toISOString()
   };
   db.push(item);
   save();
@@ -613,7 +621,7 @@ function closeAddModal(e) {
 
 function editItem(id) {
   document.getElementById('detailOverlay').classList.remove('open');
-  const item = db.find(x=>x.id===id) || db.find(x => String(x.id) === String(id));
+  const item = findInDb(id);
   if (!item) return;
 
   editingId = id;
@@ -746,16 +754,16 @@ async function saveItem() {
     emotions,
     tags,
     fav:      favEdit,
-    addedAt:  editingId ? (db.find(x=>x.id===editingId)||{}).addedAt || new Date().toISOString() : new Date().toISOString(),
+    addedAt:  editingId ? (findInDb(editingId)||{}).addedAt || new Date().toISOString() : new Date().toISOString(),
     finishedAt: (document.getElementById('f-status').value==='Finalizado')
-      ? (editingId ? (db.find(x=>x.id===editingId)||{}).finishedAt || new Date().toISOString() : new Date().toISOString())
+      ? (editingId ? (findInDb(editingId)||{}).finishedAt || new Date().toISOString() : new Date().toISOString())
       : null,
   };
   // Ensure addedAt has a fallback (db.find may miss the item in race conditions)
   if (!item.addedAt) item.addedAt = new Date().toISOString()
 
   if (editingId) {
-    const idx = db.findIndex(x=>x.id===editingId);
+    const idx = findIdxInDb(editingId);
     if (idx>=0) db[idx]=item;
   } else {
     db.unshift(item);
@@ -806,7 +814,7 @@ function toggleFav() {
 function toggleTag(btn) { btn.classList.toggle('active'); }
 
 function toggleCardFav(id) {
-  const item = db.find(x => x.id === id) || db.find(x => String(x.id) === String(id))
+  const item = findInDb(id)
   if (!item) return
   item.fav = !item.fav
   save()
