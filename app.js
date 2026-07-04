@@ -479,15 +479,6 @@ function renderInfoTab(item) {
 }
 
 /* ── Avaliação tab ── */
-const ALL_TAGS = [
-  'Favorito da vida', 'Recomendo', 'Obra-prima', 'Chorei',
-  'Rolou um boom', 'Pra esquecer', 'Pode melhorar',
-  'Amei', 'Gostei', 'Tanto faz', 'Horroroso',
-  'Vício', 'Maratonei', 'Dropado', 'Relendo',
-  'Aguardando', 'Hiatus', 'Lançamento', 'Clássico',
-  'Subestimado', 'Superestimado'
-];
-
 function renderAvaliacaoTab(item) {
   return `
     <div class="dmodal-section">
@@ -528,7 +519,7 @@ function renderAvaliacaoTab(item) {
 
       <div class="aval-field">
         <div class="aval-label">Comentário / Opinião</div>
-        <textarea class="aval-textarea" id="avalOpinion" oninput="markDetailDirty()" placeholder="O que você achou dessa obra?">${esc(item.opinion||'')}</textarea>
+        <textarea class="aval-textarea" id="avalOpinion" oninput="markDetailDirty()" placeholder="O que você achou dessa obra?">${(item.opinion||'')}</textarea>
       </div>
 
       <div class="detail-actions">
