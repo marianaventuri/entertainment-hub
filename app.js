@@ -209,7 +209,7 @@ function renderCatalogo() {
     const coverEl = item.cover
       ? `<img src="${esc(item.cover)}" alt="" loading="lazy" onerror="this.remove()">`
       : `<div class="card-placeholder"><span class="type-icon">${t.icon}</span><span class="type-label">${esc(item.type)}</span></div>`;
-    const isSelected = isDeleteMode && selectedIds.has(item.id);
+    const isSelected = isDeleteMode && (selectedIds.has(item.id) || selectedIds.has(String(item.id)));
     const ratingStars = item.rating ? `<div class="card-info-rating">${'★'.repeat(item.rating)}</div>` : '';
     const favIcon = item.fav ? '❤️' : '🤍';
     const platformHtml = item.platform ? `<span class="card-info-platform">${esc(item.platform)}</span>` : '';
