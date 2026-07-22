@@ -3,24 +3,36 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Minha Biblioteca</title>
+<title>Minha Biblioteca — Catálogo pessoal</title>
+<meta name="description" content="Catálogo pessoal de filmes, séries, animes, mangás, jogos e livros. Acompanhe seu progresso, organize coleções e descubra estatísticas.">
 <meta name="theme-color" content="#07090f">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta property="og:title" content="Minha Biblioteca">
+<meta property="og:description" content="Catálogo pessoal de filmes, séries, animes, mangás, jogos e livros.">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://entertainment-hub-7777a.web.app">
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&family=Inter:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="style.css?v=2">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,400..700,0..1,-50..200&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css?v=12">
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
 
 <!-- LOGIN OVERLAY -->
 <div class="login-overlay" id="loginOverlay">
+  <div class="login-bg-shapes">
+    <div class="shape shape-1"></div>
+    <div class="shape shape-2"></div>
+    <div class="shape shape-3"></div>
+    <div class="shape shape-4"></div>
+  </div>
   <div class="login-card">
     <div class="login-icon">📚</div>
     <h1 class="login-title">Minha Biblioteca</h1>
@@ -35,115 +47,145 @@
 <!-- SIDEBAR OVERLAY (mobile) -->
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="closeSidebar()"></div>
 
+<!-- COMMAND PALETTE OVERLAY -->
+<div class="overlay" id="cmdPaletteOverlay" onclick="closeCmdPalette(event)">
+  <div class="cmd-palette-modal">
+    <div class="cmd-palette-header">
+      <span class="material-symbols-rounded cmd-icon">search</span>
+      <input type="text" id="cmdInput" class="cmd-input" placeholder="Buscar filmes, séries, configurações..." oninput="handleCmdSearch(this.value)">
+      <span class="cmd-badge">ESC</span>
+    </div>
+    <div class="cmd-results" id="cmdResults">
+      <!-- Resultados dinâmicos aqui -->
+    </div>
+  </div>
+</div>
+
 <!-- SIDEBAR -->
-<nav class="sidebar" id="sidebar">
-  <div class="sidebar-logo">
-    <div class="logo-mark">
-      <div class="logo-icon">📚</div>
-      <span>Biblioteca</span>
+<nav class="sidebar" id="sidebar" aria-label="Navegação principal">
+  <div class="sidebar-header">
+    <img src="docs/design/Logo/Indexa__Logo_branco.svg" alt="Indexa" class="logo-img-sidebar" />
+    <button class="sidebar-close" onclick="closeSidebar()" aria-label="Fechar sidebar">
+      <span class="material-symbols-rounded">close</span>
+    </button>
+  </div>
+
+  <div class="sidebar-scroll">
+    <div class="sidebar-section">
+      <button class="nav-item active" onclick="navigate('home')">
+        <span class="material-symbols-rounded">home</span>
+        <span>Home</span>
+      </button>
+      <button class="nav-item" onclick="navigate('biblioteca')">
+        <span class="material-symbols-rounded">library_books</span>
+        <span>Biblioteca</span>
+        <span class="nav-count" id="nc-total">0</span>
+      </button>
+      <button class="nav-item" onclick="navigate('dashboard')">
+        <span class="material-symbols-rounded">bar_chart</span>
+        <span>Dashboard</span>
+      </button>
+      <button class="nav-item" onclick="navigate('perfil')">
+        <span class="material-symbols-rounded">person</span>
+        <span>Perfil</span>
+      </button>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="sidebar-accordion" onclick="toggleSidebarAccordion('tipo')">
+        <span>Por tipo</span>
+        <span class="material-symbols-rounded">expand_more</span>
+      </button>
+      <div class="sidebar-collapse" id="collapse-tipo">
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Filme')">
+          <span class="nav-count" id="nc-Filme">0</span> Filmes
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Série')">
+          <span class="nav-count" id="nc-Série">0</span> Séries
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Anime')">
+          <span class="nav-count" id="nc-Anime">0</span> Animes
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Mangá')">
+          <span class="nav-count" id="nc-Mangá">0</span> Mangás
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Dorama')">
+          <span class="nav-count" id="nc-Dorama">0</span> Doramas
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Jogo')">
+          <span class="nav-count" id="nc-Jogo">0</span> Jogos
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Livro')">
+          <span class="nav-count" id="nc-Livro">0</span> Livros
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Box')">
+          <span class="nav-count" id="nc-Box">0</span> Boxes
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Coleção')">
+          <span class="nav-count" id="nc-Coleção">0</span> Coleções
+        </button>
+        <div class="nav-divider"></div>
+        <button class="nav-item" onclick="navigate('colecoes')" id="nav-colecoes">
+          <span class="material-symbols-rounded" style="font-size:1.15rem;opacity:0.7">collections_bookmark</span> Gerenciar Coleções
+        </button>
+      </div>
+    </div>
+
+    <div class="sidebar-section">
+      <button class="sidebar-accordion" onclick="toggleSidebarAccordion('status')">
+        <span>Por status</span>
+        <span class="material-symbols-rounded">expand_more</span>
+      </button>
+      <div class="sidebar-collapse" id="collapse-status">
+        <button class="nav-item" onclick="navigateFilter('biblioteca','status','Assistindo')">
+          <span class="nav-count" id="nc-Assistindo">0</span> Assistindo
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','status','Finalizado')">
+          <span class="nav-count" id="nc-Finalizado">0</span> Finalizados
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','status','Abandonado')">
+          <span class="nav-count" id="nc-Abandonado">0</span> Abandonados
+        </button>
+        <button class="nav-item" onclick="navigateFilter('biblioteca','status','Quero assistir')">
+          <span class="nav-count" id="nc-Quero">0</span> Quero assistir
+        </button>
+      </div>
     </div>
   </div>
 
-  <div class="sidebar-section">
-    <div class="sidebar-label">Principal</div>
-    <button class="nav-item active" onclick="navigate('home')">
-      <span class="nav-icon">🏠</span> Home
-    </button>
-    <button class="nav-item" onclick="navigate('biblioteca')">
-      <span class="nav-icon">📋</span> Biblioteca
-      <span class="nav-count" id="nc-total">0</span>
-    </button>
-    <button class="nav-item" onclick="navigate('dashboard')">
-      <span class="nav-icon">📊</span> Estatísticas
-    </button>
-    <button class="nav-item" onclick="navigate('timeline')">
-      <span class="nav-icon">📅</span> Linha do tempo
-    </button>
-    <button class="nav-item" onclick="navigate('wishlist')">
-      <span class="nav-icon">❤️</span> Lista de desejos
-      <span class="nav-count" id="nc-wish">0</span>
-    </button>
-    <button class="nav-item" onclick="navigate('conquistas')">
-      <span class="nav-icon">🏆</span> Conquistas
-    </button>
-    <button class="nav-item" onclick="navigate('experiencia')">
-      <span class="nav-icon">✨</span> Experiência
-    </button>
-  </div>
-
-  <div class="sidebar-section">
-    <div class="sidebar-label">Por tipo</div>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Filme')">
-      <span class="nav-icon">🎬</span> Filmes
-      <span class="nav-count" id="nc-Filme">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Série')">
-      <span class="nav-icon">📺</span> Séries
-      <span class="nav-count" id="nc-Série">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Anime')">
-      <span class="nav-icon">⛩️</span> Animes
-      <span class="nav-count" id="nc-Anime">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Mangá')">
-      <span class="nav-icon">📖</span> Mangás
-      <span class="nav-count" id="nc-Mangá">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Dorama')">
-      <span class="nav-icon">🎭</span> Doramas
-      <span class="nav-count" id="nc-Dorama">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Jogo')">
-      <span class="nav-icon">🎮</span> Jogos
-      <span class="nav-count" id="nc-Jogo">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Livro')">
-      <span class="nav-icon">📕</span> Livros
-      <span class="nav-count" id="nc-Livro">0</span>
-    </button>
-  </div>
-
-  <div class="sidebar-section">
-    <div class="sidebar-label">Por status</div>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','status','Assistindo')">
-      <span class="nav-icon">▶️</span> Assistindo
-      <span class="nav-count" id="nc-Assistindo">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','status','Finalizado')">
-      <span class="nav-icon">✅</span> Finalizados
-      <span class="nav-count" id="nc-Finalizado">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','status','Abandonado')">
-      <span class="nav-icon">❌</span> Abandonados
-      <span class="nav-count" id="nc-Abandonado">0</span>
-    </button>
-    <button class="nav-item" onclick="navigateFilter('biblioteca','status','Quero assistir')">
-      <span class="nav-icon">🔖</span> Quero assistir
-      <span class="nav-count" id="nc-Quero">0</span>
+  <div class="sidebar-bottom">
+    <button class="sidebar-user-btn" onclick="navigate('config')" id="sidebarUserBtn" title="Configurações">
+      <span class="user-avatar-sm" id="sidebarAvatar"></span>
+      <span class="sidebar-user-name" id="sidebarUserName">Configurações</span>
+      <span class="material-symbols-rounded">settings</span>
     </button>
   </div>
 </nav>
 
 <!-- BOTTOM NAV (mobile) -->
 <div class="bottom-nav" id="bottomNav">
-  <button class="bottom-nav-item active" onclick="navigate('biblioteca')" id="bn-biblioteca">
-    <span class="bottom-nav-icon">🏠</span>
+  <button class="bottom-nav-item active" onclick="navigate('biblioteca')" id="bn-biblioteca" aria-label="Biblioteca">
+    <span class="bottom-nav-icon material-symbols-rounded">library_books</span>
     <span class="bottom-nav-label">Biblioteca</span>
   </button>
-  <button class="bottom-nav-item" onclick="navigate('favoritos')" id="bn-favoritos">
-    <span class="bottom-nav-icon">❤️</span>
+  <button class="bottom-nav-item" onclick="navigate('favoritos')" id="bn-favoritos" aria-label="Favoritos">
+    <span class="bottom-nav-icon material-symbols-rounded">favorite</span>
     <span class="bottom-nav-label">Favoritos</span>
   </button>
-  <button class="bottom-nav-fab" onclick="openAddModal()" id="bn-add" aria-label="Adicionar obra">
-    <span class="fab-icon">+</span>
+  <button class="bottom-nav-fab" onclick="openSmartFormModal('add')" id="bn-add" aria-label="Adicionar obra">
+    <span class="fab-icon material-symbols-rounded">add</span>
   </button>
-  <button class="bottom-nav-item" onclick="navigate('dashboard')" id="bn-dashboard">
-    <span class="bottom-nav-icon">📊</span>
+  <button class="bottom-nav-item" onclick="navigate('colecoes')" id="bn-colecoes" aria-label="Coleções">
+    <span class="bottom-nav-icon material-symbols-rounded">collections_bookmark</span>
+    <span class="bottom-nav-label">Coleções</span>
+  </button>
+  <button class="bottom-nav-item" onclick="navigate('dashboard')" id="bn-dashboard" aria-label="Dashboard">
+    <span class="bottom-nav-icon material-symbols-rounded">bar_chart</span>
     <span class="bottom-nav-label">Dashboard</span>
   </button>
-  <button class="bottom-nav-item" onclick="navigate('config')" id="bn-config">
-    <span class="bottom-nav-icon">⚙️</span>
-    <span class="bottom-nav-label">Config</span>
+  <button class="bottom-nav-item" onclick="navigate('perfil')" id="bn-perfil" aria-label="Perfil">
+    <span class="bottom-nav-icon material-symbols-rounded">person</span>
+    <span class="bottom-nav-label">Perfil</span>
   </button>
 </div>
 
@@ -151,24 +193,68 @@
 <div class="main">
   <!-- TOPBAR -->
   <div class="topbar">
-    <button class="menu-toggle" onclick="toggleSidebar()">☰</button>
-    <div class="search-wrap">
-      <span class="search-icon">🔍</span>
-      <input type="text" id="searchInput" placeholder="Buscar no catálogo…" oninput="renderCatalogo()"/>
+    <button class="menu-toggle" onclick="toggleSidebar()" aria-label="Abrir menu">
+      <span class="material-symbols-rounded">menu</span>
+    </button>
+
+    <div class="topbar-logo">
+      <img src="docs/design/Logo/Indexa__Logo_branco.svg" alt="Indexa" class="logo-img" />
     </div>
+
+    <div class="search-wrap" style="position:relative">
+      <span class="material-symbols-rounded search-icon">search</span>
+      <input type="text" id="searchInput" placeholder="Buscar na sua biblioteca..." oninput="debouncedRenderCatalogo();renderSearchSuggestions()" onfocus="renderSearchSuggestions()" onblur="setTimeout(()=>{const s=document.getElementById('searchSuggestions');if(s)s.classList.add('hidden')},200)" title="Digite para buscar no catálogo"/>
+      <div class="search-suggestions hidden" id="searchSuggestions"></div>
+    </div>
+
     <div class="topbar-actions">
-      <button class="btn btn-ghost" onclick="openImportModal()" title="Importar lista (CSV ou texto)">⬆ Importar</button>
-      <button class="btn btn-ghost" onclick="openWishModal()">+ Lista de desejos</button>
-      <button class="btn btn-primary" onclick="openAddModal()">+ Adicionar obra</button>
+      <button class="btn-add-circle" onclick="openSmartFormModal('add')" title="Adicionar obra">
+        <span class="material-symbols-rounded">add</span>
+      </button>
+      <div class="sync-status" id="syncStatus" title="Sincronizado">✅</div>
     </div>
+
     <div class="user-menu" id="userMenu" style="display:none">
-      <span class="user-avatar" id="userAvatar"></span>
-      <button class="btn btn-ghost" onclick="signOutUser()" title="Sair" style="padding:4px 10px;font-size:0.8rem">Sair</button>
+      <div class="profile-trigger" onclick="toggleProfileMenu()" id="profileTrigger" tabindex="0" role="button" aria-label="Menu do usuário">
+        <span class="user-avatar" id="userAvatar">M</span>
+      </div>
+      <div class="profile-dropdown" id="profileDropdown">
+    <button onclick="navigate('perfil')" aria-label="Perfil" title="Ver perfil">
+      <span class="material-symbols-rounded">person</span> Perfil
+    </button>
+    <button onclick="navigate('config')" aria-label="Configurações" title="Configurações da conta">
+      <span class="material-symbols-rounded">settings</span> Configurações
+    </button>
+    <button onclick="navigate('config')" aria-label="Integrações" title="Gerenciar integrações">
+      <span class="material-symbols-rounded">integration_instructions</span> Integrações
+    </button>
+        <button onclick="openImportModal()" aria-label="Backup" title="Fazer backup dos dados">
+          <span class="material-symbols-rounded">backup</span> Backup
+        </button>
+        <button onclick="toggleLightMode()" aria-label="Alternar tema" title="Alternar entre tema claro e escuro">
+          <span class="material-symbols-rounded">dark_mode</span> Tema
+        </button>
+        <button onclick="navigate('config')" aria-label="Sobre" title="Sobre o Indexa">
+          <span class="material-symbols-rounded">info</span> Sobre
+        </button>
+        <div class="dropdown-divider"></div>
+        <button onclick="signOutUser()" aria-label="Sair" title="Sair da conta">
+          <span class="material-symbols-rounded">logout</span> Sair
+        </button>
+      </div>
     </div>
   </div>
 
   <!-- CONTENT -->
   <div class="content">
+
+    <!-- BREADCRUMB -->
+    <nav class="breadcrumb" id="breadcrumb" aria-label="Você está em:">
+      <button class="breadcrumb-back" id="breadcrumbBack" onclick="navigate('home')" aria-label="Voltar" title="Voltar">
+        <span class="material-symbols-rounded">arrow_back</span>
+      </button>
+      <span class="breadcrumb-trail" id="breadcrumbTrail"></span>
+    </nav>
 
     <!-- ── HOME ── -->
     <div class="page" id="page-home">
@@ -183,8 +269,13 @@
           <div class="page-subtitle" id="catalogoSubtitle">Todas as obras</div>
         </div>
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+          <button class="btn btn-ghost" id="btnBatchEdit" onclick="openBatchEdit()" style="display:none;color:var(--accent);border-color:var(--accent);"><span class="material-symbols-rounded" style="font-size:1.1rem">edit</span> Editar (0)</button>
           <button class="btn btn-ghost" id="btnConfirmDelete" onclick="confirmDeleteSelected()" style="display:none;color:white;background:var(--red);border:none;">Excluir (0)</button>
-          <button class="btn btn-ghost" id="btnToggleDelete" onclick="toggleDeleteMode()" style="color:var(--red);border-color:rgba(248,113,113,0.3);">🗑 Excluir Vários</button>
+          <button class="btn btn-ghost" id="btnToggleDelete" onclick="toggleDeleteMode()" style="color:var(--red);border-color:rgba(248,113,113,0.3);"><span class="material-symbols-rounded" style="font-size:1.1rem">delete</span> Excluir Vários</button>
+          <button class="btn btn-ghost" id="btnToggleBox" onclick="toggleBoxMode()"><span class="material-symbols-rounded" style="font-size:1.1rem">inventory_2</span> Box</button>
+          <button class="btn btn-ghost" id="btnToggleColecao" onclick="toggleColecaoMode()"><span class="material-symbols-rounded" style="font-size:1.1rem">collections_bookmark</span> Coleção</button>
+          <button class="btn btn-ghost" id="btnConfirmBoxAction" onclick="openSmartFormModal('box')" style="display:none;"><span class="material-symbols-rounded" style="font-size:1.1rem">inventory_2</span> Criar Box (0)</button>
+          <button class="btn btn-ghost" id="btnConfirmColecaoAction" onclick="openSmartFormModal('colecao')" style="display:none;"><span class="material-symbols-rounded" style="font-size:1.1rem">collections_bookmark</span> Criar Coleção (0)</button>
         </div>
       </div>
 
@@ -194,33 +285,76 @@
       <!-- Filter chips - Tipo -->
       <div class="filter-chips" id="tipoFilters">
         <button class="chip active" data-tipo="" onclick="setTipoFilter('',this)">Todos</button>
-        <button class="chip" data-tipo="Filme" onclick="setTipoFilter('Filme',this)">🎬 Filmes</button>
-        <button class="chip" data-tipo="Série" onclick="setTipoFilter('Série',this)">📺 Séries</button>
-        <button class="chip" data-tipo="Anime" onclick="setTipoFilter('Anime',this)">⛩️ Animes</button>
-        <button class="chip" data-tipo="Mangá" onclick="setTipoFilter('Mangá',this)">📖 Mangás</button>
-        <button class="chip" data-tipo="Dorama" onclick="setTipoFilter('Dorama',this)">🎭 Doramas</button>
-        <button class="chip" data-tipo="Jogo" onclick="setTipoFilter('Jogo',this)">🎮 Jogos</button>
-        <button class="chip" data-tipo="Livro" onclick="setTipoFilter('Livro',this)">📕 Livros</button>
+        <button class="chip" data-tipo="Filme" onclick="setTipoFilter('Filme',this)"><span class="material-symbols-rounded chip-icon">movie</span> Filmes</button>
+        <button class="chip" data-tipo="Série" onclick="setTipoFilter('Série',this)"><span class="material-symbols-rounded chip-icon">tv</span> Séries</button>
+        <button class="chip" data-tipo="Anime" onclick="setTipoFilter('Anime',this)"><span class="material-symbols-rounded chip-icon">smart_display</span> Animes</button>
+        <button class="chip" data-tipo="Mangá" onclick="setTipoFilter('Mangá',this)"><span class="material-symbols-rounded chip-icon">menu_book</span> Mangás</button>
+        <button class="chip" data-tipo="Dorama" onclick="setTipoFilter('Dorama',this)"><span class="material-symbols-rounded chip-icon">theater_comedy</span> Doramas</button>
+        <button class="chip" data-tipo="Jogo" onclick="setTipoFilter('Jogo',this)"><span class="material-symbols-rounded chip-icon">sports_esports</span> Jogos</button>
+        <button class="chip" data-tipo="Livro" onclick="setTipoFilter('Livro',this)"><span class="material-symbols-rounded chip-icon">book</span> Livros</button>
+        <button class="chip" data-tipo="Box" onclick="setTipoFilter('Box',this)"><span class="material-symbols-rounded chip-icon">inventory_2</span> Boxes</button>
+        <button class="chip" data-tipo="Coleção" onclick="setTipoFilter('Coleção',this)"><span class="material-symbols-rounded chip-icon">collections_bookmark</span> Coleções</button>
       </div>
 
       <!-- Filter chips - Status -->
       <div class="filter-chips" id="statusFilters">
         <button class="chip active" data-status="" onclick="setStatusFilter('',this)">Todos os status</button>
-        <button class="chip" data-status="fav" onclick="setFavFilter(this)">⭐ Favoritos</button>
-        <button class="chip" data-status="Assistindo" onclick="setStatusFilter('Assistindo',this)">▶️ Assistindo</button>
-        <button class="chip" data-status="Finalizado" onclick="setStatusFilter('Finalizado',this)">✅ Finalizados</button>
-        <button class="chip" data-status="Quero assistir" onclick="setStatusFilter('Quero assistir',this)">📋 Quero assistir</button>
+        <button class="chip" data-status="fav" onclick="setFavFilter(this)"><span class="material-symbols-rounded chip-icon">favorite</span> Favoritos</button>
+        <button class="chip" data-status="Assistindo" onclick="setStatusFilter('Assistindo',this)"><span class="material-symbols-rounded chip-icon">visibility</span> Assistindo</button>
+        <button class="chip" data-status="Finalizado" onclick="setStatusFilter('Finalizado',this)"><span class="material-symbols-rounded chip-icon">check_circle</span> Finalizados</button>
+        <button class="chip" data-status="Quero assistir" onclick="setStatusFilter('Quero assistir',this)"><span class="material-symbols-rounded chip-icon">playlist_add</span> Quero assistir</button>
+      </div>
+
+      <!-- Quick filters -->
+      <div class="quick-filters" id="quickFilters">
+        <select class="qf-select" id="ff-year" onchange="renderCatalogo()">
+          <option value="">Todos os anos</option>
+          <option value="<2000">Antes de 2000</option>
+          <option value="<2010">Antes de 2010</option>
+          <option value="2020">2020</option>
+          <option value="2021">2021</option>
+          <option value="2022">2022</option>
+          <option value="2023">2023</option>
+          <option value="2024">2024</option>
+          <option value="2025">2025</option>
+          <option value="2026">2026</option>
+          <option value=">2020">Depois de 2020</option>
+        </select>
+        <select class="qf-select" id="ff-rating" onchange="renderCatalogo()">
+          <option value="">Nota mínima</option>
+          <option value="1">★ 1+</option>
+          <option value="2">★★ 2+</option>
+          <option value="3">★★★ 3+</option>
+          <option value="4">★★★★ 4+</option>
+          <option value="5">★★★★★ 5</option>
+        </select>
+        <select class="qf-select" id="ff-collection" onchange="renderCatalogo()">
+          <option value="">Coleção</option>
+        </select>
       </div>
 
       <!-- Sort row -->
       <div class="sort-row">
-        <select class="sort-select" id="filterOrder" onchange="renderCatalogo()">
-          <option value="recent">Mais recentes</option>
-          <option value="title">A → Z</option>
-          <option value="rating">Melhor nota</option>
-          <option value="fav">Favoritos primeiro</option>
-        </select>
         <span class="result-count" id="resultCount"></span>
+        <div class="sort-row-right">
+          <select class="sort-select" id="filterOrder" onchange="renderCatalogo()">
+            <option value="recent">Mais recentes</option>
+            <option value="title">A → Z</option>
+            <option value="rating">Melhor nota</option>
+            <option value="fav">Favoritos primeiro</option>
+            <option value="year">Ano</option>
+            <option value="author_asc">Autor (A-Z)</option>
+            <option value="author_desc">Autor (Z-A)</option>
+            <option value="progress">Progresso</option>
+            <option value="finished">Data de conclusão</option>
+            <option value="added">Data de adição</option>
+            <option value="updated">Última atualização</option>
+            <option value="hours">Tempo de consumo</option>
+          </select>
+          <button class="btn-icon sort-view-btn" id="btnGroupAuthor" onclick="toggleGroupAuthor()" title="Agrupar por autor" aria-label="Agrupar por autor">
+            <span class="material-symbols-rounded">author</span>
+          </button>
+        </div>
       </div>
 
       <!-- Hidden: kept for existing logic -->
@@ -232,12 +366,47 @@
         <option>Abandonado</option>
       </select>
 
+      <!-- Skeleton loading grid (hidden by default) -->
+      <div class="skeleton-grid hidden" id="catalogoSkeleton"></div>
+
       <div class="grid" id="catalogoGrid"></div>
+
+      <!-- Empty states -->
       <div class="empty hidden" id="catalogoEmpty">
-        <span class="empty-icon">🎞️</span>
-        <h3>Nenhuma obra encontrada</h3>
-        <p>Tente outro filtro ou adicione sua primeira obra!</p>
+        <span class="empty-icon" id="emptyIcon"><span class="material-symbols-rounded" style="font-size:3rem">library_books</span></span>
+        <h3 id="emptyTitle">Nenhuma obra encontrada</h3>
+        <p id="emptyDesc">Tente outro filtro ou adicione sua primeira obra!</p>
+        <button class="btn btn-primary empty-btn" id="emptyAction" onclick="openSmartFormModal('add')" style="display:none">
+          <span class="material-symbols-rounded">add</span> Adicionar obra
+        </button>
       </div>
+    </div>
+
+    <!-- ── COLEÇÕES ── -->
+    <div class="page" id="page-colecoes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Coleções</div>
+          <div class="page-subtitle" id="colecoesSubtitle">Gerencie suas coleções</div>
+        </div>
+        <div class="page-header-actions">
+          <button class="btn btn-ghost" onclick="openSmartFormModal('colecao')" style="padding:7px 14px;font-size:0.83rem">
+            <span class="material-symbols-rounded" style="font-size:1.1rem">add</span> Nova Coleção
+          </button>
+        </div>
+      </div>
+      <div id="colecoesContent"></div>
+    </div>
+
+    <!-- ── PERFIL ── -->
+    <div class="page" id="page-perfil">
+      <div class="page-header">
+        <div>
+          <div class="page-title">Perfil</div>
+          <div class="page-subtitle" id="perfilSubtitle">Sua jornada no Indexa</div>
+        </div>
+      </div>
+      <div id="perfilContent"></div>
     </div>
 
     <!-- ── DASHBOARD ── -->
@@ -269,6 +438,22 @@
           <div class="genre-list" id="tipoList"></div>
         </div>
       </div>
+      <div class="dash-row">
+        <div class="dash-card">
+          <div class="dash-card-title">⏱️ Horas por tipo</div>
+          <div class="genre-list" id="hoursByTypeList"></div>
+        </div>
+        <div class="dash-card">
+          <div class="dash-card-title">📊 Distribuição de notas</div>
+          <div class="genre-list" id="ratingDistList"></div>
+        </div>
+      </div>
+      <div class="dash-row">
+        <div class="dash-card dash-card-full">
+          <div class="dash-card-title">📈 Adições por mês</div>
+          <div class="monthly-chart" id="monthlyChart"></div>
+        </div>
+      </div>
     </div>
 
     <!-- ── TIMELINE ── -->
@@ -294,7 +479,7 @@
           <div class="page-title">Lista de desejos</div>
           <div class="page-subtitle">O que você quer ver em seguida</div>
         </div>
-        <button class="btn btn-primary" onclick="openWishModal()">+ Adicionar</button>
+        <button class="btn btn-primary" onclick="openSmartFormModal('wish')">+ Adicionar</button>
       </div>
       <div class="wish-list" id="wishList"></div>
       <div class="empty hidden" id="wishEmpty">
@@ -341,193 +526,120 @@
 </div><!-- /main -->
 
 <!-- ═══════════════════════════════════════════
-     MODAL: ADICIONAR / EDITAR
+     MODAL INTELIGENTE (Add / Edit / Box / Coleção / Wish / Batch)
 ═══════════════════════════════════════════ -->
-<div class="overlay" id="addOverlay" onclick="closeAddModal(event)">
+<div class="overlay" id="smartFormOverlay" onclick="closeSmartFormModal(event)" role="dialog" aria-modal="true" aria-label="Formulário de obra">
   <div class="modal" onclick="event.stopPropagation()">
-    <div class="modal-close"><button class="btn-close" onclick="closeAddModal()">✕</button></div>
-    <div class="modal-body">
-      <div class="modal-title" id="addModalTitle">Nova obra</div>
-
-      <div class="form-grid">
-        <div class="form-field full">
-          <label class="form-label">Título *</label>
-          <input class="form-input" id="f-title" placeholder="Nome da obra…" oninput="clearApiStatus()"/>
-          <div style="display:flex;gap:8px;margin-top:8px;align-items:center">
-            <button type="button" class="btn btn-ghost" id="btnBuscarOnline" onclick="buscarOnline()" style="padding:7px 14px;font-size:0.83rem">🔍 Buscar online</button>
-            <span id="apiStatus" style="font-size:0.8rem;color:var(--text2)"></span>
-          </div>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Tipo</label>
-          <select class="form-select" id="f-type" onchange="updateStatusOptions()">
-            <option>Filme</option>
-            <option>Série</option>
-            <option>Anime</option>
-            <option>Mangá</option>
-            <option>Dorama</option>
-            <option>Jogo</option>
-            <option>Livro</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Status</label>
-          <select class="form-select" id="f-status">
-            <option>Quero assistir</option>
-            <option>Assistindo</option>
-            <option>Finalizado</option>
-            <option>Abandonado</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Ano</label>
-          <input class="form-input" id="f-year" type="number" placeholder="2024" min="1900" max="2099"/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Onde assisti / joguei</label>
-          <input class="form-input" id="f-platform" placeholder="Netflix, Crunchyroll…"/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Episódios / Capítulos</label>
-          <input class="form-input" id="f-episodes" type="number" placeholder="12"/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Duração (horas)</label>
-          <input class="form-input" id="f-hours" type="number" step="0.5" placeholder="5.5"/>
-        </div>
-        <div class="form-field full">
-          <label class="form-label">Gêneros <span style="text-transform:none;font-weight:400;color:var(--text3)">(separados por vírgula)</span></label>
-          <input class="form-input" id="f-genres" placeholder="Fantasia, Aventura, Drama"/>
-        </div>
-        <div class="form-field full">
-          <label class="form-label">Sinopse</label>
-          <textarea class="form-textarea" id="f-synopsis" placeholder="Breve descrição da obra…"></textarea>
-        </div>
-        <div class="form-field full">
-          <label class="form-label">Minha opinião / diário</label>
-          <textarea class="form-textarea" id="f-opinion" placeholder="O que você achou? Como estava quando assistiu?"></textarea>
-        </div>
-        <div class="form-field full">
-          <label class="form-label">URL da capa <span style="text-transform:none;font-weight:400;color:var(--text3)">(opcional)</span></label>
-          <input class="form-input" id="f-cover" placeholder="https://…"/>
-        </div>
-      </div>
-
-      <div class="form-section-title">Avaliação geral</div>
-      <div class="star-input" id="starInput" data-val="0">
-        <button class="star-btn" data-star="1" onclick="setStar(1)">★</button>
-        <button class="star-btn" data-star="2" onclick="setStar(2)">★</button>
-        <button class="star-btn" data-star="3" onclick="setStar(3)">★</button>
-        <button class="star-btn" data-star="4" onclick="setStar(4)">★</button>
-        <button class="star-btn" data-star="5" onclick="setStar(5)">★</button>
-      </div>
-
-      <div class="form-section-title">Nota emocional <span style="text-transform:none;font-weight:400;font-size:0.75rem;color:var(--text3)">(além da nota técnica)</span></div>
-      <div class="emotion-grid" id="emotionGrid">
-        <!-- rendered by JS -->
-      </div>
-
-      <div class="form-section-title">Tags pessoais</div>
-      <div class="tags-wrap" id="tagsWrap">
-        <!-- rendered by JS -->
-      </div>
-
-      <div class="form-section-title">Favorito</div>
-      <div style="display:flex;align-items:center;gap:10px;">
-        <button class="star-btn" id="favBtn" onclick="toggleFav()" style="font-size:1.6rem;">☆</button>
-        <span style="font-size:0.82rem;color:var(--text2)">Marcar como favorito</span>
-      </div>
-
-      <div class="form-actions">
-        <button class="btn btn-ghost" onclick="closeAddModal()">Cancelar</button>
-        <button class="btn btn-primary" onclick="saveItem()">Salvar obra</button>
-      </div>
-    </div>
+    <div class="modal-close"><button class="btn-close" onclick="closeSmartFormModal()" aria-label="Fechar">✕</button></div>
+    <div class="modal-body" id="smartFormBody"></div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════
      MODAL: DETALHE
 ═══════════════════════════════════════════ -->
-<div class="overlay" id="detailOverlay" onclick="closeDetailModal(event)">
+<div class="overlay" id="detailOverlay" onclick="closeDetailModal(event)" role="dialog" aria-modal="true" aria-label="Detalhes da obra">
   <div class="modal detail-modal" onclick="event.stopPropagation()">
     <div class="modal-body" id="detailBody"></div>
   </div>
 </div>
 
 <!-- ═══════════════════════════════════════════
-     MODAL: WISH
+     MODAL: IMPORTAR / EXPORTAR (Package 011)
 ═══════════════════════════════════════════ -->
-<div class="overlay" id="wishOverlay" onclick="closeWishModal(event)">
-  <div class="modal" style="max-width:420px" onclick="event.stopPropagation()">
-    <div class="modal-close"><button class="btn-close" onclick="closeWishModal()">✕</button></div>
+<div class="overlay" id="importOverlay" onclick="closeImportModal(event)" role="dialog" aria-modal="true" aria-label="Importar/Exportar obras">
+  <div class="modal" style="max-width:560px" onclick="event.stopPropagation()">
+    <div class="modal-close"><button class="btn-close" onclick="closeImportModal()" aria-label="Fechar">✕</button></div>
     <div class="modal-body">
-      <div class="modal-title">Adicionar à lista de desejos</div>
-      <div class="form-grid" style="grid-template-columns:1fr">
-        <div class="form-field">
-          <label class="form-label">Título *</label>
-          <input class="form-input" id="w-title" placeholder="Nome da obra…"/>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Tipo</label>
-          <select class="form-select" id="w-type">
-            <option>Filme</option><option>Série</option><option>Anime</option>
-            <option>Mangá</option><option>Dorama</option><option>Jogo</option><option>Livro</option>
-          </select>
-        </div>
-        <div class="form-field">
-          <label class="form-label">Nota / motivo <span style="text-transform:none;font-weight:400;color:var(--text3)">(opcional)</span></label>
-          <input class="form-input" id="w-note" placeholder="Recomendação de alguém, trailer incrível…"/>
-        </div>
-      </div>
-      <div class="form-actions">
-        <button class="btn btn-ghost" onclick="closeWishModal()">Cancelar</button>
-        <button class="btn btn-primary" onclick="saveWish()">Adicionar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ═══════════════════════════════════════════
-     MODAL: IMPORTAR
-═══════════════════════════════════════════ -->
-<div class="overlay" id="importOverlay" onclick="closeImportModal(event)">
-  <div class="modal" style="max-width:520px" onclick="event.stopPropagation()">
-    <div class="modal-close"><button class="btn-close" onclick="closeImportModal()">✕</button></div>
-    <div class="modal-body">
-      <div class="modal-title">⬆ Importar obras</div>
+      <div class="modal-title">📦 Importar / Exportar</div>
+      <div class="modal-subtitle" style="font-size:0.82rem;color:var(--text3);margin:-8px 0 16px">Seus dados sempre com você</div>
 
       <!-- TABS -->
-      <div style="display:flex;gap:8px;margin-bottom:20px;border-bottom:1px solid var(--border);padding-bottom:12px;">
-        <button id="import-tab-csv" class="btn btn-primary" style="flex:1" onclick="switchImportTab('csv')">📄 CSV / Excel</button>
-        <button id="import-tab-paste" class="btn btn-ghost" style="flex:1" onclick="switchImportTab('paste')">📋 Colar lista</button>
+      <div class="imp-tabs" style="display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--border);padding-bottom:10px;overflow-x:auto">
+        <button id="imp-tab-json" class="btn btn-ghost btn-sm" onclick="switchImpTab('json')">📄 JSON</button>
+        <button id="imp-tab-csv" class="btn btn-primary btn-sm" onclick="switchImpTab('csv')">📊 CSV</button>
+        <button id="imp-tab-paste" class="btn btn-ghost btn-sm" onclick="switchImpTab('paste')">📋 Colar</button>
+        <button id="imp-tab-export" class="btn btn-ghost btn-sm" onclick="switchImpTab('export')">⬇ Exportar</button>
+      </div>
+
+      <!-- PROGRESS BAR (hidden by default) -->
+      <div id="impProgress" class="imp-progress hidden">
+        <div class="imp-progress-label" id="impProgressLabel">Processando...</div>
+        <div class="imp-progress-bar"><div class="imp-progress-fill" id="impProgressFill"></div></div>
+      </div>
+
+      <!-- TAB: JSON -->
+      <div id="imp-panel-json">
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:12px;line-height:1.5">
+          Importe um arquivo <strong>JSON</strong> exportado do Indexa ou de outra ferramenta.
+        </p>
+        <div class="imp-dropzone" id="impJsonDropzone" onclick="document.getElementById('jsonFileInput').click()">
+          <span class="material-symbols-rounded" style="font-size:2rem;color:var(--text3)">cloud_upload</span>
+          <span style="font-size:0.85rem;color:var(--text2)">Clique para selecionar ou arraste um JSON aqui</span>
+        </div>
+        <input type="file" id="jsonFileInput" accept=".json" style="display:none" onchange="handleJsonImport(event)"/>
+        <div id="jsonFeedback" style="margin-top:10px;font-size:0.85rem;color:var(--accent)"></div>
+        <div style="font-size:0.75rem;color:var(--text3);margin-top:8px">
+          Formato esperado: <code style="font-size:0.7rem">{"works": [...], "wishlist": [...]}</code>
+        </div>
       </div>
 
       <!-- TAB: CSV -->
-      <div id="import-panel-csv">
-        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;line-height:1.6">
-          Seu arquivo CSV deve ter as colunas: <strong>title, type, status, rating</strong><br>
-          Exemplo:<br>
-          <code style="font-size:0.78rem;background:var(--bg3);padding:4px 8px;border-radius:6px;display:inline-block;margin-top:4px">title,type,status,rating<br>Frieren,Anime,Finalizado,5<br>Interstellar,Filme,Finalizado,5</code>
+      <div id="imp-panel-csv" style="display:none">
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:12px;line-height:1.5">
+          Colunas: <strong>title, type, status, rating, year, genres, author, platform, synopsis, opinion, tags</strong>
         </p>
-        <input type="file" id="csvFileInput" accept=".csv,.txt" style="display:none" onchange="handleCsvImport(event)">
-        <button class="btn btn-primary" style="width:100%;padding:14px" onclick="document.getElementById('csvFileInput').click()">📂 Selecionar arquivo CSV</button>
-        <div id="csvFeedback" style="margin-top:12px;font-size:0.85rem;color:var(--accent)"></div>
+        <div class="imp-dropzone" onclick="document.getElementById('csvFileInput').click()">
+          <span class="material-symbols-rounded" style="font-size:2rem;color:var(--text3)">description</span>
+          <span style="font-size:0.85rem;color:var(--text2)">Clique para selecionar um arquivo CSV</span>
+        </div>
+        <input type="file" id="csvFileInput" accept=".csv,.txt,.xlsx" style="display:none" onchange="handleCsvImport(event)"/>
+        <div id="csvFeedback" style="margin-top:10px;font-size:0.85rem;color:var(--accent)"></div>
+        <details style="margin-top:8px;font-size:0.75rem;color:var(--text3)">
+          <summary style="cursor:pointer;font-weight:var(--weight-medium)">Ver exemplo</summary>
+          <code style="display:block;font-size:0.7rem;background:var(--bg3);padding:8px;border-radius:6px;margin-top:4px;white-space:pre">title,type,status,rating,year,genres<br>Frieren,Anime,Finalizado,5,2023,Fantasia,Aventura<br>Interestelar,Filme,Finalizado,5,2014,Ficção Científica,Drama</code>
+        </details>
       </div>
 
       <!-- TAB: PASTE -->
-      <div id="import-panel-paste" style="display:none">
-        <p style="font-size:0.85rem;color:var(--text2);margin-bottom:12px;line-height:1.6">
-          Cole uma obra por linha no formato:<br>
-          <code style="font-size:0.78rem;background:var(--bg3);padding:4px 8px;border-radius:6px;display:inline-block;margin-top:4px">Título | Tipo | Status | Nota</code><br>
-          <span style="font-size:0.78rem">Tipo: Filme, Série, Anime, Mangá, Dorama, Jogo, Livro<br>Status: Finalizado, Assistindo, Quero assistir, Abandonado<br>Nota: 1–5 (opcional)</span>
+      <div id="imp-panel-paste" style="display:none">
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:12px;line-height:1.5">
+          Cole uma obra por linha separada por <strong>|</strong> (pipe):
         </p>
-        <textarea id="pasteInput" class="form-textarea" rows="8" placeholder="Frieren | Anime | Finalizado | 5&#10;Breaking Bad | Série | Finalizado | 5&#10;Interstellar | Filme | Finalizado | 5"></textarea>
+        <textarea id="pasteInput" class="form-textarea" rows="6" placeholder="Frieren | Anime | Finalizado | 5&#10;Breaking Bad | Série | Finalizado | 5&#10;Interestelar | Filme | Finalizado | 5" style="resize:vertical"></textarea>
         <div id="pasteFeedback" style="margin-top:8px;font-size:0.85rem;color:var(--accent)"></div>
         <div class="form-actions" style="margin-top:12px">
           <button class="btn btn-ghost" onclick="closeImportModal()">Cancelar</button>
-          <button class="btn btn-primary" onclick="handlePasteImport()">⬆ Importar lista</button>
+          <button class="btn btn-primary" onclick="handlePasteImport()">⬆ Importar</button>
         </div>
+      </div>
+
+      <!-- TAB: EXPORT -->
+      <div id="imp-panel-export" style="display:none">
+        <p style="font-size:0.82rem;color:var(--text2);margin-bottom:12px;line-height:1.5">Exporte sua biblioteca para usar em outras ferramentas ou como backup.</p>
+        <div class="imp-export-grid">
+          <button class="imp-export-btn" onclick="exportJson()">
+            <span class="material-symbols-rounded" style="font-size:1.5rem">data_object</span>
+            <span class="imp-export-label">JSON</span>
+            <span class="imp-export-desc">Dados completos</span>
+          </button>
+          <button class="imp-export-btn" onclick="exportCsv()">
+            <span class="material-symbols-rounded" style="font-size:1.5rem">table_chart</span>
+            <span class="imp-export-label">CSV</span>
+            <span class="imp-export-desc">Planilha</span>
+          </button>
+          <button class="imp-export-btn" onclick="exportExcel()">
+            <span class="material-symbols-rounded" style="font-size:1.5rem">grid_on</span>
+            <span class="imp-export-label">Excel</span>
+            <span class="imp-export-desc">.xlsx</span>
+          </button>
+          <button class="imp-export-btn" onclick="exportCsv({simple:true})">
+            <span class="material-symbols-rounded" style="font-size:1.5rem">text_snippet</span>
+            <span class="imp-export-label">CSV simples</span>
+            <span class="imp-export-desc">Só título/tipo/status</span>
+          </button>
+        </div>
+        <div id="exportFeedback" style="margin-top:10px;font-size:0.85rem;color:var(--accent)"></div>
       </div>
 
     </div>
@@ -535,11 +647,27 @@
 </div>
 
 <!-- TOASTS -->
-<div class="toast-container" id="toastContainer"></div>
+<div class="toast-container" id="toastContainer" aria-live="polite" aria-atomic="true"></div>
 
-<script src="firebase.js?v=3"></script>
-<script src="persistence.js?v=3"></script>
-<script src="app.js?v=3"></script>
+<!-- SCROLL TO TOP BUTTON -->
+<button id="btnScrollTop" class="btn-scroll-top" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Voltar ao topo">↑</button>
+
+<script src="firebase.js?v=12"></script>
+<script src="persistence.js?v=12"></script>
+<script src="src/constants.js?v=12"></script>
+<script src="src/state.js?v=12"></script>
+<script src="src/utils.js?v=12"></script>
+<script src="src/navigation.js?v=12"></script>
+<script src="src/adapters/tmdbAdapter.js?v=12"></script>
+<script src="src/adapters/anilistAdapter.js?v=12"></script>
+<script src="src/adapters/rawgAdapter.js?v=12"></script>
+<script src="src/adapters/openLibraryAdapter.js?v=12"></script>
+<script src="src/api.js?v=12"></script>
+<script src="src/catalog.js?v=12"></script>
+<script src="src/jornada.js?v=12"></script>
+<script src="src/modals.js?v=12"></script>
+<script src="src/pages.js?v=12"></script>
+<script src="src/auth.js?v=12"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
