@@ -18,6 +18,9 @@ Catálogo pessoal de filmes, séries, animes, mangás, doramas, jogos e livros c
 - Wishlist
 - 15 conquistas com verificação automática
 - Obras relacionadas (mesmo título em tipos diferentes)
+- **Jornada da Obra**: aba no modal de detalhes que detecta automaticamente franquias via APIs (sequências, coleções, sagas) com barra de progresso, ordem recomendada e adição com um clique
+- Sugestão automática de próximo item ao marcar obra como "Finalizado"
+- Autor(a) / Diretor(a) com preenchimento automático via APIs
 - Nota emocional (6 dimensões) e tags personalizadas (20)
 - Importação CSV e colar texto (com dedup automático)
 - Favoritos com filtro dedicado

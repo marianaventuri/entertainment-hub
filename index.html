@@ -91,65 +91,73 @@
       </button>
     </div>
 
+    <div class="nav-divider" style="margin:8px 16px;border-top:1px solid var(--border)"></div>
+
     <div class="sidebar-section">
       <button class="sidebar-accordion" onclick="toggleSidebarAccordion('tipo')">
-        <span>Por tipo</span>
+        <span style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3)">Explorar</span>
         <span class="material-symbols-rounded">expand_more</span>
       </button>
-      <div class="sidebar-collapse" id="collapse-tipo">
+      <div class="sidebar-collapse open" id="collapse-tipo" style="display:block">
         <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Filme')">
-          <span class="nav-count" id="nc-Filme">0</span> Filmes
+          <span class="material-symbols-rounded">movie</span> Filmes <span class="nav-count" id="nc-Filme">0</span>
         </button>
         <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Série')">
-          <span class="nav-count" id="nc-Série">0</span> Séries
+          <span class="material-symbols-rounded">tv</span> Séries <span class="nav-count" id="nc-Série">0</span>
         </button>
         <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Anime')">
-          <span class="nav-count" id="nc-Anime">0</span> Animes
+          <span class="material-symbols-rounded">smart_display</span> Animes <span class="nav-count" id="nc-Anime">0</span>
         </button>
         <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Mangá')">
-          <span class="nav-count" id="nc-Mangá">0</span> Mangás
-        </button>
-        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Dorama')">
-          <span class="nav-count" id="nc-Dorama">0</span> Doramas
-        </button>
-        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Jogo')">
-          <span class="nav-count" id="nc-Jogo">0</span> Jogos
+          <span class="material-symbols-rounded">menu_book</span> Mangás <span class="nav-count" id="nc-Mangá">0</span>
         </button>
         <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Livro')">
-          <span class="nav-count" id="nc-Livro">0</span> Livros
+          <span class="material-symbols-rounded">book</span> Livros <span class="nav-count" id="nc-Livro">0</span>
         </button>
-        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Box')">
-          <span class="nav-count" id="nc-Box">0</span> Boxes
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','HQ')">
+          <span class="material-symbols-rounded">auto_stories</span> HQs <span class="nav-count" id="nc-HQ">0</span>
         </button>
-        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Coleção')">
-          <span class="nav-count" id="nc-Coleção">0</span> Coleções
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Jogo')">
+          <span class="material-symbols-rounded">sports_esports</span> Jogos <span class="nav-count" id="nc-Jogo">0</span>
         </button>
-        <div class="nav-divider"></div>
-        <button class="nav-item" onclick="navigate('colecoes')" id="nav-colecoes">
-          <span class="material-symbols-rounded" style="font-size:1.15rem;opacity:0.7">collections_bookmark</span> Gerenciar Coleções
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Dorama')">
+          <span class="material-symbols-rounded">theater_comedy</span> Doramas <span class="nav-count" id="nc-Dorama">0</span>
         </button>
       </div>
     </div>
 
+    <div class="nav-divider" style="margin:8px 16px;border-top:1px solid var(--border)"></div>
+
     <div class="sidebar-section">
-      <button class="sidebar-accordion" onclick="toggleSidebarAccordion('status')">
-        <span>Por status</span>
+      <button class="sidebar-accordion" onclick="toggleSidebarAccordion('colecoes')">
+        <span style="font-size:.75rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;color:var(--text3)">Coleções</span>
         <span class="material-symbols-rounded">expand_more</span>
       </button>
-      <div class="sidebar-collapse" id="collapse-status">
-        <button class="nav-item" onclick="navigateFilter('biblioteca','status','Assistindo')">
-          <span class="nav-count" id="nc-Assistindo">0</span> Assistindo
+      <div class="sidebar-collapse open" id="collapse-colecoes" style="display:block">
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Coleção')">
+          <span class="material-symbols-rounded">collections_bookmark</span> Coleções <span class="nav-count" id="nc-Coleção">0</span>
         </button>
-        <button class="nav-item" onclick="navigateFilter('biblioteca','status','Finalizado')">
-          <span class="nav-count" id="nc-Finalizado">0</span> Finalizados
-        </button>
-        <button class="nav-item" onclick="navigateFilter('biblioteca','status','Abandonado')">
-          <span class="nav-count" id="nc-Abandonado">0</span> Abandonados
-        </button>
-        <button class="nav-item" onclick="navigateFilter('biblioteca','status','Quero assistir')">
-          <span class="nav-count" id="nc-Quero">0</span> Quero assistir
+        <button class="nav-item" onclick="navigateFilter('biblioteca','tipo','Box')">
+          <span class="material-symbols-rounded">inventory_2</span> Boxes <span class="nav-count" id="nc-Box">0</span>
         </button>
       </div>
+    </div>
+
+    <div class="nav-divider" style="margin:8px 16px;border-top:1px solid var(--border)"></div>
+
+    <div class="sidebar-section">
+      <button class="nav-item" onclick="setFavFilter(this);navigate('biblioteca');">
+        <span class="material-symbols-rounded">favorite</span> Favoritos
+      </button>
+      <button class="nav-item" onclick="navigateFilter('biblioteca','status','Assistindo')">
+        <span class="material-symbols-rounded">visibility</span> Assistindo <span class="nav-count" id="nc-Assistindo">0</span>
+      </button>
+      <button class="nav-item" onclick="navigateFilter('biblioteca','status','Finalizado')">
+        <span class="material-symbols-rounded">check_circle</span> Concluídos <span class="nav-count" id="nc-Finalizado">0</span>
+      </button>
+      <button class="nav-item" onclick="navigateFilter('biblioteca','status','Quero assistir')">
+        <span class="material-symbols-rounded">playlist_add</span> Planejados <span class="nav-count" id="nc-Quero">0</span>
+      </button>
     </div>
   </div>
 
@@ -271,91 +279,108 @@
         <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
           <button class="btn btn-ghost" id="btnBatchEdit" onclick="openBatchEdit()" style="display:none;color:var(--accent);border-color:var(--accent);"><span class="material-symbols-rounded" style="font-size:1.1rem">edit</span> Editar (0)</button>
           <button class="btn btn-ghost" id="btnConfirmDelete" onclick="confirmDeleteSelected()" style="display:none;color:white;background:var(--red);border:none;">Excluir (0)</button>
-          <button class="btn btn-ghost" id="btnToggleDelete" onclick="toggleDeleteMode()" style="color:var(--red);border-color:rgba(248,113,113,0.3);"><span class="material-symbols-rounded" style="font-size:1.1rem">delete</span> Excluir Vários</button>
-          <button class="btn btn-ghost" id="btnToggleBox" onclick="toggleBoxMode()"><span class="material-symbols-rounded" style="font-size:1.1rem">inventory_2</span> Box</button>
-          <button class="btn btn-ghost" id="btnToggleColecao" onclick="toggleColecaoMode()"><span class="material-symbols-rounded" style="font-size:1.1rem">collections_bookmark</span> Coleção</button>
-          <button class="btn btn-ghost" id="btnConfirmBoxAction" onclick="openSmartFormModal('box')" style="display:none;"><span class="material-symbols-rounded" style="font-size:1.1rem">inventory_2</span> Criar Box (0)</button>
-          <button class="btn btn-ghost" id="btnConfirmColecaoAction" onclick="openSmartFormModal('colecao')" style="display:none;"><span class="material-symbols-rounded" style="font-size:1.1rem">collections_bookmark</span> Criar Coleção (0)</button>
+          <div class="dropdown-wrapper" style="position:relative;">
+            <button class="btn btn-ghost" onclick="toggleDropdown('menu-criar')" id="btnCriarMenu"><span class="material-symbols-rounded" style="font-size:1.1rem">add</span> Criar</button>
+            <div class="dropdown-menu" id="menu-criar" style="display:none; position:absolute; right:0; top:100%; z-index:100;">
+              <button class="dropdown-item" onclick="openSmartFormModal('colecao');toggleDropdown('menu-criar')"><span class="material-symbols-rounded">collections_bookmark</span> Nova Coleção</button>
+              <button class="dropdown-item" onclick="openSmartFormModal('box');toggleDropdown('menu-criar')"><span class="material-symbols-rounded">inventory_2</span> Novo Box</button>
+            </div>
+          </div>
         </div>
       </div>
 
-      <!-- Active filters -->
-      <div class="active-filters" id="activeFilters"></div>
-
-      <!-- Filter chips - Tipo -->
-      <div class="filter-chips" id="tipoFilters">
-        <button class="chip active" data-tipo="" onclick="setTipoFilter('',this)">Todos</button>
-        <button class="chip" data-tipo="Filme" onclick="setTipoFilter('Filme',this)"><span class="material-symbols-rounded chip-icon">movie</span> Filmes</button>
-        <button class="chip" data-tipo="Série" onclick="setTipoFilter('Série',this)"><span class="material-symbols-rounded chip-icon">tv</span> Séries</button>
-        <button class="chip" data-tipo="Anime" onclick="setTipoFilter('Anime',this)"><span class="material-symbols-rounded chip-icon">smart_display</span> Animes</button>
-        <button class="chip" data-tipo="Mangá" onclick="setTipoFilter('Mangá',this)"><span class="material-symbols-rounded chip-icon">menu_book</span> Mangás</button>
-        <button class="chip" data-tipo="Dorama" onclick="setTipoFilter('Dorama',this)"><span class="material-symbols-rounded chip-icon">theater_comedy</span> Doramas</button>
-        <button class="chip" data-tipo="Jogo" onclick="setTipoFilter('Jogo',this)"><span class="material-symbols-rounded chip-icon">sports_esports</span> Jogos</button>
-        <button class="chip" data-tipo="Livro" onclick="setTipoFilter('Livro',this)"><span class="material-symbols-rounded chip-icon">book</span> Livros</button>
-        <button class="chip" data-tipo="Box" onclick="setTipoFilter('Box',this)"><span class="material-symbols-rounded chip-icon">inventory_2</span> Boxes</button>
-        <button class="chip" data-tipo="Coleção" onclick="setTipoFilter('Coleção',this)"><span class="material-symbols-rounded chip-icon">collections_bookmark</span> Coleções</button>
-      </div>
-
-      <!-- Filter chips - Status -->
-      <div class="filter-chips" id="statusFilters">
-        <button class="chip active" data-status="" onclick="setStatusFilter('',this)">Todos os status</button>
-        <button class="chip" data-status="fav" onclick="setFavFilter(this)"><span class="material-symbols-rounded chip-icon">favorite</span> Favoritos</button>
-        <button class="chip" data-status="Assistindo" onclick="setStatusFilter('Assistindo',this)"><span class="material-symbols-rounded chip-icon">visibility</span> Assistindo</button>
-        <button class="chip" data-status="Finalizado" onclick="setStatusFilter('Finalizado',this)"><span class="material-symbols-rounded chip-icon">check_circle</span> Finalizados</button>
-        <button class="chip" data-status="Quero assistir" onclick="setStatusFilter('Quero assistir',this)"><span class="material-symbols-rounded chip-icon">playlist_add</span> Quero assistir</button>
-      </div>
-
-      <!-- Quick filters -->
-      <div class="quick-filters" id="quickFilters">
-        <select class="qf-select" id="ff-year" onchange="renderCatalogo()">
-          <option value="">Todos os anos</option>
-          <option value="<2000">Antes de 2000</option>
-          <option value="<2010">Antes de 2010</option>
-          <option value="2020">2020</option>
-          <option value="2021">2021</option>
-          <option value="2022">2022</option>
-          <option value="2023">2023</option>
-          <option value="2024">2024</option>
-          <option value="2025">2025</option>
-          <option value="2026">2026</option>
-          <option value=">2020">Depois de 2020</option>
-        </select>
-        <select class="qf-select" id="ff-rating" onchange="renderCatalogo()">
-          <option value="">Nota mínima</option>
-          <option value="1">★ 1+</option>
-          <option value="2">★★ 2+</option>
-          <option value="3">★★★ 3+</option>
-          <option value="4">★★★★ 4+</option>
-          <option value="5">★★★★★ 5</option>
-        </select>
-        <select class="qf-select" id="ff-collection" onchange="renderCatalogo()">
-          <option value="">Coleção</option>
-        </select>
-      </div>
-
-      <!-- Sort row -->
-      <div class="sort-row">
-        <span class="result-count" id="resultCount"></span>
-        <div class="sort-row-right">
-          <select class="sort-select" id="filterOrder" onchange="renderCatalogo()">
-            <option value="recent">Mais recentes</option>
-            <option value="title">A → Z</option>
-            <option value="rating">Melhor nota</option>
-            <option value="fav">Favoritos primeiro</option>
-            <option value="year">Ano</option>
-            <option value="author_asc">Autor (A-Z)</option>
-            <option value="author_desc">Autor (Z-A)</option>
-            <option value="progress">Progresso</option>
-            <option value="finished">Data de conclusão</option>
-            <option value="added">Data de adição</option>
-            <option value="updated">Última atualização</option>
-            <option value="hours">Tempo de consumo</option>
+      <!-- Nova Barra de Filtros Inteligente -->
+      <div class="filter-bar-smart">
+        <div class="filter-bar-left">
+          <h2 class="fb-title" id="fbTitle">Biblioteca</h2>
+          <span class="fb-count" id="resultCount">0 obras</span>
+        </div>
+        
+        <div class="filter-bar-right">
+          <!-- Tipo -->
+          <select class="fb-select" id="fbTypeSelect" onchange="setTipoFilter(this.value, null)">
+            <option value="">Todos</option>
+            <option value="Filme">Filmes</option>
+            <option value="Série">Séries</option>
+            <option value="Anime">Animes</option>
+            <option value="Mangá">Mangás</option>
+            <option value="HQ">HQs</option>
+            <option value="Livro">Livros</option>
+            <option value="Jogo">Jogos</option>
+            <option value="Dorama">Doramas</option>
+            <option value="Box">Boxes</option>
+            <option value="Coleção">Coleções</option>
           </select>
-          <button class="btn-icon sort-view-btn" id="btnGroupAuthor" onclick="toggleGroupAuthor()" title="Agrupar por autor" aria-label="Agrupar por autor">
-            <span class="material-symbols-rounded">author</span>
-          </button>
+
+          <!-- Status -->
+          <select class="fb-select" id="fbStatusSelect" onchange="setStatusFilter(this.value, null)">
+            <option value="">Status</option>
+            <option value="Assistindo">Assistindo</option>
+            <option value="Finalizado">Concluídos</option>
+            <option value="Quero assistir">Planejados</option>
+            <option value="Abandonado">Abandonados</option>
+          </select>
+
+          <!-- Filtros Avançados (Popover) -->
+          <div class="dropdown-wrapper" style="position:relative;">
+            <button class="fb-btn" onclick="toggleDropdown('advFiltersMenu')" id="btnAdvFilters">
+              <span class="material-symbols-rounded" style="font-size:1rem;margin-right:4px;">tune</span> Filtros
+            </button>
+            <div class="dropdown-menu adv-filters-menu" id="advFiltersMenu" style="display:none; position:absolute; right:0; top:100%; z-index:100; min-width:200px; padding:var(--space-3);">
+              <label class="adv-label">Ano</label>
+              <select class="adv-select" id="ff-year" onchange="renderCatalogo()">
+                <option value="">Todos</option>
+                <option value="<2000">Antes de 2000</option>
+                <option value="<2010">Antes de 2010</option>
+                <option value="2020">2020</option>
+                <option value="2021">2021</option>
+                <option value="2022">2022</option>
+                <option value="2023">2023</option>
+                <option value="2024">2024</option>
+                <option value="2025">2025</option>
+                <option value="2026">2026</option>
+                <option value=">2020">Depois de 2020</option>
+              </select>
+              <label class="adv-label">Nota mínima</label>
+              <select class="adv-select" id="ff-rating" onchange="renderCatalogo()">
+                <option value="">Qualquer</option>
+                <option value="1">★ 1+</option>
+                <option value="2">★★ 2+</option>
+                <option value="3">★★★ 3+</option>
+                <option value="4">★★★★ 4+</option>
+                <option value="5">★★★★★ 5</option>
+              </select>
+              <label class="adv-label">Coleção</label>
+              <select class="adv-select" id="ff-collection" onchange="renderCatalogo()">
+                <option value="">Todas</option>
+              </select>
+            </div>
+          </div>
+
+          <!-- Ordenação / Agrupamento -->
+          <select class="fb-select" id="filterOrder" onchange="renderCatalogo()">
+            <optgroup label="Ordenar por">
+              <option value="recent">Mais recentes</option>
+              <option value="title">Título (A-Z)</option>
+              <option value="rating">Melhor nota</option>
+              <option value="year">Ano</option>
+              <option value="added">Data adicionada</option>
+              <option value="updated">Última atualização</option>
+              <option value="progress">Progresso</option>
+            </optgroup>
+            <optgroup label="Agrupar por">
+              <option value="group_category">Categoria</option>
+              <option value="group_author">Autor</option>
+              <option value="group_director">Diretor</option>
+              <option value="group_studio">Estúdio</option>
+              <option value="group_collection">Coleção</option>
+            </optgroup>
+          </select>
         </div>
       </div>
+
+      <!-- Active filters (kept for badges of active search/etc) -->
+      <div class="active-filters" id="activeFilters"></div>
 
       <!-- Hidden: kept for existing logic -->
       <select id="filterStatus" style="display:none" onchange="renderCatalogo()">
@@ -373,10 +398,12 @@
 
       <!-- Empty states -->
       <div class="empty hidden" id="catalogoEmpty">
-        <span class="empty-icon" id="emptyIcon"><span class="material-symbols-rounded" style="font-size:3rem">library_books</span></span>
+        <div class="empty-icon" id="emptyIcon">
+          <span class="material-symbols-rounded" style="font-size:2rem">search</span>
+        </div>
         <h3 id="emptyTitle">Nenhuma obra encontrada</h3>
-        <p id="emptyDesc">Tente outro filtro ou adicione sua primeira obra!</p>
-        <button class="btn btn-primary empty-btn" id="emptyAction" onclick="openSmartFormModal('add')" style="display:none">
+        <p id="emptyDesc">Tente ajustar os filtros ou adicione uma nova obra ao catálogo.</p>
+        <button class="btn btn-primary" id="emptyAction" onclick="openSmartFormModal('add')" style="display:none">
           <span class="material-symbols-rounded">add</span> Adicionar obra
         </button>
       </div>

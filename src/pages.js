@@ -59,6 +59,7 @@ function renderHome() {
           <div class="h-smart-body">
             <div class="h-smart-title">${esc(item.title)}</div>
             <div class="h-smart-meta"><span class="material-symbols-rounded">${esc(t.icon)}</span> ${esc(item.type)}${item.year ? ' · ' + item.year : ''}</div>
+            ${getProgressLabel(item) ? `<div class="h-smart-progress-badge" style="display:inline-block;margin-top:4px;font-size:.7rem;background:var(--surface2);padding:2px 6px;border-radius:4px;color:var(--text2);border:1px solid var(--border)"><span class="material-symbols-rounded" style="font-size:.8rem;vertical-align:middle;margin-right:2px">schedule</span>${esc(getProgressLabel(item))}</div>` : ''}
             <button class="h-smart-btn" onclick="event.stopPropagation();openDetail('${esc(item.id)}')">▶ ${isStale ? 'Retomar' : 'Continuar'}</button>
           </div>
         </div>
@@ -119,6 +120,9 @@ function renderHome() {
             const doneC = cItems.filter(i => i.status === 'Finalizado').length;
             const pct = totalC ? Math.round(doneC / totalC * 100) : 0;
             progressHtml = `<div class="h-scroll-progress"><div class="h-scroll-bar"><div class="h-scroll-bar-fill" style="width:${pct}%"></div></div><span>${doneC}/${totalC}</span></div>`;
+          } else {
+            const lbl = getProgressLabel(item);
+            if (lbl) progressHtml = `<div style="font-size:.65rem;color:var(--text2);margin-top:2px"><span class="material-symbols-rounded" style="font-size:.7rem;vertical-align:middle;margin-right:2px">schedule</span>${esc(lbl)}</div>`;
           }
 
           const clickAction = isContainer ? `openBoxView('${esc(item.id)}')` : `openDetail('${esc(item.id)}')`;

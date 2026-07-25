@@ -1,4 +1,7 @@
-function navigate(page, resetFilters = true) {
+/* ── HISTORY API ── */
+let _navPushingState = false;
+
+function navigate(page, resetFilters = true, fromPopState = false) {
   currentPage = page;
   if (page !== 'biblioteca') currentBoxView = null;
 
@@ -52,7 +55,20 @@ function navigate(page, resetFilters = true) {
   else if (page === 'conquistas')    { renderConquistas(); }
   else if (page === 'config')        { renderConfig(); }
   else if (page === 'experiencia')   { renderExperiencia(); }
+
+  // History API — push state only on user-initiated navigation
+  if (!fromPopState) {
+    const hash = '#' + page;
+    if (window.location.hash !== hash) {
+      history.pushState({ page }, '', hash);
+    }
+  }
 }
+
+window.addEventListener('popstate', (e) => {
+  const page = (e.state && e.state.page) || 'home';
+  navigate(page, true, true);
+});
 
 function updateBreadcrumb(page) {
   const trail = document.getElementById('breadcrumbTrail');
@@ -100,18 +116,18 @@ function updateBreadcrumb(page) {
 }
 
 function navigateFilter(page, dim, val) {
-  if (dim === 'tipo')   tipoFilter = val;
+  if (dim === 'tipo') {
+    tipoFilter = val;
+    document.getElementById('fbTypeSelect').value = val;
+    document.getElementById('fbStatusSelect').value = '';
+  }
   if (dim === 'status') {
     tipoFilter = '';
     statusFilter = val;
+    document.getElementById('fbTypeSelect').value = '';
+    document.getElementById('fbStatusSelect').value = val;
   }
   navigate(page, false);
-  document.querySelectorAll('#tipoFilters .chip').forEach(b => {
-    b.classList.toggle('active', b.dataset.tipo === tipoFilter);
-  });
-  document.querySelectorAll('#statusFilters .chip').forEach(b => {
-    b.classList.toggle('active', b.dataset.status === statusFilter);
-  });
   updateBreadcrumbFilter(page, dim, val);
 }
 
@@ -216,7 +232,12 @@ function handleCmdSearch(query) {
     const terms = normQuery.split(/\s+/).filter(Boolean);
     const dbResults = db.filter(x => {
       const haystack = typeof normalizeStr === 'function'
-        ? normalizeStr(x.title + ' ' + (x.author||'') + ' ' + (x.genres||'') + ' ' + (x.director||'') + ' ' + (x.studio||'') + ' ' + (x.developer||'') + ' ' + (x.platform||''))
+        ? normalizeStr(
+            (x.title||'') + ' ' + (x.author||'') + ' ' + (x.genres||'') +
+            ' ' + (x.director||'') + ' ' + (x.studio||'') + ' ' + (x.developer||'') +
+            ' ' + (x.platform||'') + ' ' + (x.creator||'') +
+            ' ' + (x.synopsis||x.description||'') + ' ' + (x.opinion||'')
+          )
         : (x.title||'').toLowerCase();
       return terms.every(t => haystack.includes(t));
     }).slice(0, 8).map(x => ({

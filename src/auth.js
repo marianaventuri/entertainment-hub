@@ -118,8 +118,14 @@ async function initApp() {
     toast(`🔄 Sincronizado: ${msgs.join(', ')}`, '🔄')
   })
   updateCounts()
-  renderHome()
-  renderCatalogo()
+
+  // Restore page from URL hash (History API support)
+  const validPages = ['home','biblioteca','dashboard','timeline','wishlist','colecoes','perfil','conquistas','config','experiencia','favoritos'];
+  const hashPage = window.location.hash.replace('#', '');
+  const startPage = validPages.includes(hashPage) ? hashPage : 'home';
+  // Set initial history state so popstate works on first back
+  history.replaceState({ page: startPage }, '', '#' + startPage);
+  navigate(startPage, true, true);
 }
 
 auth.getRedirectResult().catch(err => {

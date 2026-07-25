@@ -87,33 +87,33 @@ function calcCardProgress(item) {
 function clearAllFilters() {
   tipoFilter = '';
   statusFilter = '';
-  document.querySelectorAll('#tipoFilters .chip').forEach(b => b.classList.remove('active'));
-  const firstTipo = document.querySelector('#tipoFilters .chip');
-  if (firstTipo) firstTipo.classList.add('active');
-  document.querySelectorAll('#statusFilters .chip').forEach(b => b.classList.remove('active'));
-  const firstStatus = document.querySelector('#statusFilters .chip');
-  if (firstStatus) firstStatus.classList.add('active');
+  const typeSel = document.getElementById('fbTypeSelect');
+  if (typeSel) typeSel.value = '';
+  const statusSel = document.getElementById('fbStatusSelect');
+  if (statusSel) statusSel.value = '';
+  const yearSel = document.getElementById('ff-year');
+  if (yearSel) yearSel.value = '';
+  const ratingSel = document.getElementById('ff-rating');
+  if (ratingSel) ratingSel.value = '';
+  const collSel = document.getElementById('ff-collection');
+  if (collSel) collSel.value = '';
   renderCatalogo();
 }
 
-function setTipoFilter(tipo, btn) {
+function setTipoFilter(tipo) {
   tipoFilter = tipo;
-  document.querySelectorAll('#tipoFilters .chip').forEach(b=>b.classList.remove('active'));
-  btn.classList.add('active');
   renderCatalogo();
 }
 
-function setStatusFilter(status, btn) {
+function setStatusFilter(status) {
   statusFilter = status;
-  document.querySelectorAll('#statusFilters .chip').forEach(b=>b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
   renderCatalogo();
 }
 
-function setFavFilter(btn) {
+function setFavFilter() {
   statusFilter = 'fav';
-  document.querySelectorAll('#statusFilters .chip').forEach(b=>b.classList.remove('active'));
-  if (btn) btn.classList.add('active');
+  const statusSel = document.getElementById('fbStatusSelect');
+  if (statusSel) statusSel.value = '';
   renderCatalogo();
 }
 
@@ -141,9 +141,9 @@ function hideSkeleton() {
 function updateActiveFilters() {
   const container = document.getElementById('activeFilters');
   const tags = [];
-  if (tipoFilter) tags.push({ label: tipoFilter, onRemove: "setTipoFilter('', document.querySelector('#tipoFilters .chip:first-child'))" });
-  if (statusFilter === 'fav') tags.push({ label: 'Favoritos', onRemove: "setStatusFilter('', document.querySelector('#statusFilters .chip:first-child'))" });
-  else if (statusFilter) tags.push({ label: statusFilter, onRemove: "setStatusFilter('', document.querySelector('#statusFilters .chip:first-child'))" });
+  if (tipoFilter) tags.push({ label: tipoFilter, onRemove: "document.getElementById('fbTypeSelect').value='';clearAllFilters()" });
+  if (statusFilter === 'fav') tags.push({ label: 'Favoritos', onRemove: "document.getElementById('fbStatusSelect').value='';clearAllFilters()" });
+  else if (statusFilter) tags.push({ label: statusFilter, onRemove: "document.getElementById('fbStatusSelect').value='';clearAllFilters()" });
   const hasFilters = tags.length > 0;
   container.innerHTML = tags.map(t => `<span class="active-filter-tag"><span class="material-symbols-rounded" style="font-size:.85rem">filter_alt</span> ${esc(t.label)} <span class="remove" onclick="${esc(t.onRemove)};event.stopPropagation()">✕</span></span>`).join('');
   if (hasFilters) {
@@ -162,29 +162,21 @@ function updateActiveFilters() {
 }
 
 function updateChipCounts() {
-  document.querySelectorAll('#tipoFilters .chip[data-tipo]').forEach(chip => {
-    const tipo = chip.dataset.tipo;
-    const count = tipo ? db.filter(x => x.type === tipo).length : db.length;
-    const existing = chip.querySelector('.chip-count');
-    if (count > 0) {
-      if (existing) existing.textContent = count;
-      else chip.innerHTML += `<span class="chip-count">${count}</span>`;
-    } else if (existing) {
-      existing.remove();
-    }
+  const counts = { total: db.length };
+  db.forEach(item => {
+    if (item.type) counts[item.type] = (counts[item.type] || 0) + 1;
+    if (item.status) counts[item.status] = (counts[item.status] || 0) + 1;
   });
-  document.querySelectorAll('#statusFilters .chip[data-status]').forEach(chip => {
-    const status = chip.dataset.status;
-    let count = 0;
-    if (status === 'fav') count = db.filter(x => x.fav).length;
-    else if (status) count = db.filter(x => x.status === status).length;
-    const existing = chip.querySelector('.chip-count');
-    if (count > 0) {
-      if (existing) existing.textContent = count;
-      else chip.innerHTML += `<span class="chip-count">${count}</span>`;
-    } else if (existing) {
-      existing.remove();
-    }
+  
+  document.querySelectorAll('.nav-count').forEach(badge => {
+    const id = badge.id.replace('nc-', '');
+    if (id === 'total') badge.textContent = counts.total;
+    else if (id === 'Quero') badge.textContent = counts['Quero assistir'] || 0;
+    else badge.textContent = counts[id] || 0;
+    
+    // Hide if 0
+    if (badge.textContent === '0') badge.style.display = 'none';
+    else badge.style.display = 'inline-block';
   });
 }
 
@@ -203,9 +195,10 @@ function renderCatalogo() {
   const ratingFilter = document.getElementById('ff-rating')?.value || '';
   const collFilter = document.getElementById('ff-collection')?.value || '';
 
-  document.querySelectorAll('#statusFilters .chip').forEach(b => {
-    b.classList.toggle('active', b.dataset.status === status);
-  });
+  const typeSel = document.getElementById('fbTypeSelect');
+  if (typeSel && tipoFilter) typeSel.value = tipoFilter;
+  const statusSel = document.getElementById('fbStatusSelect');
+  if (statusSel && status) statusSel.value = status === 'fav' ? '' : status;
 
   let items = [...db];
 
@@ -233,7 +226,11 @@ function renderCatalogo() {
   if (search) {
     const terms = search.split(/\s+/).filter(Boolean);
     items = items.filter(x => {
-      const haystack = normalizeStr(x.title + ' ' + (x.author||'') + ' ' + (x.genres||'') + ' ' + (x.tags||[]).join(' ') + ' ' + (x.director||'') + ' ' + (x.studio||'') + ' ' + (x.developer||'') + ' ' + (x.publisher||'') + ' ' + (x.platform||''));
+      const haystack = normalizeStr(
+        (x.title||'') + ' ' + (x.author||'') + ' ' + (x.genres||'') + ' ' + (x.tags||[]).join(' ') +
+        ' ' + (x.director||'') + ' ' + (x.studio||'') + ' ' + (x.developer||'') + ' ' + (x.publisher||'') +
+        ' ' + (x.platform||'') + ' ' + (x.creator||'') + ' ' + (x.synopsis||x.description||'') + ' ' + (x.opinion||'')
+      );
       return terms.every(t => haystack.includes(t));
     });
   }
@@ -253,7 +250,10 @@ function renderCatalogo() {
     });
   }
 
-  // Container-specific sort
+  // Sorting
+  const isGroup = order.startsWith('group_');
+  const sortParam = isGroup ? 'year_asc' : order; // if grouping, force sort by year ascending inside groups
+
   if (currentBoxView && containerSortBy !== 'manual') {
     const cSort = containerSortBy;
     if (cSort === 'title')  items.sort((a,b)=>a.title.localeCompare(b.title));
@@ -261,34 +261,25 @@ function renderCatalogo() {
     else if (cSort === 'status') items.sort((a,b)=>(b.status||'').localeCompare(a.status||''));
     else if (cSort === 'added')  items.sort((a,b)=>(b.addedAt||'').localeCompare(a.addedAt||''));
     else if (cSort === 'year')   items.sort((a,b)=>(b.year||'')-(a.year||''));
-  } else if (order==='title')  items.sort((a,b)=>a.title.localeCompare(b.title));
-  else if (order==='rating') items.sort((a,b)=>(b.rating||0)-(a.rating||0));
-  else if (order==='fav')    items.sort((a,b)=>((b.fav?1:0)-(a.fav?1:0)));
-  else if (order==='author_asc')  items.sort((a,b)=>(a.author||'').localeCompare(b.author||''));
-  else if (order==='author_desc') items.sort((a,b)=>(b.author||'').localeCompare(a.author||''));
-  else if (order==='finished')    items.sort((a,b)=>(b.finishedAt||'').localeCompare(a.finishedAt||''));
-  else if (order==='added')       items.sort((a,b)=>(b.addedAt||'').localeCompare(a.addedAt||''));
-  else if (order==='hours')       items.sort((a,b)=>(parseFloat(b.hours)||0)-(parseFloat(a.hours)||0));
-  else if (order==='year')     items.sort((a,b)=>(b.year||'')-(a.year||''));
-  else if (order==='progress') items.sort((a,b)=>(b.progress||0)-(a.progress||0));
-  else if (order==='updated')  items.sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
-  else items.sort((a,b)=>b.id-a.id);
-
-  const doGroupAuthor = groupByAuthor && !tipoFilter;
+  } else if (sortParam==='title')  items.sort((a,b)=>a.title.localeCompare(b.title));
+  else if (sortParam==='rating') items.sort((a,b)=>(b.rating||0)-(a.rating||0));
+  else if (sortParam==='year_asc') items.sort((a,b)=>(a.year||'')-(b.year||'')); // oldest first
+  else if (sortParam==='year')     items.sort((a,b)=>(b.year||'')-(a.year||''));
+  else if (sortParam==='progress') items.sort((a,b)=>(b.progress||0)-(a.progress||0));
+  else if (sortParam==='updated')  items.sort((a,b)=>(b.updatedAt||'').localeCompare(a.updatedAt||''));
+  else if (sortParam==='added')    items.sort((a,b)=>(b.addedAt||'').localeCompare(a.addedAt||''));
+  else items.sort((a,b)=>b.id-a.id); // recent
 
   if (currentBoxView) {
-    document.getElementById('catalogoTitle').innerHTML = `<span class="box-view-back" onclick="closeBoxView()">← Voltar para Biblioteca</span>`;
-    document.getElementById('catalogoSubtitle').textContent = `${items.length} ${items.length === 1 ? 'item' : 'itens'} nesta coleção`;
+    const titleEl = document.getElementById('fbTitle');
+    if (titleEl) titleEl.innerHTML = `<span class="box-view-back" onclick="closeBoxView()" style="cursor:pointer;font-size:0.8em;color:var(--text3)">← Voltar</span> ` + esc(currentBoxView.title);
   } else {
-    const titleEl = document.getElementById('catalogoTitle');
-    if (tipoFilter) {
-      titleEl.innerHTML = `<span class="material-symbols-rounded" style="font-size:1.2rem;vertical-align:middle">${esc(typeIcon(tipoFilter))}</span> ${esc(tipoFilter+'s')}`;
-    } else if (status === 'fav') {
-      titleEl.innerHTML = '<span class="material-symbols-rounded" style="font-size:1.2rem;vertical-align:middle">favorite</span> Favoritos';
-    } else {
-      titleEl.textContent = status || 'Biblioteca';
+    const titleEl = document.getElementById('fbTitle');
+    if (titleEl) {
+      if (tipoFilter) titleEl.textContent = tipoFilter + 's';
+      else if (status === 'fav') titleEl.textContent = 'Favoritos';
+      else titleEl.textContent = status || 'Biblioteca';
     }
-    document.getElementById('catalogoSubtitle').textContent = items.length + ' obra' + (items.length!==1?'s':'');
   }
 
   const grid  = document.getElementById('catalogoGrid');
@@ -297,15 +288,29 @@ function renderCatalogo() {
   if (!items.length) {
     grid.innerHTML = currentBoxView ? renderContainerHero() : '';
     empty.classList.remove('hidden');
+    const icon = empty.querySelector('#emptyIcon .material-symbols-rounded');
+    const action = empty.querySelector('#emptyAction');
     if (currentBoxView) {
-      empty.querySelector('h3').textContent = 'Esta ' + esc(currentBoxView.type).toLowerCase() + ' está vazia';
+      icon.textContent = 'inventory_2';
+      empty.querySelector('h3').textContent = 'Está vazia';
       empty.querySelector('p').textContent = 'Adicione itens a esta ' + esc(currentBoxView.type).toLowerCase() + ' pelo modal de detalhes';
+      action.style.display = 'none';
     } else if (statusFilter === 'fav') {
+      icon.textContent = 'favorite';
       empty.querySelector('h3').textContent = 'Nenhum favorito ainda';
-      empty.querySelector('p').innerHTML = 'Clique no <span class="material-symbols-rounded" style="font-size:1em;vertical-align:middle">favorite</span> de um card para marcar como favorito';
+      empty.querySelector('p').textContent = 'Clique no coração de um card para marcar como favorito';
+      action.style.display = 'none';
+    } else if (!db.length) {
+      icon.textContent = 'library_books';
+      empty.querySelector('h3').textContent = 'Sua biblioteca está vazia';
+      empty.querySelector('p').textContent = 'Adicione sua primeira obra para começar!';
+      action.style.display = 'inline-flex';
+      action.innerHTML = '<span class="material-symbols-rounded">add</span> Adicionar obra';
     } else {
-      empty.querySelector('h3').textContent = 'Nenhuma obra encontrada';
-      empty.querySelector('p').textContent = 'Tente outro filtro ou adicione sua primeira obra!';
+      icon.textContent = 'search';
+      empty.querySelector('h3').textContent = 'Nenhum resultado';
+      empty.querySelector('p').textContent = 'Tente ajustar os filtros ou buscar por outro termo.';
+      action.style.display = 'none';
     }
     hideSkeleton();
     updateActiveFilters();
@@ -328,17 +333,25 @@ function renderCatalogo() {
 
   if (isListView) {
     cardHtml = items.map((item, i) => renderListItem(item, i)).join('');
-  } else if (doGroupAuthor) {
+  } else if (isGroup) {
+    const groupKeyMap = {
+      'group_category': 'type',
+      'group_author': 'author',
+      'group_director': 'director',
+      'group_studio': 'studio',
+      'group_collection': 'collection'
+    };
+    const prop = groupKeyMap[order] || 'author';
     const groups = {};
     items.forEach(item => {
-      const author = item.author || 'Sem autor';
-      if (!groups[author]) groups[author] = [];
-      groups[author].push(item);
+      const gValue = item[prop] || 'Desconhecido';
+      if (!groups[gValue]) groups[gValue] = [];
+      groups[gValue].push(item);
     });
-    const sortedAuthors = Object.keys(groups).sort((a,b) => a.localeCompare(b));
-    sortedAuthors.forEach(author => {
-      cardHtml += `<div class="author-group-header" style="animation:cardEnter .3s ease both;animation-delay:${Math.min(cardIndex * 30, 300)}ms">${esc(author)}</div>`;
-      groups[author].forEach(item => { cardHtml += renderCardWithIndex(item); });
+    const sortedGroupNames = Object.keys(groups).sort((a,b) => a.localeCompare(b));
+    sortedGroupNames.forEach(gName => {
+      cardHtml += `<div class="author-group-header" style="animation:cardEnter .3s ease both;animation-delay:${Math.min(cardIndex * 30, 300)}ms; grid-column: 1/-1; font-size:1.2rem; font-weight:600; margin-top:24px; padding-bottom:8px; border-bottom:1px solid var(--border)">${esc(gName)}</div>`;
+      groups[gName].forEach(item => { cardHtml += renderCardWithIndex(item); });
     });
   } else {
     cardHtml = items.map(item => renderCardWithIndex(item)).join('');
@@ -410,6 +423,8 @@ function renderCatalogo() {
     const progPct = calcCardProgress(item);
     const progBar = progPct > 0 ? `<div class="card-progress-bar"><div class="card-progress-fill" style="width:${progPct}%"></div></div>` : '';
     const readLink = item.readUrl ? `<a class="card-read-link" href="${esc(item.readUrl)}" target="_blank" rel="noopener" onclick="event.stopPropagation()"><span class="material-symbols-rounded" style="font-size:.85rem">open_in_new</span> Continue lendo</a>` : '';
+    const progLabelText = getProgressLabel(item);
+    const progLabelBadge = (item.status === 'Assistindo' && progLabelText) ? `<div class="card-progress-badge">${esc(progLabelText)}</div>` : '';
     return `
       <div class="card" data-type="${esc(item.type)}" style="--type-color: ${t.color}; animation:cardEnter .35s ease both; animation-delay:${delay}ms" onclick="${selectionActive ? `toggleSelection('${esc(item.id)}', event)` : `openDetail('${esc(item.id)}')`}">
         <div class="card-poster">
@@ -417,6 +432,7 @@ function renderCatalogo() {
           <span class="card-status ${statusBadgeClass(item.status)}">${esc(displayStatus(item.status, item.type))}</span>
           <button class="card-fav-btn${item.fav ? ' faved' : ''}" onclick="event.stopPropagation();toggleCardFav('${esc(item.id)}')" aria-label="${item.fav ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}">${favIcon}</button>
           ${cineBadge}
+          ${progLabelBadge}
           ${progBar}
           ${readLink}
           <div class="card-overlay">
@@ -658,12 +674,10 @@ function openBoxView(id) {
   containerViewMode = 'grid';
   const searchInput = document.getElementById('searchInput');
   if (searchInput) searchInput.value = '';
-  document.querySelectorAll('#tipoFilters .chip').forEach(b => b.classList.remove('active'));
-  const firstChip = document.querySelector('#tipoFilters .chip');
-  if (firstChip) firstChip.classList.add('active');
-  document.querySelectorAll('#statusFilters .chip').forEach(b => b.classList.remove('active'));
-  const firstStatusChip = document.querySelector('#statusFilters .chip');
-  if (firstStatusChip) firstStatusChip.classList.add('active');
+  const typeSel = document.getElementById('fbTypeSelect');
+  if (typeSel) typeSel.value = '';
+  const statusSel = document.getElementById('fbStatusSelect');
+  if (statusSel) statusSel.value = '';
   renderCatalogo();
 }
 
@@ -956,18 +970,16 @@ function saveCurrentFilter() {
 function applySavedFilter(tipo, status) {
   clearAllFilters();
   if (tipo) {
-    const btn = Array.from(document.querySelectorAll('#tipoFilters .chip')).find(b => b.dataset.tipo === tipo);
-    if (btn) setTipoFilter(tipo, btn);
+    tipoFilter = tipo;
+    const typeSel = document.getElementById('fbTypeSelect');
+    if (typeSel) typeSel.value = tipo;
   }
   if (status) {
-    if (status === 'fav') {
-      const btn = Array.from(document.querySelectorAll('#statusFilters .chip')).find(b => b.dataset.status === 'fav');
-      if (btn) setFavFilter(btn);
-    } else {
-      const btn = Array.from(document.querySelectorAll('#statusFilters .chip')).find(b => b.dataset.status === status);
-      if (btn) setStatusFilter(status, btn);
-    }
+    statusFilter = status;
+    const statusSel = document.getElementById('fbStatusSelect');
+    if (statusSel) statusSel.value = status === 'fav' ? '' : status;
   }
+  renderCatalogo();
 }
 
 function removeSavedFilter(id, e) {

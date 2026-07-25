@@ -97,6 +97,36 @@ function findIdxInDb(id) {
   return i !== -1 ? i : db.findIndex(x => String(x.id) === String(id))
 }
 
+function getProgressLabel(item) {
+  if (!item) return '';
+  const type = item.type;
+  if (type === 'Série' || type === 'Anime' || type === 'Dorama') {
+    const ep = item.currentEp || (item.progress && item.progress.currentEp);
+    const total = item.episodes || (item.progress && item.progress.episodes);
+    const season = item.season || (item.progress && item.progress.season);
+    if (ep) {
+      let label = '';
+      if (season && season > 1) label += `T${season} · `;
+      label += `E${ep}`;
+      if (total) label += `/${total}`;
+      return label;
+    }
+  }
+  if (type === 'Mangá' || type === 'Livro') {
+    const ch = item.currentChapter || (item.progress && item.progress.currentChapter);
+    const total = item.chaptersTotal || (item.progress && item.progress.chaptersTotal);
+    if (ch) {
+      const unit = type === 'Mangá' ? 'Cap.' : 'Pág.';
+      return total ? `${unit} ${ch}/${total}` : `${unit} ${ch}`;
+    }
+  }
+  if (type === 'Jogo') {
+    const h = item.hoursPlayed || (item.progress && item.progress.hoursPlayed);
+    if (h) return `${h}h`;
+  }
+  return '';
+}
+
 function setSyncStatus(state) {
   const el = document.getElementById('syncStatus');
   if (!el) return;

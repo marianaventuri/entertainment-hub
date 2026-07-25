@@ -1,14 +1,23 @@
-const CACHE = 'minha-biblioteca-v3'
+const CACHE = 'minha-biblioteca-v5'
 
 const ASSETS = [
   '/',
   '/index.html',
   '/style.css',
-  '/app.js',
-  '/persistence.js',
-  '/firebase.js',
   '/manifest.json',
-  '/icon.svg'
+  '/icon.svg',
+  '/firebase.js',
+  '/persistence.js',
+  '/src/constants.js',
+  '/src/state.js',
+  '/src/utils.js',
+  '/src/navigation.js',
+  '/src/api.js',
+  '/src/catalog.js',
+  '/src/jornada.js',
+  '/src/modals.js',
+  '/src/pages.js',
+  '/src/auth.js',
 ]
 
 self.addEventListener('install', e => {
