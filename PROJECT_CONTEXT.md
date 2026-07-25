@@ -1844,6 +1844,60 @@ Cada item agora é organizado em 5 entidades no banco de dados:
 
 ---
 
+### Sprint UX.01 — Less UI, More Library (Concluído em 25/07/2026)
+
+**Objetivo:** Reduzir carga visual em ~30%, aumentar área útil para o conteúdo, simplificar interface com barra de filtros unificada.
+
+#### O que mudou:
+
+**CSS (`style.css`)**
+- `--sidebar-w`: 204px → **174px** (-15%)
+- `--topbar-h`: 56px → **48px**
+- Cards: badges `.62rem`, fav-btn 26px, estrelas `.65rem`, gradiente mais suave, respiro título-meta
+- Sidebar: header compacto (logo 34px), footer fonte menor
+- Topbar: search 38px, logo 32px
+- Removido ~200 linhas de CSS legado: `.filter-chips`, `.chip`, `.quick-filters`, `.qf-select`, `.sort-row`/`.sort-select`
+- Empty state redesenhado (ícone em container arredondado, animação `fadeIn`)
+- Smart filter bar responsiva no mobile (stack vertical)
+
+**HTML (`index.html`)**
+- Smart filter bar consolidada em linha única: `[Todos ▼] [Status ▼] [Filtros ▼] [Ordenar/Agrupar ▼]`
+- Dropdown "+ Criar" unificado (Nova Coleção, Novo Box)
+- `qf-select` → `adv-select` (classes legadas limpas)
+
+**JS (`src/catalog.js`)**
+- `clearAllFilters()`: reseta smart filter bar (`fbTypeSelect`, `fbStatusSelect`, `ff-year`, `ff-rating`, `ff-collection`)
+- `setTipoFilter(tipo)`: parâmetro `btn` removido (não existe mais)
+- `setStatusFilter(status)`: parâmetro `btn` removido
+- `setFavFilter()`: simplificado sem parâmetro `btn`
+- `updateActiveFilters()`: `onRemove` corrigido para usar `clearAllFilters()`
+- `openBoxView()`: reseta selects em vez de chips
+- `applySavedFilter()`: usa `fbTypeSelect`/`fbStatusSelect`
+- `renderCatalogo()`: sync dos selects da smart bar
+- Empty state com 4 variações: biblioteca vazia, sem resultados, box vazia, sem favoritos
+
+**JS (`src/navigation.js`)**
+- `navigateFilter()`: sincroniza `fbTypeSelect` e `fbStatusSelect`
+
+#### Bugs corrigidos
+1. `clearAllFilters()` crashava — resetava chips inexistentes
+2. `setTipoFilter()`/`setStatusFilter()` crashavam com `btn=null`
+3. `navigateFilter()` sem sincronizar selects da smart bar
+4. `openBoxView()` com referências a chips antigos
+5. `applySavedFilter()` com referências a `#tipoFilters .chip`
+
+#### Arquitetura / Impactos
+- **Mudança visual significativa**: sidebar 15% mais fina, topbar 14% menor — mais espaço para cards
+- **Zero quebras funcionais**: todas as funções continuam operando; smart filter bar substitui semântica de chips
+- **Retrocompatibilidade**: `tipoFilter`/`statusFilter` continuam sendo as variáveis globais de filtro
+- **Performance**: menos DOM (chips removidos), menos reflows (grid mais compacto)
+- **Mobile**: barra de filtros empilha verticalmente em ≤767px com scroll horizontal nos dropdowns
+
+#### Deployment
+- `firebase deploy` executado (25/07/2026) — live em https://entertainment-hub-7777a.web.app
+
+---
+
 ### Hotfix — Profile Dropdown Cortado (Corrigido em 20/07/2026)
 
 **Problema:** `.profile-dropdown` (menu do avatar) tinha a parte inferior cortada pela área da biblioteca.

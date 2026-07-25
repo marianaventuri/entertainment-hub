@@ -49,3 +49,51 @@ PROJECT_MAP.md
 
 ### Commit
 `c5f2301` — feat: horas consumidas em animes, link de leitura em mangás, popover de capa em box, correção de observações e outras melhorias
+
+## Sessão — 25/07/2026
+
+**Comando de salvar:** "Salve" → atualizar este log e commitar.
+
+### Sprint UX.01 — Less UI, More Library
+
+#### O que mudou:
+
+**style.css:**
+- `--sidebar-w`: 204px → 174px
+- `--topbar-h`: 56px → 48px
+- Cards: badges `.62rem`, fav-btn 26px, estrelas `.65rem`, gradiente mais suave, respiro título-meta
+- Sidebar: header compacto, logo 34px, footer fonte menor
+- Topbar: search 38px, logo 32px
+- Removido CSS legado: `.filter-chips`, `.chip`, `.quick-filters`, `.qf-select`, `.sort-row`/`.sort-select`
+- Empty state redesenhado (ícone em container, fadeIn)
+- Smart filter bar responsiva no mobile
+
+**index.html:**
+- Smart filter bar consolidada: `[Todos ▼] [Status ▼] [Filtros ▼] [Ordenar/Agrupar ▼]`
+- Dropdown "+ Criar" unificado (Nova Coleção, Novo Box)
+- `qf-select` → `adv-select`
+
+**catalog.js:**
+- `clearAllFilters()`: reseta smart filter bar em vez de chips antigos
+- `setTipoFilter()`/`setStatusFilter()`: parâmetro `btn` removido
+- `setFavFilter()`: simplificado
+- `updateActiveFilters()`: referências corrigidas para novos seletores
+- `openBoxView()`: reseta selects corretamente
+- `applySavedFilter()`: sem referência a chips antigos
+- Empty state com 4 variações (biblioteca vazia, sem resultados, box vazia, sem favoritos)
+
+**navigation.js:**
+- `navigateFilter()`: sincroniza `fbTypeSelect`/`fbStatusSelect`
+
+### Bugs corrigidos (pós-sprint)
+1. **`clearAllFilters()` crashava** — resetava chips inexistentes
+2. **`setTipoFilter()`/`setStatusFilter()` crashavam com `btn=null`** — chamadas do HTML passavam `null`
+3. **`navigateFilter()` sem sincronizar selects** — filtros por sidebar não atualizavam a smart bar
+4. **`openBoxView()` com referências a chips antigos**
+5. **`applySavedFilter()` com referências a `#tipoFilters .chip`**
+
+### Pendências
+- Nenhuma pendência conhecida no momento.
+
+### Commit
+`feec235` — docs: session log 25/07/2026 - Sprint UX.01 Less UI More Library
