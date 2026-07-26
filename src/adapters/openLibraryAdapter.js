@@ -26,12 +26,14 @@ function openLibraryAdapter(searchItem, detail) {
     isbn = (detail.isbn_13 && detail.isbn_13[0]) || (detail.isbn_10 && detail.isbn_10[0]) || '';
   }
 
+  const olid = searchItem.key || searchItem.olid || '';
+
   return {
-    title, year, creator: author, studio: '', developer: '', publisher,
+    title, year, author, studio: '', developer: '', publisher,
     genres, cover, synopsis: detailSynopsis || synopsis,
-    durationMinutes: '', episodes: '', seasons: '', pages, chapters: '',
+    durationMinutes: '', hoursPlayed: '', episodes: '', seasons: '', pages, chapters: '',
     source: '', anilistStatus: '', rating: '', esrb: '', platform: '', readUrl: '',
-    externalIds: { tmdbId: '', anilistId: '', rawgId: '', isbn: '' }
+    externalIds: { tmdbId: '', anilistId: '', rawgId: '', openLibraryId: olid, isbn: '' }
   };
 }
 
@@ -59,14 +61,18 @@ async function openLibraryDetailAdapter(detail) {
     coverUrl = `https://covers.openlibrary.org/b/id/${detail.covers[0]}-L.jpg`;
   }
 
+  const olid = detail.key || '';
+  const isbn13 = (detail.isbn_13 && detail.isbn_13[0]) || '';
+  const isbn10 = (detail.isbn_10 && detail.isbn_10[0]) || '';
+
   return {
     title: detail.title || '',
     year: ((detail.first_publish_date || detail.publish_date || '').match(/\d{4}/) || [])[0] || '',
-    creator: author, studio: '', developer: '', publisher: (detail.publishers || [])[0] || '',
+    author, studio: '', developer: '', publisher: (detail.publishers || [])[0] || '',
     genres: (detail.subjects || []).slice(0,4).join(', '),
     cover: coverUrl, synopsis: desc,
-    durationMinutes: '', episodes: '', seasons: '', pages: detail.number_of_pages || '', chapters: '',
+    durationMinutes: '', hoursPlayed: '', episodes: '', seasons: '', pages: detail.number_of_pages || '', chapters: '',
     source: '', anilistStatus: '', rating: '', esrb: '', platform: '', readUrl: '',
-    externalIds: { tmdbId: '', anilistId: '', rawgId: '', isbn: '' }
+    externalIds: { tmdbId: '', anilistId: '', rawgId: '', openLibraryId: olid, isbn10, isbn13, isbn: isbn13 || isbn10 }
   };
 }

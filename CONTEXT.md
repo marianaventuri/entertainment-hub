@@ -189,3 +189,45 @@ Firebase Hosting → `https://entertainment-hub-7777a.web.app`
 
 ### Deploy
 `firebase deploy` executado — live em `https://entertainment-hub-7777a.web.app`
+
+## Sessão — 26/07/2026
+
+**Comando de salvar:** "Salve tudo no context para continuarmos depois" → atualizar este log e commitar.
+
+### Sprint API.03 — Semantic Creator Fields
+
+#### Problema
+O campo `creator` no Common Adapter Format era um "coringa" — cada adapter retornava o nome da pessoa relevante (diretor, criador, autor, desenvolvedor) no mesmo campo, e o `applyApiResult()` usava roteamento por tipo de mídia para decidir qual campo do formulário preencher. Isso criava acoplamento entre o mapper e os tipos de mídia, e impedia que os adapters fossem semanticamente precisos.
+
+#### O que mudou
+
+**Adapters — campos semânticos específicos em vez de `creator` genérico:**
+
+| Adapter | Antes | Depois |
+|---|---|---|
+| `tmdbAdapter.js` | `creator` (diretor p/ filme, criador p/ série) | `director` (filme) + `creator` (série), separados |
+| `anilistAdapter.js` | `creator` (sempre, como coringa) | `director` (anime) + `author` (mangá), separados |
+| `rawgAdapter.js` | `creator` + `developer` (redundantes) | Só `developer` (removido `creator`) |
+| `openLibraryAdapter.js` | `creator` → autor | `author` diretamente |
+| Google Books (em `api.js`) | `creator` → autor | `author` diretamente |
+
+**Mapper (`applyApiResult()` em `api.js`):**
+- Substituído roteamento por tipo (`if type === 'Filme' set('f-director', r.creator)`) por leitura direta de campos específicos (`if r.director set('f-director', r.director)`)
+- Lógica de "qual campo preencher" movida para os adapters, onde pertence semanticamente
+
+**Consistência de shape:**
+- `hoursPlayed: ''` adicionado aos adapters TMDB, AniList, OpenLibrary (faltava)
+
+**Documentação:**
+- `06_Common_Adapter_Format.md` v2.0: schema atualizado com `director`, `author`, `hoursPlayed`, `volumes`; regra do `creator` como coringa removida
+- `01_API_Mapping.md` v2.1: todas as tabelas refletem campos específicos; AniList `volumes` marcado como ✅
+- `PROJECT_CONTEXT.md`: linha do `applyApiResult()` atualizada
+
+#### Arquivos alterados
+`src/adapters/tmdbAdapter.js`, `src/adapters/anilistAdapter.js`, `src/adapters/rawgAdapter.js`, `src/adapters/openLibraryAdapter.js`, `src/api.js`, `PROJECT_CONTEXT.md`, `docs/architecture/06_Common_Adapter_Format.md`, `docs/architecture/01_API_Mapping.md`
+
+### Pendências
+- Nenhuma pendência conhecida no momento.
+
+### Deploy
+`firebase deploy` executado — live em `https://entertainment-hub-7777a.web.app`

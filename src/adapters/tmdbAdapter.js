@@ -10,11 +10,12 @@ function tmdbAdapter(raw, type) {
   const studio = (raw.production_companies || []).map(c => c.name).join(', ') || '';
   const publisher = !isMovie && (raw.networks || []).length ? raw.networks.map(n => n.name).join(', ') : '';
 
+  let director = '';
   let creator = '';
   if (isMovie) {
     if (raw.credits && raw.credits.crew) {
       const dir = raw.credits.crew.find(c => c.job === 'Director');
-      if (dir) creator = dir.name;
+      if (dir) director = dir.name;
     }
   } else {
     if (raw.created_by && raw.created_by.length > 0) {
@@ -25,8 +26,8 @@ function tmdbAdapter(raw, type) {
   let episodes = !isMovie && raw.number_of_episodes ? raw.number_of_episodes : '';
 
   return {
-    title, year, creator, studio, developer: '', publisher,
-    genres, cover, synopsis, durationMinutes, episodes, seasons, pages: '', chapters: '',
+    title, year, director, creator, studio, developer: '', publisher,
+    genres, cover, synopsis, durationMinutes, hoursPlayed: '', episodes, seasons, pages: '', chapters: '',
     source: '', anilistStatus: '', rating: '', esrb: '', platform: '', readUrl: '',
     externalIds: { tmdbId: raw.id, anilistId: '', rawgId: '', isbn: '' }
   };

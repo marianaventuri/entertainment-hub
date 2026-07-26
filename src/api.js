@@ -33,6 +33,7 @@ async function searchAniList(title, type) {
           genres
           episodes
           chapters
+          volumes
           duration
           status
           source
@@ -86,24 +87,25 @@ async function searchGoogleBooks(title, author) {
         synopsis = synopsis.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'");
       }
 
-      let isbn = '';
+      let isbn10 = '', isbn13 = '';
       if (info.industryIdentifiers) {
-        const isbn13 = info.industryIdentifiers.find(i => i.type === 'ISBN_13');
-        const isbn10 = info.industryIdentifiers.find(i => i.type === 'ISBN_10');
-        isbn = (isbn13 || isbn10 || {}).identifier || '';
+        const i13 = info.industryIdentifiers.find(i => i.type === 'ISBN_13');
+        const i10 = info.industryIdentifiers.find(i => i.type === 'ISBN_10');
+        isbn13 = (i13 || {}).identifier || '';
+        isbn10 = (i10 || {}).identifier || '';
       }
 
       return {
         title: info.title || '',
         year: (info.publishedDate || '').slice(0,4),
-        creator: (info.authors || [])[0] || '',
+        author: (info.authors || [])[0] || '',
         studio: '', developer: '', publisher: (info.publisher || ''),
         genres: (info.categories || []).slice(0,4).join(', '),
         cover, synopsis,
         durationMinutes: '', episodes: '', seasons: '', chapters: '',
         pages: info.pageCount || '',
         source: '', anilistStatus: '', rating: '', esrb: '', platform: '', readUrl: '',
-        externalIds: { tmdbId: '', anilistId: '', rawgId: '', isbn },
+        externalIds: { tmdbId: '', anilistId: '', rawgId: '', googleBooksId: v.id, isbn10, isbn13, isbn: isbn13 || isbn10 },
         _source: 'Google Books'
       };
     });
@@ -249,16 +251,14 @@ function applyApiResult(r, highlight = false) {
   set('f-anilist-id', extIds.anilistId);
   set('f-rawg-id', extIds.rawgId);
 
-  if (r.creator) {
-    if (type === 'Filme') set('f-director', r.creator);
-    else if (type === 'Série' || type === 'Dorama' || type === 'Anime') set('f-creator', r.creator);
-    else if (type === 'Jogo') set('f-developer', r.creator);
-    else set('f-author', r.creator);
-  }
-  if (r.studio && type === 'Anime') set('f-studio', r.studio);
-  if (r.developer && type === 'Jogo' && !r.creator) set('f-developer', r.developer);
+  if (r.director) set('f-director', r.director);
+  if (r.creator) set('f-creator', r.creator);
+  if (r.author) set('f-author', r.author);
+  if (r.developer) set('f-developer', r.developer);
+  if (r.studio) set('f-studio', r.studio);
   if (r.publisher) set('f-publisher', r.publisher);
   if (r.durationMinutes) set('f-duration-minutes', r.durationMinutes);
+  if (r.hoursPlayed) set('f-hours-played', r.hoursPlayed);
   if (r.platform) set('f-platform', r.platform);
   if (r.readUrl) set('f-read-url', r.readUrl);
   if (r.anilistStatus && !document.getElementById('f-status')?.value) {
@@ -269,8 +269,13 @@ function applyApiResult(r, highlight = false) {
   }
   if (r.pages) set('f-pages', r.pages);
   if (r.chapters) set('f-chapters-total', r.chapters);
+  if (r.volumes) set('f-total-volumes', r.volumes);
   if (r.rating && typeof setStar === 'function') setStar(Math.min(5, Math.max(0, parseInt(r.rating) || 0)));
   if (extIds.isbn) set('f-isbn', extIds.isbn);
+  if (extIds.isbn10) set('f-isbn10', extIds.isbn10);
+  if (extIds.isbn13) set('f-isbn13', extIds.isbn13);
+  if (extIds.googleBooksId) set('f-googlebooks-id', extIds.googleBooksId);
+  if (extIds.openLibraryId) set('f-openlibrary-id', extIds.openLibraryId);
 
   const cnEl = document.getElementById('f-cover-name');
   if (cnEl && r.cover) cnEl.textContent = 'Capa definida pela busca';

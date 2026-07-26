@@ -45,6 +45,10 @@ function normalizeItem(item) {
   if (item.anilistId !== undefined && !item.externalIds.anilistId) item.externalIds.anilistId = item.anilistId;
   if (item.rawgId !== undefined && !item.externalIds.rawgId) item.externalIds.rawgId = item.rawgId;
   if (item.isbn !== undefined && !item.externalIds.isbn) item.externalIds.isbn = item.isbn;
+  if (item.googleBooksId !== undefined && !item.externalIds.googleBooksId) item.externalIds.googleBooksId = item.googleBooksId;
+  if (item.openLibraryId !== undefined && !item.externalIds.openLibraryId) item.externalIds.openLibraryId = item.openLibraryId;
+  if (item.isbn10 !== undefined && !item.externalIds.isbn10) item.externalIds.isbn10 = item.isbn10;
+  if (item.isbn13 !== undefined && !item.externalIds.isbn13) item.externalIds.isbn13 = item.isbn13;
 
   item.title = item.obra.title;
   item.cover = item.obra.cover;
@@ -66,10 +70,14 @@ function normalizeItem(item) {
   item.cinemaWatched = item.consumption.cinemaWatched;
   item.durationMinutes = item.consumption.durationMinutes;
   item.readUrl = item.consumption.readUrl || '';
-  item.hours = item.hours || (item.consumption.durationMinutes ? (item.consumption.durationMinutes / 60).toFixed(1) : '');
+  item.hours = item.hours || (item.consumption.durationMinutes ? (item.consumption.durationMinutes / 60).toFixed(1) : '') || item.hoursPlayed;
   item.tmdbId = item.externalIds.tmdbId;
   item.anilistId = item.externalIds.anilistId;
   item.rawgId = item.externalIds.rawgId;
+  item.googleBooksId = item.externalIds.googleBooksId;
+  item.openLibraryId = item.externalIds.openLibraryId;
+  item.isbn10 = item.externalIds.isbn10;
+  item.isbn13 = item.externalIds.isbn13;
   item.season = item.progress.season;
   item.currentEp = item.progress.currentEp;
   item.episodes = item.progress.episodes;

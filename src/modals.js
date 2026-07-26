@@ -166,7 +166,7 @@ function renderSmartFormBody(mode, options = {}) {
             <input class="form-input" id="f-year" type="number" placeholder="2024" oninput="editorAutoSave()"/>
             <div class="field-error" id="f-year-error"></div>
           </div>
-          <div class="form-field ff-meta" data-types="Filme">
+          <div class="form-field ff-meta" data-types="Filme,Anime">
             <label class="form-label">Diretor(a)</label>
             <input class="form-input" id="f-director" placeholder="Opcional" oninput="editorAutoSave()"/>
           </div>
@@ -337,6 +337,10 @@ function renderSmartFormBody(mode, options = {}) {
           <input type="hidden" id="f-anilist-id"/>
           <input type="hidden" id="f-rawg-id"/>
           <input type="hidden" id="f-isbn"/>
+          <input type="hidden" id="f-isbn10"/>
+          <input type="hidden" id="f-isbn13"/>
+          <input type="hidden" id="f-googlebooks-id"/>
+          <input type="hidden" id="f-openlibrary-id"/>
 
           <div class="form-field full hidden" id="f-olid-field">
             <label class="form-label">Código OpenLibrary (OLID / ISBN)</label>
@@ -507,6 +511,10 @@ function fillEditForm(id) {
   set('f-anilist-id', item.externalIds?.anilistId);
   set('f-rawg-id',    item.externalIds?.rawgId);
   set('f-isbn',       item.externalIds?.isbn);
+  set('f-isbn10',     item.externalIds?.isbn10);
+  set('f-isbn13',     item.externalIds?.isbn13);
+  set('f-googlebooks-id', item.externalIds?.googleBooksId);
+  set('f-openlibrary-id', item.externalIds?.openLibraryId);
  
   // Progresso
   set('f-season',         item.progress?.season);
@@ -713,6 +721,10 @@ async function saveItem(isSilent = false) {
       tmdbId:    g('f-tmdb-id'),
       anilistId: g('f-anilist-id'),
       rawgId:    g('f-rawg-id'),
+      googleBooksId: g('f-googlebooks-id'),
+      openLibraryId: g('f-openlibrary-id'),
+      isbn10:    g('f-isbn10'),
+      isbn13:    g('f-isbn13'),
       isbn:      g('f-isbn')
     }
   };

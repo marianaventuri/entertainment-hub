@@ -1269,7 +1269,7 @@ Cada item agora é organizado em 5 entidades no banco de dados:
 - `searchRAWG()`: detail fetch extrai `developers`, `publishers`; passa por `rawgAdapter()`
 - `searchGoogleBooks()`: retorna formato comum com `publisher`, `pages`
 - `searchOpenLibrary()` / `fetchOpenLibraryByCode()`: usam `openLibraryAdapter()` / `openLibraryDetailAdapter()`
-- `applyApiResult()`: lê `r.creator`, `r.studio`, `r.developer`, `r.publisher`, `r.pages`, `r.externalIds.*`
+- `applyApiResult()`: lê `r.director`, `r.creator`, `r.author`, `r.studio`, `r.developer`, `r.publisher`, `r.pages`, `r.externalIds.*`
 
 #### HTML (`index.html`)
 - 4 novos `<script>` tags para os adaptadores (carregados antes de `api.js`)
@@ -1367,6 +1367,7 @@ Cada item agora é organizado em 5 entidades no banco de dados:
 - [x] Package 009: Profile (page-perfil, stats, metas, preferências)
 - [x] Package 010: Settings (config accordion, aparência, conta, APIs, backup)
 - [x] Package 011: Import/Export (JSON/CSV/Excel, drag-drop, progresso, auto-backup)
+- [x] Sprint API/UX.01 — Smart Search (múltiplos resultados, seleção explícita, autocomplete real)
 
 ---
 
@@ -1841,6 +1842,53 @@ Cada item agora é organizado em 5 entidades no banco de dados:
 
 #### Deployment
 - `firebase deploy` executado (20/07/2026) — live em https://entertainment-hub-7777a.web.app
+
+---
+
+### Sprint API/UX.01 — Smart Search (Concluído em 26/07/2026)
+
+**Problema:** O sistema de busca e importação selecionava automaticamente o primeiro resultado da API, sem dar ao usuário a oportunidade de escolher entre múltiplas opções. O autocomplete retornava apenas 1 resultado, e a lupa fazia chamadas duplicadas à API com auto-importação.
+
+**Solução:** Todos os adaptadores retornam arrays de até 5 resultados. O autocomplete exibe uma lista de sugestões com capa, título, ano, badge da fonte e selo de confiança. A lupa nunca busca — apenas importa a obra previamente selecionada pelo usuário.
+
+#### O que mudou:
+
+**src/api.js** — Todos os adaptadores retornam arrays de até 5 resultados:
+- `searchTMDB()`: `results[0]` → `results.slice(0, 5)`. Detail fetch removido (otimização).
+- `searchAniList()`: Query GraphQL migrada de `Media` (1 resultado) para `Page(perPage: 5).media`.
+- `searchGoogleBooks()`: `maxResults=1` → `maxResults=5`, retorna array.
+- `searchOpenLibrary()`: `limit=1` → `limit=5`, retorna array.
+- `searchRAWG()`: `page_size=1` → `page_size=5`, retorna array.
+- `buscarOnline()`: refatorada — sempre retorna array, sem parâmetro `acOnly`, sem auto-apply. Zero chamadas duplicadas.
+- Cada resultado inclui `_source` (ex: `"TMDB"`, `"Google Books"`, `"RAWG"`) e `_apiId`.
+
+**src/modals.js** — Autocomplete real com seleção explícita:
+- `renderSearchAcResults()`: lista com até 8 sugestões, cada uma com capa, título, ano, badge da fonte (`<span class="ac-source">`), selo de confiança (🟢 Correspondência exata / 🟡 Título semelhante) e autor.
+- `computeTrustLevel()`: compara título digitado vs resultado (exact, close, different).
+- `handleSearchClick()`: lupa **nunca** busca — só importa se `_selectedResult` existe. Se não, exibe `"ℹ️ Digite o título e selecione uma obra na lista para importar"`.
+- Navegação por teclado: ↑↓, Enter, Escape, **Home**, **End**.
+- Nenhum item pré-selecionado (`_acHighlightIdx = -1`).
+
+**style.css** — Novos estilos para sugestões:
+- `.ac-source` (badge da API), `.ac-trust--exact/close` (selo de confiança), `.ac-extra` (autor/creator), `.ac-placeholder-cover`, `.search-ac-empty`.
+
+#### Arquivos modificados
+
+| Arquivo | Mudança |
+|---------|---------|
+| `src/api.js` | 5 funções de busca → arrays; `buscarOnline()` refatorada sem auto-apply |
+| `src/modals.js` | `renderSearchAcResults` reescrito; `handleSearchClick` só importa; keyboard nav + Home/End; trust level |
+| `style.css` | ~50 linhas: `.ac-source`, `.ac-trust-*`, `.ac-extra`, `.ac-placeholder-cover`, `.search-ac-empty` |
+
+#### Arquitetura / Impactos
+- **Zero auto-importação**: usuário sempre escolhe explicitamente qual obra importar
+- **Sem chamadas duplicadas**: `buscarOnline()` é chamada uma vez pelo autocomplete; lupa nunca consulta a API
+- **Backward compatible**: adaptadores mantêm mesmo schema de retorno (agora como array)
+- **AniList**: query migrada para `Page { media }` — retorna até 5 resultados em vez de 1
+- **Desempenho**: detail fetch removido do TMDB e RAWG para search (reduz chamadas de 5 para 1 por busca)
+
+#### Deployment
+- `firebase deploy` executado (26/07/2026) — live em https://entertainment-hub-7777a.web.app
 
 ---
 

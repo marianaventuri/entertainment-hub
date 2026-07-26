@@ -8,6 +8,7 @@ function rawgAdapter(item, detail) {
   let developers = [];
   let publishers = [];
   let durationMinutes = '';
+  let hoursPlayed = '';
   let platform = '';
   let readUrl = '';
   let rating = '';
@@ -17,7 +18,7 @@ function rawgAdapter(item, detail) {
     synopsis = detail.description_raw || '';
     developers = (detail.developers || []).map(d => d.name);
     publishers = (detail.publishers || []).map(p => p.name);
-    if (detail.playtime) durationMinutes = detail.playtime * 60;
+    if (detail.playtime) hoursPlayed = String(detail.playtime);
     platform = (detail.platforms || []).map(p => p.platform?.name).filter(Boolean).join(', ');
     readUrl = detail.website || '';
     if (detail.metacritic) rating = Math.round(detail.metacritic / 20);
@@ -27,9 +28,8 @@ function rawgAdapter(item, detail) {
 
   return {
     title, year,
-    creator: developers[0] || '',
     studio: '', developer: developers[0] || '', publisher: publishers[0] || '',
-    genres, cover, synopsis, durationMinutes, episodes: '', seasons: '', pages: '', chapters: '',
+    genres, cover, synopsis, durationMinutes, hoursPlayed, episodes: '', seasons: '', pages: '', chapters: '',
     source: '', anilistStatus: '', rating, esrb, platform, readUrl,
     externalIds: { tmdbId: '', anilistId: '', rawgId: item.id || '', isbn: '' }
   };

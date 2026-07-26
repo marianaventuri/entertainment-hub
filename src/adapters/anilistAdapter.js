@@ -3,6 +3,7 @@ function anilistAdapter(m, type) {
     .replace(/<[^>]+>/g, '')
     .replace(/\n\n+/g, '\n').trim();
 
+  let director = '';
   let author = '';
   if (m.staff && m.staff.edges) {
     if (type === 'Mangá') {
@@ -13,7 +14,7 @@ function anilistAdapter(m, type) {
     } else {
       const dirEdge = m.staff.edges.find(e =>
         e.role && /director|creator|story/i.test(e.role));
-      if (dirEdge) author = dirEdge.node.name.full;
+      if (dirEdge) director = dirEdge.node.name.full;
     }
   }
 
@@ -33,9 +34,9 @@ function anilistAdapter(m, type) {
 
   return {
     title: m.title?.romaji || m.title?.english || m.title?.native || '',
-    year, creator: author, studio, developer: '', publisher: '',
-    genres, cover, synopsis: cleanDesc, durationMinutes, episodes, seasons: '',
-    pages: '', chapters: m.chapters || '', source, anilistStatus,
+    year, director, author, studio, developer: '', publisher: '',
+    genres, cover, synopsis: cleanDesc, durationMinutes, hoursPlayed: '', episodes, seasons: '',
+    pages: '', chapters: m.chapters || '', volumes: m.volumes || '', source, anilistStatus,
     rating: '', esrb: '', platform: '', readUrl: '',
     externalIds: { tmdbId: '', anilistId: m.id, rawgId: '', isbn: '' }
   };
