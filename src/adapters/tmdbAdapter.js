@@ -7,6 +7,8 @@ function tmdbAdapter(raw, type) {
   const synopsis = raw.overview || '';
   const durationMinutes = isMovie && raw.runtime ? raw.runtime : (!isMovie && raw.episode_run_time && raw.episode_run_time[0]) ? raw.episode_run_time[0] : '';
   const seasons = !isMovie && raw.number_of_seasons ? raw.number_of_seasons : '';
+  const studio = (raw.production_companies || []).map(c => c.name).join(', ') || '';
+  const publisher = !isMovie && (raw.networks || []).length ? raw.networks.map(n => n.name).join(', ') : '';
 
   let creator = '';
   if (isMovie) {
@@ -20,18 +22,12 @@ function tmdbAdapter(raw, type) {
     }
   }
 
-  let episodes = '';
-  if (!isMovie && raw.seasons) {
-    const firstSeason = raw.seasons
-      .filter(s => s.season_number > 0 && s.episode_count > 0)
-      .sort((a, b) => a.season_number - b.season_number)[0];
-    if (firstSeason) episodes = firstSeason.episode_count;
-  }
+  let episodes = !isMovie && raw.number_of_episodes ? raw.number_of_episodes : '';
 
   return {
-    title, year, creator, studio: '', developer: '', publisher: '',
-    genres, cover, synopsis, durationMinutes, episodes, seasons, pages: '',
-    source: '', anilistStatus: '',
-    externalIds: { tmdbId: raw.id, anilistId: '', rawgId: '' }
+    title, year, creator, studio, developer: '', publisher,
+    genres, cover, synopsis, durationMinutes, episodes, seasons, pages: '', chapters: '',
+    source: '', anilistStatus: '', rating: '', esrb: '', platform: '', readUrl: '',
+    externalIds: { tmdbId: raw.id, anilistId: '', rawgId: '', isbn: '' }
   };
 }

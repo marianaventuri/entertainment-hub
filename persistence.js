@@ -44,6 +44,7 @@ function normalizeItem(item) {
   if (item.tmdbId !== undefined && !item.externalIds.tmdbId) item.externalIds.tmdbId = item.tmdbId;
   if (item.anilistId !== undefined && !item.externalIds.anilistId) item.externalIds.anilistId = item.anilistId;
   if (item.rawgId !== undefined && !item.externalIds.rawgId) item.externalIds.rawgId = item.rawgId;
+  if (item.isbn !== undefined && !item.externalIds.isbn) item.externalIds.isbn = item.isbn;
 
   item.title = item.obra.title;
   item.cover = item.obra.cover;
@@ -57,6 +58,10 @@ function normalizeItem(item) {
   item.negTags = item.obra.negTags;
   item.fav = item.obra.fav;
   item.author = item.metadata.director || item.metadata.creator || item.metadata.studio || item.metadata.author || item.metadata.developer || '';
+  item.director = item.metadata.director || '';
+  item.creator = item.metadata.creator || '';
+  item.studio = item.metadata.studio || '';
+  item.developer = item.metadata.developer || '';
   item.platform = item.consumption.platform || '';
   item.cinemaWatched = item.consumption.cinemaWatched;
   item.durationMinutes = item.consumption.durationMinutes;

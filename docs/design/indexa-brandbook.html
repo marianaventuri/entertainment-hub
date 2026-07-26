@@ -1,0 +1,1508 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Indexa — Brandbook</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Playfair+Display:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #0f1114;
+      --surface: #16191e;
+      --surface-raised: #1c1f26;
+      --surface-hover: #22262f;
+      --border: #2a2e38;
+      --border-subtle: #1e222b;
+      --fg: #f0f2f5;
+      --fg-secondary: #9ca3af;
+      --fg-muted: #6b7280;
+      --accent: #3563E9;
+      --accent-soft: rgba(53, 99, 233, 0.12);
+      --accent-hover: #4a78f0;
+      --success: #22C55E;
+      --success-soft: rgba(34, 197, 94, 0.12);
+      --warning: #F59E0B;
+      --warning-soft: rgba(245, 158, 11, 0.12);
+      --error: #EF4444;
+      --error-soft: rgba(239, 68, 68, 0.12);
+      --favorite: #E11D48;
+      --favorite-soft: rgba(225, 29, 72, 0.10);
+      --font-display: 'Playfair Display', Georgia, serif;
+      --font-body: 'Inter', system-ui, -apple-system, sans-serif;
+      --font-logo: 'All Round Gothic', 'Inter', sans-serif;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 16px;
+      --radius-xl: 20px;
+      --radius-pill: 999px;
+      --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+      --shadow-md: 0 4px 12px rgba(0,0,0,0.4);
+      --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+      --space-xs: 4px;
+      --space-sm: 8px;
+      --space-md: 16px;
+      --space-lg: 24px;
+      --space-xl: 32px;
+      --space-2xl: 48px;
+      --space-3xl: 64px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--fg);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-font-smoothing: grayscale;
+    }
+
+    /* ── Navigation ── */
+    .nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      background: rgba(15, 17, 20, 0.85);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border-subtle);
+      padding: 0 var(--space-xl);
+      height: 64px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .nav-logo {
+      font-family: var(--font-logo);
+      font-size: 22px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--fg);
+    }
+    .nav-logo span { color: var(--accent); }
+    .nav-links {
+      display: flex;
+      gap: var(--space-lg);
+      list-style: none;
+    }
+    .nav-links a {
+      color: var(--fg-secondary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--fg); }
+
+    /* ── Hero ── */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      padding: var(--space-3xl) var(--space-xl);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 800px;
+      background: radial-gradient(circle, rgba(53, 99, 233, 0.08) 0%, transparent 70%);
+      pointer-events: none;
+    }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 6px 16px;
+      background: var(--accent-soft);
+      border: 1px solid rgba(53, 99, 233, 0.2);
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent);
+      letter-spacing: 0.02em;
+      margin-bottom: var(--space-xl);
+    }
+    .hero h1 {
+      font-family: var(--font-logo);
+      font-size: clamp(48px, 8vw, 88px);
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      line-height: 1.05;
+      margin-bottom: var(--space-lg);
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero-sub {
+      font-size: 18px;
+      color: var(--fg-secondary);
+      max-width: 520px;
+      line-height: 1.6;
+      margin-bottom: var(--space-2xl);
+    }
+    .hero-tagline {
+      font-family: var(--font-display);
+      font-size: 24px;
+      font-weight: 400;
+      font-style: italic;
+      color: var(--fg-muted);
+      letter-spacing: -0.01em;
+    }
+
+    /* ── Section ── */
+    .section {
+      padding: var(--space-3xl) var(--space-xl);
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+    .section-header {
+      margin-bottom: var(--space-2xl);
+    }
+    .section-label {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: var(--space-sm);
+    }
+    .section-title {
+      font-family: var(--font-display);
+      font-size: clamp(28px, 4vw, 40px);
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      line-height: 1.15;
+    }
+    .section-desc {
+      font-size: 16px;
+      color: var(--fg-secondary);
+      max-width: 600px;
+      margin-top: var(--space-md);
+      line-height: 1.6;
+    }
+
+    /* ── Divider ── */
+    .divider {
+      max-width: 1200px;
+      margin: 0 auto;
+      border: none;
+      border-top: 1px solid var(--border-subtle);
+    }
+
+    /* ── Grid helpers ── */
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-lg); }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: var(--space-lg); }
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: var(--space-lg); }
+
+    @media (max-width: 768px) {
+      .grid-2, .grid-3, .grid-4, .grid-5 { grid-template-columns: 1fr; }
+    }
+
+    /* ── Cards ── */
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: var(--space-xl);
+      transition: border-color 0.2s;
+    }
+    .card:hover { border-color: var(--border); }
+    .card-label {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      margin-bottom: var(--space-sm);
+    }
+    .card-value {
+      font-family: var(--font-display);
+      font-size: 20px;
+      font-weight: 500;
+      letter-spacing: -0.01em;
+    }
+    .card-desc {
+      font-size: 14px;
+      color: var(--fg-secondary);
+      margin-top: var(--space-sm);
+      line-height: 1.5;
+    }
+
+    /* ── Color swatches ── */
+    .swatch-group { margin-bottom: var(--space-xl); }
+    .swatch-group-title {
+      font-size: 13px;
+      font-weight: 600;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      margin-bottom: var(--space-md);
+    }
+    .swatch-row { display: flex; gap: var(--space-md); flex-wrap: wrap; }
+    .swatch {
+      flex: 1;
+      min-width: 140px;
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      border: 1px solid var(--border-subtle);
+    }
+    .swatch-color {
+      height: 80px;
+      display: flex;
+      align-items: flex-end;
+      padding: var(--space-sm) var(--space-md);
+    }
+    .swatch-color span {
+      font-size: 12px;
+      font-weight: 600;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      padding: 2px 8px;
+      border-radius: 4px;
+      background: rgba(0,0,0,0.35);
+    }
+    .swatch-info {
+      padding: var(--space-md);
+      background: var(--surface);
+    }
+    .swatch-name {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .swatch-token {
+      font-size: 12px;
+      color: var(--fg-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      margin-top: 2px;
+    }
+
+    /* ── Typography samples ── */
+    .type-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      padding: var(--space-lg) 0;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+    .type-row:last-child { border-bottom: none; }
+    .type-meta {
+      font-size: 12px;
+      color: var(--fg-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      min-width: 180px;
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    /* ── Spacing scale ── */
+    .spacing-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-lg);
+      padding: var(--space-md) 0;
+    }
+    .spacing-bar {
+      height: 24px;
+      background: var(--accent);
+      border-radius: 4px;
+      opacity: 0.7;
+      transition: opacity 0.2s;
+    }
+    .spacing-bar:hover { opacity: 1; }
+    .spacing-label {
+      font-size: 13px;
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      color: var(--fg-muted);
+      min-width: 80px;
+    }
+    .spacing-value {
+      font-size: 13px;
+      color: var(--fg-secondary);
+      min-width: 60px;
+    }
+
+    /* ── Radius showcase ── */
+    .radius-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-sm);
+    }
+    .radius-box {
+      width: 80px;
+      height: 80px;
+      background: var(--accent-soft);
+      border: 2px solid var(--accent);
+    }
+    .radius-label {
+      font-size: 12px;
+      color: var(--fg-muted);
+      font-family: 'SF Mono', 'Fira Code', monospace;
+    }
+
+    /* ── Personality traits ── */
+    .trait {
+      display: flex;
+      align-items: flex-start;
+      gap: var(--space-md);
+      padding: var(--space-lg);
+      background: var(--surface);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+    }
+    .trait-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius-sm);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+      flex-shrink: 0;
+    }
+    .trait-name {
+      font-weight: 600;
+      font-size: 15px;
+      margin-bottom: 2px;
+    }
+    .trait-desc {
+      font-size: 13px;
+      color: var(--fg-secondary);
+      line-height: 1.5;
+    }
+
+    /* ── Principles ── */
+    .principle {
+      position: relative;
+      padding: var(--space-xl) var(--space-xl) var(--space-xl) 80px;
+      background: var(--surface);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-subtle);
+    }
+    .principle-num {
+      position: absolute;
+      left: var(--space-xl);
+      top: var(--space-xl);
+      font-family: var(--font-display);
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--accent);
+      opacity: 0.3;
+    }
+    .principle-title {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: var(--space-sm);
+    }
+    .principle-desc {
+      font-size: 14px;
+      color: var(--fg-secondary);
+      line-height: 1.6;
+    }
+
+    /* ── Voice examples ── */
+    .voice-example {
+      padding: var(--space-lg);
+      border-radius: var(--radius-md);
+      font-size: 15px;
+      line-height: 1.5;
+    }
+    .voice-do {
+      background: var(--success-soft);
+      border-left: 3px solid var(--success);
+    }
+    .voice-dont {
+      background: var(--error-soft);
+      border-left: 3px solid var(--error);
+    }
+    .voice-tag {
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: var(--space-sm);
+    }
+    .voice-do .voice-tag { color: var(--success); }
+    .voice-dont .voice-tag { color: var(--error); }
+
+    /* ── Component previews ── */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: var(--space-sm);
+      padding: 10px 20px;
+      border-radius: var(--radius-md);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: var(--font-body);
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: white;
+    }
+    .btn-primary:hover { background: var(--accent-hover); }
+    .btn-secondary {
+      background: transparent;
+      color: var(--fg);
+      border: 1px solid var(--border);
+    }
+    .btn-secondary:hover { border-color: var(--fg-muted); }
+    .btn-tertiary {
+      background: transparent;
+      color: var(--accent);
+      padding: 10px 4px;
+    }
+    .btn-tertiary:hover { color: var(--accent-hover); }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 4px 12px;
+      border-radius: var(--radius-pill);
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .badge-accent { background: var(--accent-soft); color: var(--accent); }
+    .badge-success { background: var(--success-soft); color: var(--success); }
+    .badge-warning { background: var(--warning-soft); color: var(--warning); }
+    .badge-error { background: var(--error-soft); color: var(--error); }
+
+    .chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 14px;
+      border-radius: var(--radius-pill);
+      font-size: 13px;
+      font-weight: 500;
+      background: var(--surface-raised);
+      border: 1px solid var(--border);
+      color: var(--fg-secondary);
+    }
+
+    /* ── Token table ── */
+    .token-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    .token-table th {
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      padding: var(--space-md) var(--space-md);
+      border-bottom: 1px solid var(--border);
+    }
+    .token-table td {
+      padding: var(--space-md) var(--space-md);
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 14px;
+    }
+    .token-table td:first-child {
+      font-family: 'SF Mono', 'Fira Code', monospace;
+      font-size: 13px;
+      color: var(--accent);
+    }
+    .token-table tr:hover td { background: var(--surface); }
+
+    /* ── Footer ── */
+    .footer {
+      text-align: center;
+      padding: var(--space-3xl) var(--space-xl);
+      border-top: 1px solid var(--border-subtle);
+    }
+    .footer-text {
+      font-size: 14px;
+      color: var(--fg-muted);
+    }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .animate-in {
+      animation: fadeUp 0.6s ease-out both;
+    }
+
+    /* ── Scrollbar ── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: var(--fg-muted); }
+  </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="nav" data-od-id="main-nav">
+  <div class="nav-logo">Indexa<span>.</span></div>
+  <ul class="nav-links">
+    <li><a href="#identidade">Identidade</a></li>
+    <li><a href="#cores">Cores</a></li>
+    <li><a href="#tipografia">Tipografia</a></li>
+    <li><a href="#sistema">Sistema</a></li>
+    <li><a href="#voz">Voz</a></li>
+    <li><a href="#principios">Princípios</a></li>
+  </ul>
+</nav>
+
+<!-- Hero -->
+<section class="hero" data-od-id="hero">
+  <div class="hero-badge">Brandbook v1.0</div>
+  <h1><img src="Logo/Indexa__Logo_branco.png" alt="Indexa" style="max-width: 720px; width: 100%; height: auto;" /></h1>
+  <p class="hero-sub">Toda sua biblioteca de entretenimento. Em um único lugar.</p>
+  <p class="hero-tagline">"Organizar obras é organizar memórias."</p>
+</section>
+
+<hr class="divider" />
+
+<!-- 01 — Essência da Marca -->
+<section class="section" id="identidade" data-od-id="brand-essence">
+  <div class="section-header">
+    <div class="section-label">01 — Essência</div>
+    <h2 class="section-title">A identidade da marca Indexa</h2>
+    <p class="section-desc">
+      O Indexa nasceu para organizar aquilo que acompanha as pessoas durante toda a vida: suas histórias.
+      Livros, filmes, séries, animes e jogos fazem parte da memória afetiva de cada pessoa.
+    </p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom: var(--space-2xl);">
+    <div class="card">
+      <div class="card-label">Missão</div>
+      <div class="card-value">Organizar a jornada de entretenimento das pessoas de forma simples, elegante e intuitiva.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Visão</div>
+      <div class="card-value">Ser a principal biblioteca pessoal de entretenimento.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Promessa</div>
+      <div class="card-value">Toda sua biblioteca. Em um único lugar.</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label">Slogan</div>
+      <div class="card-value" style="font-size: 24px; font-style: italic;">Sua biblioteca. Sua jornada.</div>
+    </div>
+    <div class="card">
+      <div class="card-label">Posicionamento</div>
+      <div class="card-desc">O Indexa não compete com plataformas como Letterboxd, MyAnimeList ou Goodreads. Ele complementa essas plataformas, reunindo diferentes mídias em uma biblioteca pessoal única.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 02 — Logo -->
+<section class="section" data-od-id="logo">
+  <div class="section-header">
+    <div class="section-label">02 — Logo</div>
+    <h2 class="section-title">O sistema de marca</h2>
+    <p class="section-desc">A logo do Indexa combina um ícone de livro aberto com o logotipo "Indexa" em All Round Gothic Book. Cinco variantes cobrem todos os usos.</p>
+  </div>
+
+  <div class="grid-3" style="margin-bottom: var(--space-xl);">
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; background: #f0f2f5;">
+      <img src="Logo/Indexa__Logo.png" alt="Indexa logo — ícone azul + wordmark escuro" style="max-width: 280px; height: auto;" />
+      <div class="card-label" style="margin-top: var(--space-md);">Principal</div>
+      <div class="card-desc" style="text-align: center; color: #6b7280;">Fundo claro — uso padrão</div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; background: var(--surface-raised);">
+      <img src="Logo/Indexa__Logo_branco.png" alt="Indexa logo — ícone azul + wordmark branco" style="max-width: 280px; height: auto;" />
+      <div class="card-label" style="margin-top: var(--space-md);">Branco</div>
+      <div class="card-desc" style="text-align: center;">Fundo escuro — wordmark branco</div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 180px; background: var(--accent);">
+      <img src="Logo/Indexa__Logo_negativo.png" alt="Indexa logo — tudo branco (negativo)" style="max-width: 280px; height: auto;" />
+      <div class="card-label" style="margin-top: var(--space-md); color: rgba(255,255,255,0.7);">Negativo</div>
+      <div class="card-desc" style="text-align: center; color: rgba(255,255,255,0.6);">Sobre cor — tudo branco</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; background: var(--surface-raised);">
+      <img src="Logo/Indexa__Icone.png" alt="Indexa ícone — livro azul" style="height: 80px; width: auto;" />
+      <div class="card-label" style="margin-top: var(--space-md);">Ícone</div>
+      <div class="card-desc" style="text-align: center;">Favicon, app icon, espaços reduzidos</div>
+    </div>
+    <div class="card" style="display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 160px; background: var(--surface-raised);">
+      <img src="Logo/Indexa__Icone_branco.png" alt="Indexa ícone — livro branco" style="height: 80px; width: auto;" />
+      <div class="card-label" style="margin-top: var(--space-md);">Ícone Branco</div>
+      <div class="card-desc" style="text-align: center;">Sobre fundos escuros ou coloridos</div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: var(--space-xl);">
+    <div class="card-label">Regras de uso</div>
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-lg); margin-top: var(--space-md);">
+      <div>
+        <div style="font-size: 13px; font-weight: 600; color: var(--success); margin-bottom: var(--space-sm);">Sempre</div>
+        <div style="font-size: 14px; color: var(--fg-secondary); line-height: 1.7;">
+          <div>• Respeitar o espaçamento mínimo ao redor da logo</div>
+          <div>• Usar a variante correta para cada fundo</div>
+          <div>• Manter a proporção original</div>
+          <div>• Usar o ícone sozinho apenas em espaços pequenos</div>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 13px; font-weight: 600; color: var(--error); margin-bottom: var(--space-sm);">Nunca</div>
+        <div style="font-size: 14px; color: var(--fg-secondary); line-height: 1.7;">
+          <div>• Alterar as cores da logo</div>
+          <div>• Adicionar sombras ou contornos</div>
+          <div>• Rotacionar ou distorcer</div>
+          <div>• Sobrepor outros elementos sobre o ícone</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 03 — Personalidade & Arquétipos -->
+<section class="section" data-od-id="personality">
+  <div class="section-header">
+    <div class="section-label">03 — Personalidade</div>
+    <h2 class="section-title">Se o Indexa fosse uma pessoa</h2>
+  </div>
+
+  <div class="grid-3" style="margin-bottom: var(--space-2xl);">
+    <div class="trait">
+      <div class="trait-icon" style="background: var(--accent-soft); color: var(--accent);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      </div>
+      <div>
+        <div class="trait-name">Organizado</div>
+        <div class="trait-desc">Toda informação possui um lugar. Nada parece perdido.</div>
+      </div>
+    </div>
+    <div class="trait">
+      <div class="trait-icon" style="background: var(--accent-soft); color: var(--accent);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+      </div>
+      <div>
+        <div class="trait-name">Inteligente</div>
+        <div class="trait-desc">Valoriza informação. Ajuda o usuário a encontrar rapidamente aquilo que procura.</div>
+      </div>
+    </div>
+    <div class="trait">
+      <div class="trait-icon" style="background: var(--accent-soft); color: var(--accent);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div>
+        <div class="trait-name">Calmo</div>
+        <div class="trait-desc">Acompanha o usuário. Nunca o contrário.</div>
+      </div>
+    </div>
+    <div class="trait">
+      <div class="trait-icon" style="background: var(--accent-soft); color: var(--accent);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>
+      </div>
+      <div>
+        <div class="trait-name">Discreto</div>
+        <div class="trait-desc">A interface nunca disputa atenção com as obras.</div>
+      </div>
+    </div>
+    <div class="trait">
+      <div class="trait-icon" style="background: var(--accent-soft); color: var(--accent);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+      </div>
+      <div>
+        <div class="trait-name">Elegante</div>
+        <div class="trait-desc">Menos elementos. Mais significado.</div>
+      </div>
+    </div>
+    <div class="trait">
+      <div class="trait-icon" style="background: var(--accent-soft); color: var(--accent);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      </div>
+      <div>
+        <div class="trait-name">Prestativo</div>
+        <div class="trait-desc">O aplicativo nunca pergunta "O que você quer fazer?". Ele mostra: "Aqui está exatamente onde você parou."</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="border-left: 3px solid var(--error);">
+    <div class="card-label" style="color: var(--error);">Nunca seria</div>
+    <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; margin-top: var(--space-sm);">
+      <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Infantil</span>
+      <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Chamativo</span>
+      <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Barulhento</span>
+      <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Exagerado</span>
+      <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Competitivo</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 04 — Arquétipos -->
+<section class="section" data-od-id="archetypes">
+  <div class="section-header">
+    <div class="section-label">04 — Arquétipos</div>
+    <h2 class="section-title">A personalidade profunda</h2>
+  </div>
+
+  <div class="grid-2">
+    <div class="card" style="border-top: 3px solid var(--accent);">
+      <div class="card-label">Principal</div>
+      <div class="card-value" style="margin-bottom: var(--space-sm);">Sábio <span style="color: var(--fg-muted); font-weight: 400;">(The Sage)</span></div>
+      <div class="card-desc">O Indexa organiza conhecimento. Valoriza informação. Ajuda o usuário a encontrar rapidamente aquilo que procura.</div>
+    </div>
+    <div class="card" style="border-top: 3px solid var(--accent);">
+      <div class="card-label">Secundário</div>
+      <div class="card-value" style="margin-bottom: var(--space-sm);">Cuidador <span style="color: var(--fg-muted); font-weight: 400;">(The Caregiver)</span></div>
+      <div class="card-desc">Protege a biblioteca do usuário. Preserva memórias. Registra sua jornada.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 05 — Valores -->
+<section class="section" data-od-id="values">
+  <div class="section-header">
+    <div class="section-label">05 — Valores</div>
+    <h2 class="section-title">Os pilares que guiam cada decisão</h2>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-value" style="color: var(--accent); margin-bottom: var(--space-sm);">01</div>
+      <div class="card-value">Simplicidade</div>
+      <div class="card-desc">Toda funcionalidade deve resolver um problema de forma direta.</div>
+    </div>
+    <div class="card">
+      <div class="card-value" style="color: var(--accent); margin-bottom: var(--space-sm);">02</div>
+      <div class="card-value">Organização</div>
+      <div class="card-desc">Toda informação possui um lugar claro.</div>
+    </div>
+    <div class="card">
+      <div class="card-value" style="color: var(--accent); margin-bottom: var(--space-sm);">03</div>
+      <div class="card-value">Elegância</div>
+      <div class="card-desc">Menos elementos. Mais significado.</div>
+    </div>
+    <div class="card">
+      <div class="card-value" style="color: var(--accent); margin-bottom: var(--space-sm);">04</div>
+      <div class="card-value">Consistência</div>
+      <div class="card-desc">As mesmas ações funcionam da mesma maneira em qualquer categoria.</div>
+    </div>
+    <div class="card">
+      <div class="card-value" style="color: var(--accent); margin-bottom: var(--space-sm);">05</div>
+      <div class="card-value">Confiabilidade</div>
+      <div class="card-desc">O usuário pode depender do Indexa por anos.</div>
+    </div>
+    <div class="card">
+      <div class="card-value" style="color: var(--accent); margin-bottom: var(--space-sm);">06</div>
+      <div class="card-value">Leveza</div>
+      <div class="card-desc">A experiência deve parecer natural, nunca pesada.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 06 — Cores -->
+<section class="section" id="cores" data-od-id="colors">
+  <div class="section-header">
+    <div class="section-label">06 — Cores</div>
+    <h2 class="section-title">Uma paleta que orienta, nunca decora</h2>
+    <p class="section-desc">Toda cor comunica algo. Cores são usadas apenas para orientar a navegação e transmitir estado.</p>
+  </div>
+
+  <div class="swatch-group">
+    <div class="swatch-group-title">Primárias</div>
+    <div class="swatch-row">
+      <div class="swatch">
+        <div class="swatch-color" style="background: #3563E9;"><span>#3563E9</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Azul Indexa</div>
+          <div class="swatch-token">--accent</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #1C1F26;"><span style="color: #9ca3af;">#1C1F26</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Surface</div>
+          <div class="swatch-token">--surface</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #0f1114;"><span style="color: #9ca3af;">#0f1114</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Background</div>
+          <div class="swatch-token">--bg</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="swatch-group">
+    <div class="swatch-group-title">Texto</div>
+    <div class="swatch-row">
+      <div class="swatch">
+        <div class="swatch-color" style="background: #f0f2f5;"><span style="color: #0f1114;">#f0f2f5</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Texto Primário</div>
+          <div class="swatch-token">--fg</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #9ca3af;"><span>#9ca3af</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Texto Secundário</div>
+          <div class="swatch-token">--fg-secondary</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #6b7280;"><span>#6b7280</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Texto Muted</div>
+          <div class="swatch-token">--fg-muted</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="swatch-group">
+    <div class="swatch-group-title">Semânticas</div>
+    <div class="swatch-row">
+      <div class="swatch">
+        <div class="swatch-color" style="background: #22C55E;"><span>#22C55E</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Sucesso</div>
+          <div class="swatch-token">--success</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #F59E0B;"><span>#F59E0B</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Atenção</div>
+          <div class="swatch-token">--warning</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #EF4444;"><span>#EF4444</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Erro</div>
+          <div class="swatch-token">--error</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #E11D48;"><span>#E11D48</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Favorito</div>
+          <div class="swatch-token">--favorite</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="swatch-group">
+    <div class="swatch-group-title">Superfícies</div>
+    <div class="swatch-row">
+      <div class="swatch">
+        <div class="swatch-color" style="background: #22262f;"><span style="color: #9ca3af;">#22262f</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Surface Hover</div>
+          <div class="swatch-token">--surface-hover</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #2a2e38;"><span style="color: #9ca3af;">#2a2e38</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Border</div>
+          <div class="swatch-token">--border</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-color" style="background: #1e222b;"><span style="color: #9ca3af;">#1e222b</span></div>
+        <div class="swatch-info">
+          <div class="swatch-name">Border Subtle</div>
+          <div class="swatch-token">--border-subtle</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 07 — Tipografia -->
+<section class="section" id="tipografia" data-od-id="typography">
+  <div class="section-header">
+    <div class="section-label">07 — Tipografia</div>
+    <h2 class="section-title">Excelente legibilidade, poucos pesos</h2>
+    <p class="section-desc">A tipografia prioriza leitura confortável em português, em telas de qualquer tamanho.</p>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--space-xl); padding: var(--space-2xl); border-top: 3px solid var(--accent);">
+    <div class="card-label">Logotipo</div>
+    <div style="font-family: 'All Round Gothic', 'Inter', sans-serif; font-size: 36px; font-weight: 500; letter-spacing: 0.02em; margin-top: var(--space-sm);">
+      All Round Gothic Book — wordmark da marca
+    </div>
+    <div style="font-size: 14px; color: var(--fg-secondary); margin-top: var(--space-sm);">Peso: Book (500). Usada exclusivamente no logotipo "Indexa". Não utilizar em outros contextos.</div>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--space-xl); padding: var(--space-2xl);">
+    <div class="card-label">Família principal</div>
+    <div style="font-family: var(--font-body); font-size: 32px; font-weight: 600; letter-spacing: -0.02em; margin-top: var(--space-sm);">
+      Inter — para todo o corpo de texto
+    </div>
+    <div style="font-size: 14px; color: var(--fg-secondary); margin-top: var(--space-sm);">Fallback: system-ui, -apple-system, sans-serif</div>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--space-xl); padding: var(--space-2xl);">
+    <div class="card-label">Família de destaque</div>
+    <div style="font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -0.02em; margin-top: var(--space-sm);">
+      Playfair Display — para títulos e números de destaque
+    </div>
+    <div style="font-size: 14px; color: var(--fg-secondary); margin-top: var(--space-sm);">Fallback: Georgia, serif</div>
+  </div>
+
+  <div class="card" style="padding: var(--space-lg) var(--space-xl);">
+    <div class="card-label">Escala tipográfica</div>
+    <div style="margin-top: var(--space-lg);">
+      <div class="type-row">
+        <span style="font-family: var(--font-display); font-size: 40px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2;">Display</span>
+        <span class="type-meta">40px · 600 · -0.02em</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 32px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2;">Heading 1</span>
+        <span class="type-meta">32px · 600 · -0.02em</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 28px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.25;">Heading 2</span>
+        <span class="type-meta">28px · 600 · -0.01em</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 24px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.3;">Heading 3</span>
+        <span class="type-meta">24px · 600 · -0.01em</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 20px; font-weight: 600; line-height: 1.4;">Título Card</span>
+        <span class="type-meta">20px · 600</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 16px; font-weight: 500; line-height: 1.5;">Subtítulo</span>
+        <span class="type-meta">16px · 500</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 15px; font-weight: 400; line-height: 1.6;">Texto corrido — o conteúdo que o usuário lê por mais tempo.</span>
+        <span class="type-meta">15px · 400 · 150%</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 14px; font-weight: 400; color: var(--fg-secondary); line-height: 1.5;">Texto secundário — metadados e informações de apoio.</span>
+        <span class="type-meta">14px · 400</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 13px; font-weight: 500; color: var(--fg-muted); letter-spacing: 0.01em;">Legenda</span>
+        <span class="type-meta">13px · 500 · 0.01em</span>
+      </div>
+      <div class="type-row">
+        <span style="font-size: 12px; font-weight: 500; color: var(--fg-muted); letter-spacing: 0.02em; text-transform: uppercase;">Microtexto</span>
+        <span class="type-meta">12px · 500 · 0.02em · uppercase</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-top: var(--space-lg); padding: var(--space-lg) var(--space-xl);">
+    <div class="card-label">Peso das fontes</div>
+    <div style="display: flex; gap: var(--space-xl); flex-wrap: wrap; margin-top: var(--space-md);">
+      <div><span style="font-weight: 300; font-size: 18px;">Light</span><br><span style="font-size: 12px; color: var(--fg-muted);">Apenas casos especiais</span></div>
+      <div><span style="font-weight: 400; font-size: 18px;">Regular</span><br><span style="font-size: 12px; color: var(--fg-muted);">Texto padrão</span></div>
+      <div><span style="font-weight: 500; font-size: 18px;">Medium</span><br><span style="font-size: 12px; color: var(--fg-muted);">Botões e UI</span></div>
+      <div><span style="font-weight: 600; font-size: 18px;">Semibold</span><br><span style="font-size: 12px; color: var(--fg-muted);">Subtítulos</span></div>
+      <div><span style="font-weight: 700; font-size: 18px;">Bold</span><br><span style="font-size: 12px; color: var(--fg-muted);">Somente títulos</span></div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 08 — Espaçamentos & Bordas -->
+<section class="section" id="sistema" data-od-id="spacing-radius">
+  <div class="section-header">
+    <div class="section-label">08 — Sistema visual</div>
+    <h2 class="section-title">Espaçamento, bordas e profundidade</h2>
+    <p class="section-desc">Toda a interface segue uma escala de 8 pontos. Nunca utilizar valores aleatórios.</p>
+  </div>
+
+  <div class="grid-2" style="margin-bottom: var(--space-2xl);">
+    <div class="card">
+      <div class="card-label">Escala de espaçamento</div>
+      <div style="margin-top: var(--space-md);">
+        <div class="spacing-row">
+          <span class="spacing-label">xs</span>
+          <div class="spacing-bar" style="width: 4px;"></div>
+          <span class="spacing-value">4px</span>
+        </div>
+        <div class="spacing-row">
+          <span class="spacing-label">sm</span>
+          <div class="spacing-bar" style="width: 8px;"></div>
+          <span class="spacing-value">8px</span>
+        </div>
+        <div class="spacing-row">
+          <span class="spacing-label">md</span>
+          <div class="spacing-bar" style="width: 16px;"></div>
+          <span class="spacing-value">16px</span>
+        </div>
+        <div class="spacing-row">
+          <span class="spacing-label">lg</span>
+          <div class="spacing-bar" style="width: 24px;"></div>
+          <span class="spacing-value">24px</span>
+        </div>
+        <div class="spacing-row">
+          <span class="spacing-label">xl</span>
+          <div class="spacing-bar" style="width: 32px;"></div>
+          <span class="spacing-value">32px</span>
+        </div>
+        <div class="spacing-row">
+          <span class="spacing-label">2xl</span>
+          <div class="spacing-bar" style="width: 48px;"></div>
+          <span class="spacing-value">48px</span>
+        </div>
+        <div class="spacing-row">
+          <span class="spacing-label">hero</span>
+          <div class="spacing-bar" style="width: 64px;"></div>
+          <span class="spacing-value">64px</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Border radius</div>
+      <div style="display: flex; gap: var(--space-xl); flex-wrap: wrap; margin-top: var(--space-lg); justify-content: center;">
+        <div class="radius-item">
+          <div class="radius-box" style="border-radius: 8px;"></div>
+          <span class="radius-label">8px</span>
+          <span style="font-size: 11px; color: var(--fg-muted);">Pequeno</span>
+        </div>
+        <div class="radius-item">
+          <div class="radius-box" style="border-radius: 12px;"></div>
+          <span class="radius-label">12px</span>
+          <span style="font-size: 11px; color: var(--fg-muted);">Médio</span>
+        </div>
+        <div class="radius-item">
+          <div class="radius-box" style="border-radius: 16px;"></div>
+          <span class="radius-label">16px</span>
+          <span style="font-size: 11px; color: var(--fg-muted);">Grande</span>
+        </div>
+        <div class="radius-item">
+          <div class="radius-box" style="border-radius: 20px;"></div>
+          <span class="radius-label">20px</span>
+          <span style="font-size: 11px; color: var(--fg-muted);">Cards</span>
+        </div>
+        <div class="radius-item">
+          <div class="radius-box" style="border-radius: 999px;"></div>
+          <span class="radius-label">999px</span>
+          <span style="font-size: 11px; color: var(--fg-muted);">Pill</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--space-xl);">
+    <div class="card-label">Grid</div>
+    <div style="display: flex; gap: var(--space-2xl); flex-wrap: wrap; margin-top: var(--space-md);">
+      <div>
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: var(--space-sm);">Desktop</div>
+        <div style="display: flex; gap: 4px;">
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+        </div>
+        <div style="font-size: 12px; color: var(--fg-muted); margin-top: 4px;">12 colunas · 1440px max</div>
+      </div>
+      <div>
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: var(--space-sm);">Tablet</div>
+        <div style="display: flex; gap: 4px;">
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+        </div>
+        <div style="font-size: 12px; color: var(--fg-muted); margin-top: 4px;">8 colunas</div>
+      </div>
+      <div>
+        <div style="font-size: 14px; font-weight: 600; margin-bottom: var(--space-sm);">Mobile</div>
+        <div style="display: flex; gap: 4px;">
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+          <div style="width: 32px; height: 48px; background: var(--accent-soft); border: 1px solid rgba(53,99,233,0.2); border-radius: 4px;"></div>
+        </div>
+        <div style="font-size: 12px; color: var(--fg-muted); margin-top: 4px;">4 colunas</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-label">Sombras</div>
+      <div style="display: flex; gap: var(--space-xl); margin-top: var(--space-lg); justify-content: center;">
+        <div style="width: 80px; height: 80px; background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: 0 1px 2px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--fg-muted);">Small</div>
+        <div style="width: 80px; height: 80px; background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: 0 4px 12px rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--fg-muted);">Medium</div>
+        <div style="width: 80px; height: 80px; background: var(--surface-raised); border-radius: var(--radius-md); box-shadow: 0 8px 32px rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; font-size: 12px; color: var(--fg-muted);">Large</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-label">Motion</div>
+      <div style="margin-top: var(--space-md);">
+        <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md);">
+          <span style="font-size: 14px; min-width: 60px;">150ms</span>
+          <div style="flex: 1; height: 4px; background: var(--border); border-radius: 2px; position: relative;">
+            <div style="position: absolute; left: 0; top: 0; height: 100%; width: 33%; background: var(--accent); border-radius: 2px;"></div>
+          </div>
+          <span style="font-size: 12px; color: var(--fg-muted);">Micro</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--space-md); margin-bottom: var(--space-md);">
+          <span style="font-size: 14px; min-width: 60px;">200ms</span>
+          <div style="flex: 1; height: 4px; background: var(--border); border-radius: 2px; position: relative;">
+            <div style="position: absolute; left: 0; top: 0; height: 100%; width: 66%; background: var(--accent); border-radius: 2px;"></div>
+          </div>
+          <span style="font-size: 12px; color: var(--fg-muted);">Padrão</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: var(--space-md);">
+          <span style="font-size: 14px; min-width: 60px;">250ms</span>
+          <div style="flex: 1; height: 4px; background: var(--border); border-radius: 2px; position: relative;">
+            <div style="position: absolute; left: 0; top: 0; height: 100%; width: 100%; background: var(--accent); border-radius: 2px;"></div>
+          </div>
+          <span style="font-size: 12px; color: var(--fg-muted);">Complexo</span>
+        </div>
+        <div style="font-size: 12px; color: var(--fg-muted); margin-top: var(--space-md);">Curva: ease-out · Suaves, curtas, discretas</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 09 — Componentes -->
+<section class="section" data-od-id="components">
+  <div class="section-header">
+    <div class="section-label">09 — Componentes</div>
+    <h2 class="section-title">A Biblioteca de Componentes</h2>
+    <p class="section-desc">Um conjunto reduzido de componentes reutilizáveis. O mesmo componente sempre funciona da mesma forma.</p>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--space-xl);">
+    <div class="card-label">Botões</div>
+    <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; margin-top: var(--space-md); align-items: center;">
+      <button class="btn btn-primary">Adicionar obra</button>
+      <button class="btn btn-secondary">Cancelar</button>
+      <button class="btn btn-tertiary">Ver mais</button>
+      <button class="btn btn-primary" style="border-radius: var(--radius-pill);">FAB</button>
+      <button class="btn btn-primary" disabled style="opacity: 0.4; cursor: not-allowed;">Disabled</button>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--space-xl);">
+    <div class="card-label">Badges</div>
+    <div style="display: flex; gap: var(--space-md); flex-wrap: wrap; margin-top: var(--space-md);">
+      <span class="badge badge-accent">Filme</span>
+      <span class="badge badge-success">Concluído</span>
+      <span class="badge badge-warning">Em andamento</span>
+      <span class="badge badge-error">Dropped</span>
+      <span class="badge badge-accent">2024</span>
+      <span class="badge badge-accent">Ação</span>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--space-xl);">
+    <div class="card-label">Chips</div>
+    <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-md);">
+      <span class="chip">Ficção científica</span>
+      <span class="chip">Drama</span>
+      <span class="chip">Aventura</span>
+      <span class="chip">Coleção pessoal</span>
+      <span class="chip">Favoritos</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Hierarquia de Cards</div>
+    <div style="margin-top: var(--space-md); font-size: 14px; color: var(--fg-secondary); line-height: 1.7;">
+      <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+        <span style="color: var(--accent); font-weight: 600;">1.</span> Capa (elemento visual principal)
+      </div>
+      <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+        <span style="color: var(--accent); font-weight: 600;">2.</span> Título
+      </div>
+      <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+        <span style="color: var(--accent); font-weight: 600;">3.</span> Progresso
+      </div>
+      <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: var(--space-sm);">
+        <span style="color: var(--accent); font-weight: 600;">4.</span> Status (Badge clicável)
+      </div>
+      <div style="display: flex; align-items: center; gap: var(--space-sm);">
+        <span style="color: var(--fg-muted); font-weight: 600;">5.</span> <span style="color: var(--fg-muted);">Avaliação, Gêneros, Ano — secundários</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 10 — Tom de Voz -->
+<section class="section" id="voz" data-od-id="voice">
+  <div class="section-header">
+    <div class="section-label">10 — Tom de voz</div>
+    <h2 class="section-title">Como o Indexa fala</h2>
+    <p class="section-desc">O Indexa conversa como um bom bibliotecário. Educado. Objetivo. Prestativo. Nunca informal em excesso. Nunca robótico.</p>
+  </div>
+
+  <div class="grid-2" style="margin-bottom: var(--space-xl);">
+    <div>
+      <div class="card-label" style="margin-bottom: var(--space-md); color: var(--success);">Sempre usar</div>
+      <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+        <div class="voice-example voice-do">
+          <div class="voice-tag">Feedback</div>
+          Obra adicionada.
+        </div>
+        <div class="voice-example voice-do">
+          <div class="voice-tag">Status</div>
+          Biblioteca atualizada.
+        </div>
+        <div class="voice-example voice-do">
+          <div class="voice-tag">Progresso</div>
+          Episódio concluído.
+        </div>
+        <div class="voice-example voice-do">
+          <div class="voice-tag">Busca</div>
+          Nenhuma obra encontrada.
+        </div>
+        <div class="voice-example voice-do">
+          <div class="voice-tag">Conquista</div>
+          Você concluiu esta coleção.
+        </div>
+      </div>
+    </div>
+    <div>
+      <div class="card-label" style="margin-bottom: var(--space-md); color: var(--error);">Nunca usar</div>
+      <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
+        <div class="voice-example voice-dont">
+          <div class="voice-tag">Excesso</div>
+          Sucesso!!!
+        </div>
+        <div class="voice-example voice-dont">
+          <div class="voice-tag">Excesso</div>
+          Parabéns!!
+        </div>
+        <div class="voice-example voice-dont">
+          <div class="voice-tag">Excesso</div>
+          Uhuuu!!
+        </div>
+        <div class="voice-example voice-dont">
+          <div class="voice-tag">Excesso</div>
+          Incrível!!
+        </div>
+        <div class="voice-example voice-dont">
+          <div class="voice-tag">Excesso</div>
+          Sensacional!!
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom: var(--space-xl);">
+    <div class="card-label">Escrita</div>
+    <div style="margin-top: var(--space-md); font-size: 14px; color: var(--fg-secondary); line-height: 1.7;">
+      <div style="margin-bottom: var(--space-sm);">• Sempre utilizar frases curtas.</div>
+      <div style="margin-bottom: var(--space-sm);">• Evitar textos longos.</div>
+      <div style="margin-bottom: var(--space-sm);">• Botões sempre começam com verbos.</div>
+    </div>
+    <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap; margin-top: var(--space-md);">
+      <span class="chip">Adicionar obra</span>
+      <span class="chip">Salvar</span>
+      <span class="chip">Editar</span>
+      <span class="chip">Cancelar</span>
+      <span class="chip">Excluir</span>
+      <span class="chip">Importar</span>
+      <span class="chip">Exportar</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-label">Vocabulário oficial</div>
+    <div class="grid-2" style="margin-top: var(--space-md);">
+      <div>
+        <div style="font-size: 13px; font-weight: 600; color: var(--success); margin-bottom: var(--space-sm);">Sempre utilizar</div>
+        <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+          <span class="chip">Biblioteca</span>
+          <span class="chip">Obra</span>
+          <span class="chip">Coleção</span>
+          <span class="chip">Jornada</span>
+          <span class="chip">Categoria</span>
+          <span class="chip">Adicionar</span>
+          <span class="chip">Concluir</span>
+          <span class="chip">Continuar</span>
+          <span class="chip">Favorito</span>
+          <span class="chip">Progresso</span>
+        </div>
+      </div>
+      <div>
+        <div style="font-size: 13px; font-weight: 600; color: var(--error); margin-bottom: var(--space-sm);">Evitar</div>
+        <div style="display: flex; gap: var(--space-sm); flex-wrap: wrap;">
+          <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Item</span>
+          <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Registro</span>
+          <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Arquivo</span>
+          <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Objeto</span>
+          <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Lista</span>
+          <span class="chip" style="border-color: rgba(239,68,68,0.3); color: var(--fg-muted);">Cadastro</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 11 — Princípios de Produto -->
+<section class="section" id="principios" data-od-id="principles">
+  <div class="section-header">
+    <div class="section-label">11 — Princípios</div>
+    <h2 class="section-title">As regras que guiam cada decisão</h2>
+    <p class="section-desc">Toda funcionalidade nova deve fortalecer pelo menos um destes princípios. Se violar algum, deve ser revista.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: var(--space-md);">
+    <div class="principle">
+      <div class="principle-num">01</div>
+      <div class="principle-title">O conteúdo é o protagonista</div>
+      <div class="principle-desc">O usuário deve enxergar primeiro a capa, o título e o progresso. Nunca a interface.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">02</div>
+      <div class="principle-title">Organização acima de quantidade</div>
+      <div class="principle-desc">Adicionar mais funcionalidades não torna o produto melhor. Uma funcionalidade só existe se realmente melhorar a organização.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">03</div>
+      <div class="principle-title">Simplicidade vence complexidade</div>
+      <div class="principle-desc">Sempre escolher a solução mais simples. Se duas soluções resolverem o mesmo problema, utilizar a que exige menos aprendizado.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">04</div>
+      <div class="principle-title">Cada tela possui apenas um objetivo</div>
+      <div class="principle-desc">Home → Retomar jornada. Biblioteca → Encontrar obras. Dashboard → Descobrir padrões. Nunca misturar objetivos.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">05</div>
+      <div class="principle-title">O usuário nunca deve preencher o que a API conhece</div>
+      <div class="principle-desc">Título, ano, autor, sinopse, gêneros, capa — tudo preenchido automaticamente. O usuário apenas complementa informações pessoais.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">06</div>
+      <div class="principle-title">Ações frequentes devem exigir um clique</div>
+      <div class="principle-desc">Favoritar, alterar status, avaliar e continuar progresso nunca devem ficar escondidos.</div>
+    </div>
+    <div class="principle">
+      <div class="principle-num">07</div>
+      <div class="principle-title">A interface deve desaparecer</div>
+      <div class="principle-desc">Quanto menos o usuário pensar sobre a interface, melhor. O Indexa existe para organizar histórias, não interfaces.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider" />
+
+<!-- 12 — Design Tokens Reference -->
+<section class="section" data-od-id="tokens">
+  <div class="section-header">
+    <div class="section-label">12 — Design Tokens</div>
+    <h2 class="section-title">Referência completa de tokens</h2>
+  </div>
+
+  <div class="card" style="overflow-x: auto;">
+    <table class="token-table">
+      <thead>
+        <tr>
+          <th>Token</th>
+          <th>Valor</th>
+          <th>Uso</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td>--bg</td><td>#0f1114</td><td>Fundo principal da aplicação</td></tr>
+        <tr><td>--surface</td><td>#1C1F26</td><td>Cards, modais e painéis</td></tr>
+        <tr><td>--surface-raised</td><td>#1c1f26</td><td>Superfícies elevadas</td></tr>
+        <tr><td>--surface-hover</td><td>#22262f</td><td>Hover em superfícies</td></tr>
+        <tr><td>--border</td><td>#2a2e38</td><td>Bordas padrão</td></tr>
+        <tr><td>--border-subtle</td><td>#1e222b</td><td>Bordas sutis e separadores</td></tr>
+        <tr><td>--fg</td><td>#f0f2f5</td><td>Texto primário</td></tr>
+        <tr><td>--fg-secondary</td><td>#9ca3af</td><td>Texto secundário</td></tr>
+        <tr><td>--fg-muted</td><td>#6b7280</td><td>Texto muted e legendas</td></tr>
+        <tr><td>--accent</td><td>#3563E9</td><td>Cor primária — confiança e tecnologia</td></tr>
+        <tr><td>--success</td><td>#22C55E</td><td>Feedback de sucesso</td></tr>
+        <tr><td>--warning</td><td>#F59E0B</td><td>Avisos e atenção</td></tr>
+        <tr><td>--error</td><td>#EF4444</td><td>Erros e ações destrutivas</td></tr>
+        <tr><td>--favorite</td><td>#E11D48</td><td>Favoritos</td></tr>
+        <tr><td>--radius-sm</td><td>8px</td><td>Border radius pequeno</td></tr>
+        <tr><td>--radius-md</td><td>12px</td><td>Inputs e botões</td></tr>
+        <tr><td>--radius-lg</td><td>16px</td><td>Border radius grande</td></tr>
+        <tr><td>--radius-xl</td><td>20px</td><td>Cards premium</td></tr>
+        <tr><td>--radius-pill</td><td>999px</td><td>Badges e botões arredondados</td></tr>
+        <tr><td>--font-display</td><td>Playfair Display</td><td>Títulos e display</td></tr>
+        <tr><td>--font-body</td><td>Inter</td><td>Corpo de texto e UI</td></tr>
+        <tr><td>--font-logo</td><td>All Round Gothic Book</td><td>Logotipo da marca (peso 500)</td></tr>
+      </tbody>
+    </table>
+  </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer" data-od-id="footer">
+  <div style="font-family: var(--font-logo); font-size: 28px; font-weight: 500; letter-spacing: 0.02em; margin-bottom: var(--space-md);">
+    Indexa<span style="color: var(--accent);">.</span>
+  </div>
+  <div class="footer-text">
+    Brandbook v1.0 · Toda sua biblioteca. Em um único lugar.
+  </div>
+  <div class="footer-text" style="margin-top: var(--space-sm); font-style: italic;">
+    "Toda história merece ser lembrada."
+  </div>
+</footer>
+
+</body>
+</html>

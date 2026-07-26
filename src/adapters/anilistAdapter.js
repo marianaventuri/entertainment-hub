@@ -35,7 +35,8 @@ function anilistAdapter(m, type) {
     title: m.title?.romaji || m.title?.english || m.title?.native || '',
     year, creator: author, studio, developer: '', publisher: '',
     genres, cover, synopsis: cleanDesc, durationMinutes, episodes, seasons: '',
-    pages: m.chapters || '', source, anilistStatus,
-    externalIds: { tmdbId: '', anilistId: m.id, rawgId: '' }
+    pages: '', chapters: m.chapters || '', source, anilistStatus,
+    rating: '', esrb: '', platform: '', readUrl: '',
+    externalIds: { tmdbId: '', anilistId: m.id, rawgId: '', isbn: '' }
   };
 }

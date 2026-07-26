@@ -7,21 +7,16 @@ async function searchTMDB(title, type) {
   const mediaType = (type === 'Filme') ? 'movie' : 'tv';
   const url = `${TMDB_BASE}/search/${mediaType}?query=${encodeURIComponent(title)}&api_key=${TMDB_KEY}&language=pt-BR`;
   const res = await fetch(url);
-  if (!res.ok) return null;
+  if (!res.ok) return [];
   const data = await res.json();
-  const item = data.results && data.results[0];
-  if (!item) return null;
+  if (!data.results || !data.results.length) return [];
 
-  let rawDetail = null;
-  try {
-    const detUrl = `${TMDB_BASE}/${mediaType}/${item.id}?api_key=${TMDB_KEY}&language=pt-BR&append_to_response=${mediaType === 'movie' ? 'credits' : 'aggregate_credits'}`;
-    const detRes  = await fetch(detUrl);
-    if (detRes.ok) rawDetail = await detRes.json();
-  } catch(_) {}
-
-  const adapted = tmdbAdapter(rawDetail || item, type);
-  adapted.externalIds.tmdbId = item.id;
-  return adapted;
+  return data.results.slice(0, 5).map(item => {
+    const adapted = tmdbAdapter(item, type);
+    adapted._source = 'TMDB';
+    adapted._apiId = item.id;
+    return adapted;
+  });
 }
 
 /* ── AniList ── */
@@ -29,22 +24,24 @@ async function searchAniList(title, type) {
   const mediaType = type === 'Mangá' ? 'MANGA' : 'ANIME';
   const query = `
     query($search: String, $type: MediaType) {
-      Media(search: $search, type: $type, sort: SEARCH_MATCH) {
-        title { romaji english native }
-        startDate { year }
-        description(asHtml: false)
-        coverImage { large }
-        genres
-        episodes
-        chapters
-        duration
-        status
-        source
-        staff(sort: ROLE, perPage: 5) {
-          edges { role node { name { full } } }
-        }
-        studios {
-          edges { isMain node { name } }
+      Page(perPage: 5) {
+        media(search: $search, type: $type, sort: SEARCH_MATCH) {
+          title { romaji english native }
+          startDate { year }
+          description(asHtml: false)
+          coverImage { large }
+          genres
+          episodes
+          chapters
+          duration
+          status
+          source
+          staff(sort: ROLE, perPage: 5) {
+            edges { role node { name { full } } }
+          }
+          studios {
+            edges { isMain node { name } }
+          }
         }
       }
     }
@@ -54,65 +51,80 @@ async function searchAniList(title, type) {
     headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
     body:    JSON.stringify({ query, variables: { search: title, type: mediaType } })
   });
-  if (!res.ok) return null;
+  if (!res.ok) return [];
   const data = await res.json();
-  const m = data.data && data.data.Media;
-  if (!m) return null;
+  const page = data.data && data.data.Page;
+  if (!page || !page.media || !page.media.length) return [];
 
-  return anilistAdapter(m, type);
+  return page.media.slice(0, 5).map(m => {
+    const adapted = anilistAdapter(m, type);
+    adapted._source = 'AniList';
+    adapted._apiId = m.id;
+    return adapted;
+  });
 }
 
 /* ── Google Books ── */
 async function searchGoogleBooks(title, author) {
   const q = author ? `${title} ${author}` : title;
-  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&key=${GOOGLE_BOOKS_KEY}&maxResults=1`;
+  const url = `https://www.googleapis.com/books/v1/volumes?q=${encodeURIComponent(q)}&key=${GOOGLE_BOOKS_KEY}&maxResults=5`;
   try {
     const res  = await fetch(url);
     const data = await res.json();
-    if (data.error) { console.warn('Google Books API error:', data.error); return null; }
-    const v = data.items && data.items[0];
-    if (!v) return null;
+    if (data.error) { console.warn('Google Books API error:', data.error); return []; }
+    if (!data.items || !data.items.length) return [];
 
-    const info = v.volumeInfo || {};
-    let cover = '';
-    if (info.imageLinks) {
-      cover = (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail || '').replace(/^http:/, 'https:');
-    }
-    let synopsis = info.description || '';
-    if (synopsis) {
-      synopsis = synopsis.replace(/<[^>]+>/g, '').trim();
-      synopsis = synopsis.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'");
-    }
+    return data.items.slice(0, 5).map(v => {
+      const info = v.volumeInfo || {};
+      let cover = '';
+      if (info.imageLinks) {
+        cover = (info.imageLinks.thumbnail || info.imageLinks.smallThumbnail || '').replace(/^http:/, 'https:');
+      }
+      let synopsis = info.description || '';
+      if (synopsis) {
+        synopsis = synopsis.replace(/<[^>]+>/g, '').trim();
+        synopsis = synopsis.replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").replace(/&apos;/g, "'");
+      }
 
-    return {
-      title: info.title || '',
-      year: (info.publishedDate || '').slice(0,4),
-      creator: (info.authors || [])[0] || '',
-      studio: '', developer: '', publisher: (info.publisher || ''),
-      genres: (info.categories || []).slice(0,4).join(', '),
-      cover, synopsis,
-      durationMinutes: '', episodes: '', seasons: '',
-      pages: info.pageCount || '',
-      source: '', anilistStatus: '',
-      externalIds: { tmdbId: '', anilistId: '', rawgId: '' }
-    };
-  } catch(_) { return null; }
+      let isbn = '';
+      if (info.industryIdentifiers) {
+        const isbn13 = info.industryIdentifiers.find(i => i.type === 'ISBN_13');
+        const isbn10 = info.industryIdentifiers.find(i => i.type === 'ISBN_10');
+        isbn = (isbn13 || isbn10 || {}).identifier || '';
+      }
+
+      return {
+        title: info.title || '',
+        year: (info.publishedDate || '').slice(0,4),
+        creator: (info.authors || [])[0] || '',
+        studio: '', developer: '', publisher: (info.publisher || ''),
+        genres: (info.categories || []).slice(0,4).join(', '),
+        cover, synopsis,
+        durationMinutes: '', episodes: '', seasons: '', chapters: '',
+        pages: info.pageCount || '',
+        source: '', anilistStatus: '', rating: '', esrb: '', platform: '', readUrl: '',
+        externalIds: { tmdbId: '', anilistId: '', rawgId: '', isbn },
+        _source: 'Google Books'
+      };
+    });
+  } catch(_) { return []; }
 }
 
 /* ── Open Library (search) ── */
 async function searchOpenLibrary(title, author) {
   const q = author ? `${title} ${author}` : title;
-  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=1`;
+  const url = `https://openlibrary.org/search.json?q=${encodeURIComponent(q)}&limit=5`;
   try {
     const res = await fetch(url);
     const data = await res.json();
-    const item = data.docs && data.docs[0];
-    if (!item) return null;
+    if (!data.docs || !data.docs.length) return [];
 
-    const adapted = openLibraryAdapter(item, null);
-    adapted.externalIds.rawgId = item.olid || '';
-    return adapted;
-  } catch(_) { return null; }
+    return data.docs.slice(0, 5).map(item => {
+      const adapted = openLibraryAdapter(item, null);
+      adapted._source = 'OpenLibrary';
+      return adapted;
+    });
+  } catch(_) { return []; }
 }
 
 /* ── Open Library (by code: OLID / ISBN) ── */
@@ -140,21 +152,18 @@ async function fetchOpenLibraryByCode(code) {
 
 /* ── RAWG ── */
 async function searchRAWG(title) {
-  const url = `https://api.rawg.io/api/games?key=${RAWG_KEY}&search=${encodeURIComponent(title)}&page_size=1`;
+  const url = `https://api.rawg.io/api/games?key=${RAWG_KEY}&search=${encodeURIComponent(title)}&page_size=5`;
   const res  = await fetch(url);
-  if (!res.ok) return null;
+  if (!res.ok) return [];
   const data = await res.json();
-  const item = data.results && data.results[0];
-  if (!item) return null;
+  if (!data.results || !data.results.length) return [];
 
-  let detail = null;
-  try {
-    const detUrl = `https://api.rawg.io/api/games/${item.id}?key=${RAWG_KEY}`;
-    const detRes = await fetch(detUrl);
-    detail = await detRes.json();
-  } catch(_) {}
-
-  return rawgAdapter(item, detail);
+  return data.results.slice(0, 5).map(item => {
+    const adapted = rawgAdapter(item, null);
+    adapted._source = 'RAWG';
+    adapted._apiId = item.id;
+    return adapted;
+  });
 }
 
 /* ── Busca online (ponto de entrada) ── */
@@ -167,10 +176,10 @@ function clearApiStatus() {
 
 let _lastApiSnapshot = {};
 
-async function buscarOnline(acOnly = false) {
+async function buscarOnline() {
   const title  = document.getElementById('f-title')?.value?.trim() || '';
   const type   = document.getElementById('f-type')?.value || '';
-  if (!title) return acOnly ? [] : alert('Digite o título antes de buscar.');
+  if (!title || title.length < 2) return [];
 
   let author = '';
   if (type === 'Filme') author = document.getElementById('f-director')?.value?.trim() || '';
@@ -179,67 +188,23 @@ async function buscarOnline(acOnly = false) {
   else if (type === 'Jogo') author = document.getElementById('f-developer')?.value?.trim() || '';
   else author = document.getElementById('f-author')?.value?.trim() || '';
 
-  const btn = document.getElementById('btnBuscarOnline');
-  if (!acOnly) {
-    const statusEl = document.getElementById('apiStatus');
-    if (statusEl) statusEl.textContent = '⏳ Buscando…';
-    if (btn) btn.disabled = true;
-  }
-  document.getElementById('f-olid-field')?.classList.add('hidden');
+  let results = [];
 
   try {
-    let result = null;
-    let results = [];
-
     if (type === 'Anime' || type === 'Mangá') {
-      result = await searchAniList(title, type);
+      results = await searchAniList(title, type) || [];
     } else if (type === 'Livro') {
-      result = await searchGoogleBooks(title, author);
-      if (result && (!result.year || !result.synopsis || !result.genres)) {
-        const ol = await searchOpenLibrary(title, author);
-        if (ol) {
-          if (!result.year && ol.year) result.year = ol.year;
-          if (!result.creator && ol.creator) result.creator = ol.creator;
-          if (!result.synopsis && ol.synopsis) result.synopsis = ol.synopsis;
-          if (!result.cover && ol.cover) result.cover = ol.cover;
-          if (!result.genres && ol.genres) result.genres = ol.genres;
-          if (!result.publisher && ol.publisher) result.publisher = ol.publisher;
-          if (!result.pages && ol.pages) result.pages = ol.pages;
-        }
-      }
-      if (!result) result = await searchOpenLibrary(title, author);
+      results = await searchGoogleBooks(title, author) || [];
+      if (!results.length) results = await searchOpenLibrary(title, author) || [];
     } else if (type === 'Jogo') {
-      if (RAWG_KEY !== 'SUA_CHAVE_AQUI') result = await searchRAWG(title);
+      if (RAWG_KEY !== 'SUA_CHAVE_AQUI') results = await searchRAWG(title) || [];
     } else {
-      if (TMDB_KEY !== 'SUA_CHAVE_AQUI') result = await searchTMDB(title, type);
-    }
-
-    if (acOnly) {
-      results = result ? [result] : [];
-      return results;
-    }
-
-    if (result) {
-      applyApiResult(result, true);
-      previewCover();
-      document.getElementById('f-olid-field')?.classList.add('hidden');
-      const statusEl = document.getElementById('apiStatus');
-      if (statusEl) { statusEl.textContent = '✅ Dados preenchidos!'; statusEl.style.color = 'var(--accent)'; }
-    } else {
-      const statusEl = document.getElementById('apiStatus');
-      if (statusEl) { statusEl.textContent = '❌ Nada encontrado.'; statusEl.style.color = '#ef4444'; }
-      if (type === 'Livro') document.getElementById('f-olid-field')?.classList.remove('hidden');
+      if (TMDB_KEY !== 'SUA_CHAVE_AQUI') results = await searchTMDB(title, type) || [];
     }
   } catch(err) {
     console.error(err);
-    if (!acOnly) {
-      const statusEl = document.getElementById('apiStatus');
-      if (statusEl) { statusEl.textContent = '❌ Erro na busca.'; statusEl.style.color = '#ef4444'; }
-    }
-  } finally {
-    if (!acOnly && btn) btn.disabled = false;
   }
-  return [];
+  return results;
 }
 
 async function fetchBookByCode() {
@@ -278,6 +243,7 @@ function applyApiResult(r, highlight = false) {
   set('f-cover', r.cover);
   set('f-genres', r.genres);
   set('f-episodes', r.episodes);
+  set('f-season', r.seasons);
   const extIds = r.externalIds || {};
   set('f-tmdb-id', extIds.tmdbId);
   set('f-anilist-id', extIds.anilistId);
@@ -285,7 +251,7 @@ function applyApiResult(r, highlight = false) {
 
   if (r.creator) {
     if (type === 'Filme') set('f-director', r.creator);
-    else if (type === 'Série' || type === 'Dorama') set('f-creator', r.creator);
+    else if (type === 'Série' || type === 'Dorama' || type === 'Anime') set('f-creator', r.creator);
     else if (type === 'Jogo') set('f-developer', r.creator);
     else set('f-author', r.creator);
   }
@@ -293,7 +259,18 @@ function applyApiResult(r, highlight = false) {
   if (r.developer && type === 'Jogo' && !r.creator) set('f-developer', r.developer);
   if (r.publisher) set('f-publisher', r.publisher);
   if (r.durationMinutes) set('f-duration-minutes', r.durationMinutes);
+  if (r.platform) set('f-platform', r.platform);
+  if (r.readUrl) set('f-read-url', r.readUrl);
+  if (r.anilistStatus && !document.getElementById('f-status')?.value) {
+    const st = r.anilistStatus.toUpperCase();
+    const isManga = type === 'Mangá';
+    const stMap = { 'FINISHED':'Finalizado', 'RELEASING': isManga ? 'Lendo' : 'Assistindo', 'NOT_YET_RELEASED': isManga ? 'Quero ler' : 'Quero assistir', 'CANCELLED':'Abandonado', 'HIATUS':'Pausado' };
+    if (stMap[st]) set('f-status', stMap[st]);
+  }
   if (r.pages) set('f-pages', r.pages);
+  if (r.chapters) set('f-chapters-total', r.chapters);
+  if (r.rating && typeof setStar === 'function') setStar(Math.min(5, Math.max(0, parseInt(r.rating) || 0)));
+  if (extIds.isbn) set('f-isbn', extIds.isbn);
 
   const cnEl = document.getElementById('f-cover-name');
   if (cnEl && r.cover) cnEl.textContent = 'Capa definida pela busca';

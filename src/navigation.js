@@ -7,12 +7,14 @@ function navigate(page, resetFilters = true, fromPopState = false) {
 
   let domPage = page;
   if (page === 'favoritos') {
+    tipoFilter = '';
     statusFilter = 'fav';
     domPage = 'biblioteca';
   } else if (resetFilters) {
     tipoFilter = '';
     statusFilter = '';
   }
+  if (typeof updateGroupOptions === 'function') updateGroupOptions(tipoFilter);
 
   const prev = document.querySelector('.page.active');
   const next = document.getElementById('page-' + domPage);
@@ -120,12 +122,14 @@ function navigateFilter(page, dim, val) {
     tipoFilter = val;
     document.getElementById('fbTypeSelect').value = val;
     document.getElementById('fbStatusSelect').value = '';
+    if (typeof updateGroupOptions === 'function') updateGroupOptions(val);
   }
   if (dim === 'status') {
     tipoFilter = '';
     statusFilter = val;
     document.getElementById('fbTypeSelect').value = '';
     document.getElementById('fbStatusSelect').value = val;
+    if (typeof updateGroupOptions === 'function') updateGroupOptions('');
   }
   navigate(page, false);
   updateBreadcrumbFilter(page, dim, val);

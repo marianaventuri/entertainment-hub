@@ -97,12 +97,110 @@ function clearAllFilters() {
   if (ratingSel) ratingSel.value = '';
   const collSel = document.getElementById('ff-collection');
   if (collSel) collSel.value = '';
+  updateGroupOptions('');
   renderCatalogo();
 }
 
 function setTipoFilter(tipo) {
   tipoFilter = tipo;
+  updateGroupOptions(tipo);
   renderCatalogo();
+}
+
+function getGroupOptions(tipo) {
+  const all = [
+    { value: 'group_category', label: 'Categoria' },
+    { value: 'group_collection', label: 'Coleção' },
+    { value: 'group_status', label: 'Status' },
+    { value: 'group_year', label: 'Ano' }
+  ];
+  const map = {
+    'Filme': [
+      { value: 'group_director', label: '🎬 Diretor' },
+      { value: 'group_studio', label: '🏢 Estúdio' },
+      { value: 'group_collection', label: '📦 Coleção' },
+      { value: 'group_year', label: '📅 Ano' },
+      { value: 'group_status', label: '📌 Status' }
+    ],
+    'Série': [
+      { value: 'group_creator', label: '🎬 Criador' },
+      { value: 'group_studio', label: '🏢 Estúdio' },
+      { value: 'group_collection', label: '📦 Coleção' },
+      { value: 'group_year', label: '📅 Ano' },
+      { value: 'group_status', label: '📌 Status' }
+    ],
+    'Dorama': [
+      { value: 'group_creator', label: '🎬 Criador' },
+      { value: 'group_studio', label: '🏢 Estúdio' },
+      { value: 'group_collection', label: '📦 Coleção' },
+      { value: 'group_year', label: '📅 Ano' },
+      { value: 'group_status', label: '📌 Status' }
+    ],
+    'Anime': [
+      { value: 'group_studio', label: '🏢 Estúdio' },
+      { value: 'group_director', label: '🎬 Diretor' },
+      { value: 'group_collection', label: '📦 Coleção' },
+      { value: 'group_year', label: '📅 Ano' },
+      { value: 'group_status', label: '📌 Status' }
+    ],
+    'Mangá': [
+      { value: 'group_author', label: '✍ Mangaká' },
+      { value: 'group_collection', label: '📦 Coleção' },
+      { value: 'group_year', label: '📅 Ano' },
+      { value: 'group_status', label: '📌 Status' }
+    ],
+    'Livro': [
+      { value: 'group_author', label: '👤 Autor' },
+      { value: 'group_publisher', label: '🏢 Editora' },
+      { value: 'group_collection', label: '📦 Coleção' },
+      { value: 'group_year', label: '📅 Ano' },
+      { value: 'group_status', label: '📌 Status' }
+    ],
+    'Jogo': [
+      { value: 'group_developer', label: '🎮 Desenvolvedora' },
+      { value: 'group_publisher', label: '🏢 Publicadora' },
+      { value: 'group_platform', label: '🖥 Plataforma' },
+      { value: 'group_collection', label: '📦 Coleção' },
+      { value: 'group_year', label: '📅 Ano' },
+      { value: 'group_status', label: '📌 Status' }
+    ],
+    'Box': [
+      { value: 'group_category', label: '📁 Categoria' },
+      { value: 'group_year', label: '📅 Ano' }
+    ],
+    'Coleção': [
+      { value: 'group_category', label: '📁 Categoria' },
+      { value: 'group_year', label: '📅 Ano' }
+    ]
+  };
+  return map[tipo] || all;
+}
+
+function updateGroupOptions(tipo) {
+  const select = document.getElementById('filterOrder');
+  if (!select) return;
+  const currentVal = select.value;
+
+  const existing = select.querySelector('optgroup[label="Agrupar por"]');
+  if (existing) existing.remove();
+
+  const options = getGroupOptions(tipo || '');
+  const optgroup = document.createElement('optgroup');
+  optgroup.label = 'Agrupar por';
+  options.forEach(opt => {
+    const option = document.createElement('option');
+    option.value = opt.value;
+    option.textContent = opt.label;
+    optgroup.appendChild(option);
+  });
+  select.appendChild(optgroup);
+
+  const validValues = [...select.options].map(o => o.value);
+  if (validValues.includes(currentVal)) {
+    select.value = currentVal;
+  } else if (currentVal.startsWith('group_') || !validValues.includes(select.value)) {
+    select.value = 'recent';
+  }
 }
 
 function setStatusFilter(status) {
@@ -339,7 +437,13 @@ function renderCatalogo() {
       'group_author': 'author',
       'group_director': 'director',
       'group_studio': 'studio',
-      'group_collection': 'collection'
+      'group_collection': 'collection',
+      'group_status': 'status',
+      'group_year': 'year',
+      'group_creator': 'creator',
+      'group_developer': 'developer',
+      'group_publisher': 'publisher',
+      'group_platform': 'platform'
     };
     const prop = groupKeyMap[order] || 'author';
     const groups = {};
@@ -678,6 +782,7 @@ function openBoxView(id) {
   if (typeSel) typeSel.value = '';
   const statusSel = document.getElementById('fbStatusSelect');
   if (statusSel) statusSel.value = '';
+  updateGroupOptions('');
   renderCatalogo();
 }
 
@@ -979,6 +1084,7 @@ function applySavedFilter(tipo, status) {
     const statusSel = document.getElementById('fbStatusSelect');
     if (statusSel) statusSel.value = status === 'fav' ? '' : status;
   }
+  updateGroupOptions(tipoFilter || '');
   renderCatalogo();
 }
 

@@ -97,3 +97,95 @@ PROJECT_MAP.md
 
 ### Commit
 `feec235` — docs: session log 25/07/2026 - Sprint UX.01 Less UI More Library
+
+## Sessão — 25/07/2026
+
+**Comando de salvar:** "atualize o contexts" → atualizar este log (sem commit).
+
+### Sprints concluídas
+
+#### Sprint API.01 — Correções
+
+| # | Arquivo | O que mudou |
+|---|---|---|
+| #1 | `tmdbAdapter.js` | `episodes` agora usa `number_of_episodes` (total) em vez de `seasons[0].episode_count` |
+| #2/#20 | `api.js` | `r.seasons` mapeado para `f-season` |
+| #6 | `anilistAdapter.js` + `api.js` | `m.chapters` → `chapters` (não `pages`); mapeado para `f-chapters-total` |
+| #7/#23 | `api.js` | Anime → `f-creator` em vez de cair no `else → f-author` |
+| #9/#21 | `api.js` | `anilistStatus` mapeado para sugestão de `f-status` |
+| #14 | `api.js` | `adapted.externalIds.rawgId = item.olid` removido |
+| #15 | `openLibraryAdapter.js` | `first_publish_date.slice(0,4)` → regex `match(/\d{4}/)` |
+| — | Todos os adapters | Adicionado `chapters: ''` ao formato comum |
+
+#### Sprint API.02 — Enriquecimento
+
+| Fonte | Dado | Destino |
+|---|---|---|
+| TMDB `production_companies[].name` | join → `studio` | `metadata.studio` |
+| TMDB `networks[].name` (séries) | join → `publisher` | `metadata.publisher` |
+| RAWG `platforms[].platform.name` | join → `platform` | `consumption.platform` |
+| RAWG `website` | `readUrl` | `consumption.readUrl` |
+| RAWG `metacritic`/`rating` | normalizado 0-5 → `rating` | estrelas via `setStar()` |
+| RAWG `esrb_rating.name` | `esrb` | pipeline (sem campo de formulário) |
+| Google Books `industryIdentifiers` | ISBN-13 > ISBN-10 → `isbn` | `externalIds.isbn` |
+| OpenLibrary ISBN | agora mapeado | (via `searchOpenLibrary`) |
+| Todos adapters | `rating, esrb, platform, readUrl` | adicionados ao formato comum |
+| `persistence.js` | `item.director/creator/studio/developer` | flatten para groupBy |
+
+#### Sprint UX.02 — Context-Aware Grouping
+
+- Menu "Agrupar por" agora é **dinâmico** — opções mudam conforme o tipo de mídia selecionado
+- **Todos**: Categoria, Coleção, Status, Ano (só universais)
+- **Filme**: Diretor, Estúdio, Coleção, Ano, Status
+- **Série/Dorama**: Criador, Estúdio, Coleção, Ano, Status
+- **Anime**: Estúdio, Diretor, Coleção, Ano, Status
+- **Mangá**: ✍ Mangaká, Coleção, Ano, Status
+- **Livro**: 👤 Autor, 🏢 Editora, Coleção, Ano, Status
+- **Jogo**: 🎮 Desenvolvedora, 🏢 Publicadora, 🖥 Plataforma, Coleção, Ano, Status
+- **Box/Coleção**: Categoria, Ano
+- Agrupamentos inválidos são removidos automaticamente na troca de categoria
+- `updateGroupOptions` reconstroi o `<optgroup>` via DOM, sem refresh
+- `groupKeyMap` estendido com 6 novos valores (`status, year, creator, developer, publisher, platform`)
+- `normalizeItem()` agora achata `director, creator, studio, developer` ao top level (necessário para groupBy)
+
+#### Bug corrigido (pós-Sprint UX.02)
+- `updateGroupOptions` dentro de `renderCatalogo()` causava perda da seleção de agrupamento: ao remover o optgroup para reconstruí-lo, o browser resetava o `select.value` para o primeiro `<option>` disponível. Removido de `renderCatalogo()` e movido para os pontos onde `tipoFilter` efetivamente muda.
+
+### Arquivos alterados (total)
+`persistence.js`, `index.html`, `src/catalog.js`, `src/navigation.js`, `src/api.js`, `src/adapters/tmdbAdapter.js`, `src/adapters/anilistAdapter.js`, `src/adapters/rawgAdapter.js`, `src/adapters/openLibraryAdapter.js`, `src/modals.js`, `docs/api-mapping.md`
+
+### Deploy
+Firebase Hosting → `https://entertainment-hub-7777a.web.app`
+
+## Sessão — 26/07/2026
+
+**Comando de salvar:** "Salve" → atualizar este log e commitar.
+
+### Sprint API/UX.01 — Smart Search
+
+#### O que mudou:
+
+**src/api.js** — Todos os adaptadores retornam arrays de até 5 resultados:
+- `searchTMDB()`: `results[0]` → `results.slice(0, 5)`. Detail fetch removido (otimização).
+- `searchAniList()`: Query GraphQL migrada de `Media` (1 resultado) para `Page(perPage: 5).media`.
+- `searchGoogleBooks()`: `maxResults=1` → `maxResults=5`, retorna array.
+- `searchOpenLibrary()`: `limit=1` → `limit=5`, retorna array.
+- `searchRAWG()`: `page_size=1` → `page_size=5`, retorna array.
+- `buscarOnline()`: refatorada — sempre retorna array, sem parâmetro `acOnly`, sem auto-apply. Zero chamadas duplicadas.
+- Cada resultado inclui `_source` (ex: `"TMDB"`, `"Google Books"`, `"RAWG"`) e `_apiId`.
+
+**src/modals.js** — Autocomplete real com seleção explícita:
+- `renderSearchAcResults()`: lista com até 8 sugestões, cada uma com capa, título, ano, badge da fonte (`<span class="ac-source">`), selo de confiança (🟢 Correspondência exata / 🟡 Título semelhante) e autor.
+- `computeTrustLevel()`: compara título digitado vs resultado (exact, close, different).
+- `handleSearchClick()`: lupa **nunca** busca — só importa se `_selectedResult` existe. Se não, exibe `"ℹ️ Digite o título e selecione uma obra na lista para importar"`.
+- Navegação por teclado: ↑↓, Enter, Escape, **Home**, **End**.
+- Nenhum item pré-selecionado (`_acHighlightIdx = -1`).
+
+**style.css** — Novos estilos para sugestões:
+- `.ac-source` (badge da API), `.ac-trust--exact/close` (selo de confiança), `.ac-extra` (autor/creator), `.ac-placeholder-cover`, `.search-ac-empty`.
+
+### Pendências
+- Nenhuma pendência conhecida no momento.
+
+### Deploy
+`firebase deploy` executado — live em `https://entertainment-hub-7777a.web.app`

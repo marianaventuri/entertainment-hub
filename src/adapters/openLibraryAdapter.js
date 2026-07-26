@@ -29,9 +29,9 @@ function openLibraryAdapter(searchItem, detail) {
   return {
     title, year, creator: author, studio: '', developer: '', publisher,
     genres, cover, synopsis: detailSynopsis || synopsis,
-    durationMinutes: '', episodes: '', seasons: '', pages,
-    source: '', anilistStatus: '',
-    externalIds: { tmdbId: '', anilistId: '', rawgId: '' }
+    durationMinutes: '', episodes: '', seasons: '', pages, chapters: '',
+    source: '', anilistStatus: '', rating: '', esrb: '', platform: '', readUrl: '',
+    externalIds: { tmdbId: '', anilistId: '', rawgId: '', isbn: '' }
   };
 }
 
@@ -61,12 +61,12 @@ async function openLibraryDetailAdapter(detail) {
 
   return {
     title: detail.title || '',
-    year: (detail.first_publish_date || detail.publish_date || '').slice(0,4),
+    year: ((detail.first_publish_date || detail.publish_date || '').match(/\d{4}/) || [])[0] || '',
     creator: author, studio: '', developer: '', publisher: (detail.publishers || [])[0] || '',
     genres: (detail.subjects || []).slice(0,4).join(', '),
     cover: coverUrl, synopsis: desc,
-    durationMinutes: '', episodes: '', seasons: '', pages: detail.number_of_pages || '',
-    source: '', anilistStatus: '',
-    externalIds: { tmdbId: '', anilistId: '', rawgId: '' }
+    durationMinutes: '', episodes: '', seasons: '', pages: detail.number_of_pages || '', chapters: '',
+    source: '', anilistStatus: '', rating: '', esrb: '', platform: '', readUrl: '',
+    externalIds: { tmdbId: '', anilistId: '', rawgId: '', isbn: '' }
   };
 }

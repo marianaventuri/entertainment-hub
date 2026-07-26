@@ -124,12 +124,12 @@ function renderSmartFormBody(mode, options = {}) {
     <div class="editor-topbar" id="editorTopbar">
       <div class="editor-topbar-title-wrap">
         <input class="form-input" id="f-title" placeholder="Título da obra…" autocomplete="off"
-          oninput="clearApiStatus();editorAutoSave();debouncedSearchAc()"/>
+          oninput="clearSelectedResult();clearApiStatus();editorAutoSave();debouncedSearchAc()"/>
         <div class="field-error" id="f-title-error"></div>
         <div id="searchAcContainer"></div>
       </div>
       <div class="editor-topbar-actions">
-        <button type="button" class="btn-icon" id="btnBuscarOnline" onclick="buscarOnline()"
+        <button type="button" class="btn-icon" id="btnBuscarOnline" onclick="handleSearchClick()"
           title="Buscar dados automaticamente" aria-label="Buscar dados"><span class="material-symbols-rounded">search</span></button>
         <button type="button" class="btn-icon" id="favBtn" onclick="toggleFav()"
           title="Favorito" aria-label="Favorito"><span class="material-symbols-rounded" id="favIcon">favorite_border</span></button>
@@ -336,6 +336,7 @@ function renderSmartFormBody(mode, options = {}) {
           <input type="hidden" id="f-tmdb-id"/>
           <input type="hidden" id="f-anilist-id"/>
           <input type="hidden" id="f-rawg-id"/>
+          <input type="hidden" id="f-isbn"/>
 
           <div class="form-field full hidden" id="f-olid-field">
             <label class="form-label">Código OpenLibrary (OLID / ISBN)</label>
@@ -505,6 +506,7 @@ function fillEditForm(id) {
   set('f-tmdb-id',    item.externalIds?.tmdbId);
   set('f-anilist-id', item.externalIds?.anilistId);
   set('f-rawg-id',    item.externalIds?.rawgId);
+  set('f-isbn',       item.externalIds?.isbn);
  
   // Progresso
   set('f-season',         item.progress?.season);
@@ -710,7 +712,8 @@ async function saveItem(isSilent = false) {
     externalIds: {
       tmdbId:    g('f-tmdb-id'),
       anilistId: g('f-anilist-id'),
-      rawgId:    g('f-rawg-id')
+      rawgId:    g('f-rawg-id'),
+      isbn:      g('f-isbn')
     }
   };
   if (!item.addedAt) item.addedAt = new Date().toISOString()
@@ -948,23 +951,72 @@ async function doEditorSave() {
   editorDirty = false;
 }
 
+let _acHighlightIdx = -1;
+
+function computeTrustLevel(query, resultTitle) {
+  if (!query || !resultTitle) return '';
+  const q = query.toLowerCase().trim();
+  const r = resultTitle.toLowerCase().trim();
+  if (q === r) return 'exact';
+  if (r.includes(q) || q.includes(r)) return 'close';
+  const qWords = q.split(/\s+/).filter(Boolean);
+  const rWords = r.split(/\s+/).filter(Boolean);
+  const common = qWords.filter(w => rWords.includes(w)).length;
+  if (common >= Math.min(2, qWords.length)) return 'close';
+  return 'different';
+}
+
+function trustLabel(level) {
+  if (level === 'exact') return '🟢 Correspondência exata';
+  if (level === 'close') return '🟡 Título semelhante';
+  return '';
+}
+
+function renderSearchAcResults(results) {
+  const container = document.getElementById('searchAcContainer');
+  if (!container) return;
+  if (!results || !results.length) {
+    container.innerHTML = '<div class="search-ac-results"><div class="search-ac-empty">Nenhum resultado encontrado</div></div>';
+    return;
+  }
+  _acHighlightIdx = -1;
+  const query = document.getElementById('f-title')?.value?.trim() || '';
+  container.innerHTML = `<div class="search-ac-results" role="listbox">
+    ${results.slice(0, 8).map((r, i) => {
+      const trust = computeTrustLevel(query, r.title || r.titulo || '');
+      const creator = r.creator || r.author || r.director || '';
+      return `<div class="search-ac-item" onclick="applySearchAcResult(${i})"
+           onmouseenter="highlightAcItem(${i})" role="option" data-idx="${i}">
+        ${r.cover ? `<img src="${esc(r.cover)}" alt="" loading="lazy">` : '<div class="ac-placeholder-cover"></div>'}
+        <div class="ac-info">
+          <div class="ac-title">${esc(r.title || r.titulo || '')}</div>
+          <div class="ac-meta-row">
+            ${r.year ? `<span class="ac-year">${esc(r.year)}</span>` : ''}
+            ${r._source ? `<span class="ac-source">${esc(r._source)}</span>` : ''}
+            ${trust ? `<span class="ac-trust ac-trust--${trust}">${trustLabel(trust)}</span>` : ''}
+          </div>
+          ${creator ? `<div class="ac-extra">${esc(creator)}</div>` : ''}
+        </div>
+      </div>`;
+    }).join('')}
+  </div>`;
+  window._acResults = results;
+}
+
+function highlightAcItem(idx) {
+  _acHighlightIdx = idx;
+  document.querySelectorAll('.search-ac-item').forEach((el, i) => {
+    el.classList.toggle('ac-highlight', i === idx);
+  });
+}
+
 const debouncedSearchAc = debounce(function() {
   const q = document.getElementById('f-title')?.value.trim() || '';
   const container = document.getElementById('searchAcContainer');
   if (!container) return;
   if (q.length < 2) { container.innerHTML = ''; return; }
-  buscarOnline(true).then(results => {
-    if (!results || !results.length) { container.innerHTML = ''; return; }
-    container.innerHTML = `<div class="search-ac-results">
-      ${results.slice(0, 6).map((r, i) => `<div class="search-ac-item" onclick="applySearchAcResult(${i})" data-idx="${i}">
-        ${r.cover ? `<img src="${esc(r.cover)}" alt="" loading="lazy">` : '<div style="width:36px;height:54px;background:var(--surface2);border-radius:4px;flex-shrink:0"></div>'}
-        <div class="ac-info">
-          <div class="ac-title">${esc(r.title || r.titulo || '')}</div>
-          <div class="ac-meta">${r.year || ''}${r.genres ? ' · ' + esc(r.genres.split(',').slice(0, 2).join(', ')) : ''}</div>
-        </div>
-      </div>`).join('')}
-    </div>`;
-    window._acResults = results;
+  buscarOnline().then(results => {
+    renderSearchAcResults(results);
   }).catch(() => {});
 }, 400);
 
@@ -975,15 +1027,56 @@ function setupSearchAc() {
     const c = document.getElementById('searchAcContainer');
     if (c) c.innerHTML = '';
   }, 200));
+  title.addEventListener('keydown', function(e) {
+    const items = document.querySelectorAll('.search-ac-item');
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (!items.length) return;
+      const next = _acHighlightIdx < items.length - 1 ? _acHighlightIdx + 1 : 0;
+      highlightAcItem(next);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (!items.length) return;
+      const prev = _acHighlightIdx > 0 ? _acHighlightIdx - 1 : items.length - 1;
+      highlightAcItem(prev);
+    } else if (e.key === 'Enter') {
+      if (_acHighlightIdx >= 0) {
+        e.preventDefault();
+        applySearchAcResult(_acHighlightIdx);
+      }
+    } else if (e.key === 'Escape') {
+      document.getElementById('searchAcContainer').innerHTML = '';
+    } else if (e.key === 'Home') {
+      if (items.length) { e.preventDefault(); highlightAcItem(0); }
+    } else if (e.key === 'End') {
+      if (items.length) { e.preventDefault(); highlightAcItem(items.length - 1); }
+    }
+  });
 }
 
-let _acResults = [];
+function clearSelectedResult() {
+  window._selectedResult = null;
+}
+
 function applySearchAcResult(idx) {
   const results = window._acResults || [];
   const r = results[idx];
   if (!r) return;
+  window._selectedResult = r;
   document.getElementById('searchAcContainer').innerHTML = '';
   applyApiResult(r, true);
+  previewCover();
+  const statusEl = document.getElementById('apiStatus');
+  if (statusEl) { statusEl.textContent = '✅ Obra selecionada. Clique em Salvar para concluir.'; statusEl.style.color = 'var(--accent)'; }
+}
+
+function handleSearchClick() {
+  if (window._selectedResult) {
+    return;
+  }
+  const statusEl = document.getElementById('apiStatus');
+  if (statusEl) { statusEl.textContent = 'ℹ️ Digite o título e selecione uma obra na lista para importar'; statusEl.style.color = '#f59e0b'; }
+  document.getElementById('searchAcContainer')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 }
 
 function buildContainerSelect() {
