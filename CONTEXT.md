@@ -190,6 +190,25 @@ Firebase Hosting → `https://entertainment-hub-7777a.web.app`
 ### Deploy
 `firebase deploy` executado — live em `https://entertainment-hub-7777a.web.app`
 
+## Sessão — 01/08/2026
+
+**Comando de salvar:** "Salve" → atualizar este log e commitar.
+
+### Correção pendente aplicada — Campo "Link" universal
+
+Scripts de correção abandonados (`fix.js`, `fix.ps1`, `fix2.ps1`, `fix_readurl.ps1`) deixados na raiz em sessão anterior. As mudanças que eles aplicariam não estavam no código — aplicadas manualmente (os scripts tinham encoding corrompido no `data-types="Livro,Mangá"`).
+
+**src/modals.js:**
+1. **Campo "Link" (`f-read-url`) universal no editor** — antes restrito a Livro/Mangá (`ff-leitura data-types="Livro,Mangá"`), agora `<div class="form-field full">` — visível para todos os tipos (linha 205).
+2. **`hasInfoTecnica()` simplificado** — agora retorna `true` se qualquer campo relevante existir (incluindo `readUrl`), sem branch por template (linha 1945).
+3. **Linha "Link" dedicada em `renderInfoTecnicaContent()`** — exibe `readUrl` como link clicável antes da linha de Plataforma (linha 1951).
+
+**Arquivos alterados:** `src/modals.js`
+**Scripts removidos:** `fix.js`, `fix.ps1`, `fix2.ps1`, `fix_readurl.ps1`
+
+### Pendências
+- Commit anterior (`4cc60bf`) ainda não pusheado para `origin/main`.
+
 ## Sessão — 26/07/2026
 
 **Comando de salvar:** "Salve tudo no context para continuarmos depois" → atualizar este log e commitar.

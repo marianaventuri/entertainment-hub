@@ -202,7 +202,7 @@ function renderSmartFormBody(mode, options = {}) {
             <label class="form-label">Onde leio</label>
             <input class="form-input" id="f-platform" placeholder="MangaPlus, TMO Browser…" oninput="editorAutoSave()"/>
           </div>
-          <div class="form-field ff-leitura" data-types="Livro,Mangá">
+          <div class="form-field full">
             <label class="form-label">Link</label>
             <input class="form-input" id="f-read-url" type="url" placeholder="https://..." oninput="editorAutoSave()"/>
           </div>
@@ -1943,15 +1943,12 @@ function renderObsTags(item) {
 
 /* ── Info técnica (sem repetir tipo/status/ano/autor do header) ── */
 function hasInfoTecnica(item, template) {
-  if (template === 'leitura') return item.platform || item.readUrl || item.hours || item.cinemaWatched || item.finishedAt || item.addedAt || item.fav || item.chaptersTotal;
-  if (template === 'consumo-unico' || template === 'jogo') return item.platform || item.hours || item.hoursPlayed || item.cinemaWatched || item.finishedAt || item.addedAt || item.fav;
-  return item.platform || item.episodes || item.hours ||
-         item.cinemaWatched || item.finishedAt || item.addedAt || item.fav ||
-         item.season || item.currentEp || item.currentChapter || item.chaptersTotal;
+  return item.platform || item.readUrl || item.hours || item.hoursPlayed || item.cinemaWatched || item.finishedAt || item.addedAt || item.fav || item.chaptersTotal || item.season || item.currentEp || item.currentChapter || item.episodes;
 }
 
 function renderInfoTecnicaContent(item, template) {
   const rows = [];
+  if (item.readUrl) rows.push(['Link', `<a href="${esc(item.readUrl)}" target="_blank" rel="noopener">${esc(item.readUrl)}</a>`]);
   if (item.platform) rows.push(['Plataforma', item.readUrl ? `<a href="${esc(item.readUrl)}" target="_blank" rel="noopener">${esc(item.platform)}</a>` : esc(item.platform)]);
   if (template === 'consumo-episodico' && (item.season || item.currentEp) && !item.tmdbId) {
     const parts = [];
