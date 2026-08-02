@@ -272,6 +272,31 @@ Hoisted as declarações `settingsTheme/settingsScale/settingsDensity/settingsLa
 ### Deploy
 `firebase deploy --only hosting` executado — live em `https://entertainment-hub-7777a.web.app`
 
+## Sessão — 02/08/2026
+
+**Comando de salvar:** "Faça" → deploy + commit.
+
+### Bug fix — Aba "Sobre" abria Configurações no topo
+
+O item "Sobre" do menu do avatar chamava `navigate('config')`, abrindo Configurações na seção "Aparência" — o conteúdo "Sobre" (seção `secSobre`) ficava lá embaixo, recolhido.
+
+#### Fix
+- **`src/pages.js`**: novo `openCfgSection(id)` — navega para Configurações (se não estiver nela), expande a seção (adiciona `.open` ao header e remove `.hidden` do body), rola até ela (`scrollIntoView`) e aplica um destaque temporário via classe `.cfg-highlight`.
+- **`index.html`**: botão "Sobre" agora chama `openCfgSection('secSobre')` em vez de `navigate('config')`.
+- **`style.css`**: animação `cfgFlash` no `.cfg-highlight` (flash de borda roxa por 1.6s).
+
+#### Verificação
+- Testado em Chrome headless (harness com `openCfgSection` + DOM do accordion): PASS — seção aberta, `hidden` removido e `.cfg-highlight` aplicado.
+
+#### Arquivos alterados
+`src/pages.js`, `index.html`, `style.css`
+
+### Pendências
+- Nenhuma pendência conhecida no momento.
+
+### Deploy
+`firebase deploy --only hosting` executado — live em `https://entertainment-hub-7777a.web.app`
+
 ## Sessão — 01/08/2026
 
 **Comando de salvar:** "Salve" → atualizar este log e commitar.

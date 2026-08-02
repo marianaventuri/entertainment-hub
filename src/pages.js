@@ -703,6 +703,28 @@ function renderConfig() {
 
 /* ── Config Persistence Helpers ── */
 
+function openCfgSection(id) {
+  const wasConfig = currentPage === 'config';
+  if (!wasConfig) navigate('config');
+  setTimeout(() => {
+    const sec = document.getElementById(id);
+    if (!sec) return;
+    const header = sec.previousElementSibling;
+    if (header && header.classList.contains('cfg-section-header') && !header.classList.contains('open')) {
+      header.classList.add('open');
+      sec.classList.remove('hidden');
+    }
+    sec.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    const wrap = sec.closest('.cfg-section');
+    if (wrap) {
+      wrap.classList.remove('cfg-highlight');
+      void wrap.offsetWidth;
+      wrap.classList.add('cfg-highlight');
+      setTimeout(() => wrap.classList.remove('cfg-highlight'), 1600);
+    }
+  }, wasConfig ? 0 : 400);
+}
+
 function toggleLightMode() {
   const modes = ['system', 'light', 'dark'];
   const idx = modes.indexOf(settingsTheme);

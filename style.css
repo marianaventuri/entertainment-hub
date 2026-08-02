@@ -6605,6 +6605,15 @@ body.light-mode .card-info-title {
 }
 .cfg-section-body.hidden { display: none; }
 
+.cfg-highlight {
+  animation: cfgFlash 1.6s ease;
+}
+@keyframes cfgFlash {
+  0%   { box-shadow: 0 0 0 0 rgba(108, 92, 231, 0); }
+  20%  { box-shadow: 0 0 0 3px rgba(108, 92, 231, .45); }
+  100% { box-shadow: 0 0 0 3px rgba(108, 92, 231, 0); }
+}
+
 /* ── Rows ── */
 .cfg-row {
   display: flex;
