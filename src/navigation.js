@@ -160,12 +160,27 @@ function toggleProfileMenu() {
   document.getElementById('profileDropdown').classList.toggle('open');
 }
 
+function toggleDropdown(id) {
+  const el = document.getElementById(id);
+  if (!el) return;
+  const isOpen = el.style.display === 'flex';
+  document.querySelectorAll('.dropdown-menu').forEach(m => {
+    m.style.display = 'none';
+  });
+  if (!isOpen) el.style.display = 'flex';
+}
+
 document.addEventListener('click', function(e) {
   const menu = document.getElementById('profileDropdown');
   const trigger = document.getElementById('profileTrigger');
   if (menu && menu.classList.contains('open') && !menu.contains(e.target) && !trigger.contains(e.target)) {
     menu.classList.remove('open');
   }
+  document.querySelectorAll('.dropdown-menu').forEach(m => {
+    if (m.style.display === 'flex' && m.parentElement && !m.parentElement.contains(e.target)) {
+      m.style.display = 'none';
+    }
+  });
 });
 
 function closeSidebar() {
