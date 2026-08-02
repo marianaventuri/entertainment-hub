@@ -9,10 +9,6 @@ const firebaseConfig = {
 
 firebase.initializeApp(firebaseConfig)
 
-if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
-  firebase.functions().useEmulator('127.0.0.1', 5001);
-}
-
 const auth = firebase.auth()
 let currentUser = null
 

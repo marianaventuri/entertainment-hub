@@ -1,9 +1,0 @@
-{
-  "media": "Filme",
-  "pipeline": [
-    {
-      "api": "TMDB",
-      "fields": ["title", "original_title", "overview", "poster", "backdrop", "release_date", "runtime", "genres", "imdb_id", "collection_id", "director", "producer"]
-    }
-  ]
-}
