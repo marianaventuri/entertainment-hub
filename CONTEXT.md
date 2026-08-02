@@ -246,6 +246,32 @@ Os adapters viraram **classes com contrato uniforme** rodando **direto no browse
 ### Deploy
 `firebase deploy --only hosting` executado — live em `https://entertainment-hub-7777a.web.app`
 
+## Sessão — 02/08/2026
+
+**Comando de salvar:** "Faça" → deploy + commit.
+
+### Bug fix — Aba Perfil abria vazia
+
+#### Causa raiz
+`src/state.js` chamava `applyTheme()` (linha 46) **antes** da declaração de `let settingsTheme` (linha 51). Como `let` sofre *temporal dead zone*, isso lançava `ReferenceError` durante o load do script e **abortava a execução de `state.js`** — nada depois da linha 46 era inicializado, incluindo `profileGoals` e `profilePrefs` (linhas 48-49). Aí `renderProfile()` (src/pages.js:1156) quebrava ao acessar `profileGoals`, deixando o `#perfilContent` em branco.
+
+A página de **Configurações** também era afetada (usava `settingsTheme`/`settings*`, todos em TDZ).
+
+#### Fix
+Hoisted as declarações `settingsTheme/settingsScale/settingsDensity/settingsLayout/settingsAnimations/settingsCovers/settingsItemsPerPage` para **antes** de `applyTheme()` em `src/state.js`.
+
+#### Verificação
+- Reproduzido em Chrome headless (harness isolado com `state.js` + `pages.js`): antes → `ReferenceError: profileGoals is not defined` em `renderProfile`; depois → Perfil renderiza completo (LEN=11252, subtítulo "1 obra · 1 concluídas", zero erros).
+
+#### Arquivos alterados
+`src/state.js`
+
+### Pendências
+- Nenhuma pendência conhecida no momento.
+
+### Deploy
+`firebase deploy --only hosting` executado — live em `https://entertainment-hub-7777a.web.app`
+
 ## Sessão — 01/08/2026
 
 **Comando de salvar:** "Salve" → atualizar este log e commitar.

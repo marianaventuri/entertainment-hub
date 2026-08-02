@@ -33,6 +33,14 @@ let installPrompt = null;
 
 const jornadaCache = new Map();
 
+let settingsTheme = load('indexa_settingsTheme', 'system');
+let settingsScale = load('indexa_settingsScale', 100);
+let settingsDensity = load('indexa_settingsDensity', 'normal');
+let settingsLayout = load('indexa_settingsLayout', 'grid');
+let settingsAnimations = load('indexa_settingsAnimations', true);
+let settingsCovers = load('indexa_settingsCovers', true);
+let settingsItemsPerPage = load('indexa_settingsItemsPerPage', 0);
+
 let lightMode = load('biblioteca_lightMode', false);
 function applyTheme() {
   if (settingsTheme === 'system') {
@@ -47,11 +55,3 @@ applyTheme();
 
 let profileGoals = load('indexa_profileGoals', []);
 let profilePrefs = load('indexa_profilePrefs', {});
-
-let settingsTheme = load('indexa_settingsTheme', 'system');
-let settingsScale = load('indexa_settingsScale', 100);
-let settingsDensity = load('indexa_settingsDensity', 'normal');
-let settingsLayout = load('indexa_settingsLayout', 'grid');
-let settingsAnimations = load('indexa_settingsAnimations', true);
-let settingsCovers = load('indexa_settingsCovers', true);
-let settingsItemsPerPage = load('indexa_settingsItemsPerPage', 0);
