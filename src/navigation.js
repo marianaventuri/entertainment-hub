@@ -57,6 +57,7 @@ function navigate(page, resetFilters = true, fromPopState = false) {
   else if (page === 'conquistas')    { renderConquistas(); }
   else if (page === 'config')        { renderConfig(); }
   else if (page === 'experiencia')   { renderExperiencia(); }
+  else if (page === 'integracoes')   { renderIntegracoes(); }
 
   // History API — push state only on user-initiated navigation
   if (!fromPopState) {
@@ -86,6 +87,7 @@ function updateBreadcrumb(page) {
     conquistas:  'Conquistas',
     config:      'Configurações',
     experiencia: 'Experiência',
+    integracoes: 'Integrações',
     favoritos:   'Favoritos'
   };
 

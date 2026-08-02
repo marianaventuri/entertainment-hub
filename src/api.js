@@ -23,6 +23,7 @@ async function _flattenAdapterRaw(raw) {
 
 async function fetchAdapterSingle(query, adapter) {
   if (!adapter) return {};
+  adapterRegistry.recordCall(adapter.name);
   try {
     const raw = await adapter.fetch(query, []);
     if (!raw || Object.keys(raw).length === 0) return {};
@@ -47,6 +48,7 @@ async function fetchOpenLibraryByCode(code) {
   if (!/^OL\d+/.test(code) && !/^\d{9,13}$/.test(code.replace(/-/g, ''))) return null;
   try {
     const adapter = adapterRegistry.getAdapter('OpenLibrary');
+    adapterRegistry.recordCall(adapter.name);
     const raw = await adapter.fetch(code, []);
     if (!raw || Object.keys(raw).length === 0) return null;
     return await _flattenAdapterRaw(raw);

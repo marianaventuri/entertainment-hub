@@ -233,7 +233,7 @@
     <button onclick="navigate('config')" aria-label="Configurações" title="Configurações da conta">
       <span class="material-symbols-rounded">settings</span> Configurações
     </button>
-    <button onclick="navigate('config')" aria-label="Integrações" title="Gerenciar integrações">
+    <button onclick="navigate('integracoes')" aria-label="Integrações" title="Gerenciar integrações">
       <span class="material-symbols-rounded">integration_instructions</span> Integrações
     </button>
         <button onclick="openImportModal()" aria-label="Backup" title="Fazer backup dos dados">
@@ -531,6 +531,17 @@
       <div id="configContent"></div>
     </div>
 
+    <!-- ── INTEGRAÇÕES ── -->
+    <div class="page" id="page-integracoes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📡 Integrações</div>
+          <div class="page-subtitle">Status e cobertura das fontes de dados</div>
+        </div>
+      </div>
+      <div id="integracoesContent"></div>
+    </div>
+
     <!-- ── EXPERIÊNCIA ── -->
     <div class="page" id="page-experiencia">
       <div class="page-header">
@@ -698,6 +709,7 @@ adapterRegistry.register('OpenLibrary',  new OpenLibraryAdapter(),              
 <script src="src/modals.js?v=12"></script>
 <script src="src/pages.js?v=12"></script>
 <script src="src/auth.js?v=12"></script>
+<script src="src/integrationsPanel.js?v=13"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

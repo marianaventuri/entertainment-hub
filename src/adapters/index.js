@@ -6,6 +6,7 @@ class AdapterRegistry {
   constructor() {
     this.adapters = new Map();
     this.weights  = new Map();
+    this.usage    = new Map();
   }
 
   register(name, instance, weight = 5) {
@@ -16,6 +17,15 @@ class AdapterRegistry {
   getAdapter(name) { return this.adapters.get(name); }
   getWeight(name)  { return this.weights.get(name) || 0; }
   allAdapters()    { return [...this.adapters.entries()]; }
+
+  recordCall(name) {
+    const u = this.usage.get(name) || { count: 0, lastCall: null };
+    u.count += 1;
+    u.lastCall = new Date().toISOString();
+    this.usage.set(name, u);
+  }
+
+  getUsage(name) { return this.usage.get(name) || { count: 0, lastCall: null }; }
 }
 
 // Singleton global

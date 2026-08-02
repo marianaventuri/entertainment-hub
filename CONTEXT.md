@@ -227,9 +227,18 @@ Os adapters viraram **classes com contrato uniforme** rodando **direto no browse
 #### Nota de design
 - `buscarOnline()` retorna **1 resultado** (melhor correspondência por adapter/policy), em vez dos 5 resultados do Smart Search. O autocomplete continua funcionando — seleção explícita mantida — mas com sugestão única. Coerente com o modelo de pipeline por adapter.
 
+#### Painel de Integrações (retomado, sem nuvem)
+- **`src/integrationsPanel.js`** recriado para funcionar **100% no browser**, sem Cloud Functions:
+  - Tabela com cada fonte (TMDB, AniList, RAWG, Google Books, OpenLibrary): status da chave, cobertura, chamadas da sessão, última chamada
+  - Botão **"Testar conexão"** por fonte (faz uma busca real e reporta tempo/resposta)
+  - Card "O que cada fonte preenche" com os campos de `capabilities()`
+- **`AdapterRegistry`** ganhou `recordCall()`/`getUsage()` — contadores de chamadas por sessão (em memória)
+- `api.js`: `fetchAdapterSingle()` e `fetchOpenLibraryByCode()` registram a chamada no registry
+- `navigation.js`: `navigate('integracoes')` renderiza o painel + breadcrumb "Integrações"
+
 #### Arquivos alterados
-`src/api.js`, `src/adapters/*` (5 adapters + index + adapters.json + policies), `index.html`, `firebase.js`, `firebase.json`, `CONTEXT.md`
-**Removidos:** `src/integrationsPanel.js`, `functions/` (adapters + index.js + package.json + policies)
+`src/api.js`, `src/adapters/*` (5 adapters + index + adapters.json + policies), `src/integrationsPanel.js`, `index.html`, `firebase.js`, `firebase.json`, `CONTEXT.md`
+**Removidos:** `src/integrationsPanel.js` (versão com nuvem), `functions/` (adapters + index.js + package.json + policies)
 
 ### Pendências
 - Nenhuma pendência conhecida no momento.
