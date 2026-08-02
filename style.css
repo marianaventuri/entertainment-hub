@@ -6790,6 +6790,13 @@ body.light-mode .card-info-title {
   margin-top: var(--space-1);
   font-style: italic;
 }
+.cfg-about-text {
+  font-size: var(--font-sm);
+  line-height: 1.6;
+  color: var(--text2);
+  max-width: 420px;
+  margin: var(--space-2) auto 0;
+}
 .cfg-about-links {
   margin-top: var(--space-2);
   font-size: var(--font-xs);

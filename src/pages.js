@@ -678,6 +678,11 @@ function renderConfig() {
       <div class="cfg-about-name">Indexa</div>
       <div class="cfg-about-version">Versão 3.0</div>
       <div class="cfg-about-desc">Sua biblioteca. Sua jornada.</div>
+      <p class="cfg-about-text">
+        Uma biblioteca pessoal para reunir toda a sua jornada de entretenimento em um único lugar —
+        filmes, séries, animes, mangás, doramas, livros, HQs e jogos.
+        Registre progresso e avaliações, acompanhe metas e estatísticas, e retome exatamente de onde parou.
+      </p>
       <div class="cfg-about-links">
         <a href="#" onclick="event.preventDefault();toast('📖 Indexa — código aberto')">Licença MIT</a>
         <span class="cfg-about-sep">·</span>

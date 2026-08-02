@@ -297,6 +297,28 @@ O item "Sobre" do menu do avatar chamava `navigate('config')`, abrindo Configura
 ### Deploy
 `firebase deploy --only hosting` executado — live em `https://entertainment-hub-7777a.web.app`
 
+## Sessão — 02/08/2026
+
+**Comando de salvar:** "sim faça" → deploy + commit.
+
+### Feature — Descritivo do app na aba Sobre
+
+A seção "Sobre" em Configurações agora exibe um breve descritivo do app, além de logo/tagline:
+- **`src/pages.js`**: adicionado `<p class="cfg-about-text">` ao `sobreBody` (seção `secSobre`) — "Uma biblioteca pessoal para reunir toda a sua jornada de entretenimento em um único lugar — filmes, séries, animes, mangás, doramas, livros, HQs e jogos. Registre progresso e avaliações, acompanhe metas e estatísticas, e retome exatamente de onde parou."
+- **`style.css`**: novo estilo `.cfg-about-text` (fonte sm, line-height 1.6, cor text2, max-width 420px, centralizado).
+
+### Verificação
+- `node --check src/pages.js` — sintaxe ok.
+
+#### Arquivos alterados
+`src/pages.js`, `style.css`
+
+### Pendências
+- Nenhuma pendência conhecida no momento.
+
+### Deploy
+`firebase deploy --only hosting` executado — live em `https://entertainment-hub-7777a.web.app`
+
 ## Sessão — 01/08/2026
 
 **Comando de salvar:** "Salve" → atualizar este log e commitar.
