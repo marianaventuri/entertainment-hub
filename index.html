@@ -21,6 +21,7 @@
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-functions-compat.js"></script>
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </head>
 <body>
@@ -233,7 +234,7 @@
     <button onclick="navigate('config')" aria-label="Configurações" title="Configurações da conta">
       <span class="material-symbols-rounded">settings</span> Configurações
     </button>
-    <button onclick="navigate('config')" aria-label="Integrações" title="Gerenciar integrações">
+    <button onclick="navigate('integracoes')" aria-label="Integrações" title="Gerenciar integrações">
       <span class="material-symbols-rounded">integration_instructions</span> Integrações
     </button>
         <button onclick="openImportModal()" aria-label="Backup" title="Fazer backup dos dados">
@@ -531,6 +532,17 @@
       <div id="configContent"></div>
     </div>
 
+    <!-- ── INTEGRAÇÕES ── -->
+    <div class="page" id="page-integracoes">
+      <div class="page-header">
+        <div>
+          <div class="page-title">📡 Integrações</div>
+          <div class="page-subtitle">Status e cobertura das fontes de dados</div>
+        </div>
+      </div>
+      <div id="integracoesContent"></div>
+    </div>
+
     <!-- ── EXPERIÊNCIA ── -->
     <div class="page" id="page-experiencia">
       <div class="page-header">
@@ -682,12 +694,23 @@
 <script src="src/adapters/anilistAdapter.js?v=12"></script>
 <script src="src/adapters/rawgAdapter.js?v=12"></script>
 <script src="src/adapters/openLibraryAdapter.js?v=12"></script>
+<script src="src/adapters/googleBooksAdapter.js?v=12"></script>
+<script src="src/adapters/index.js?v=12"></script>
+<script>
+// Register all adapters with their API keys from constants
+adapterRegistry.register('TMDB',         new TMDBAdapter(typeof TMDB_KEY !== 'undefined' ? TMDB_KEY : ''),        5);
+adapterRegistry.register('AniList',      new AniListAdapter(),                                                     5);
+adapterRegistry.register('RAWG',         new RAWGAdapter(typeof RAWG_KEY !== 'undefined' ? RAWG_KEY : ''),        5);
+adapterRegistry.register('Google Books', new GoogleBooksAdapter(typeof GOOGLE_BOOKS_KEY !== 'undefined' ? GOOGLE_BOOKS_KEY : ''), 5);
+adapterRegistry.register('OpenLibrary',  new OpenLibraryAdapter(),                                                 4);
+</script>
 <script src="src/api.js?v=12"></script>
 <script src="src/catalog.js?v=12"></script>
 <script src="src/jornada.js?v=12"></script>
 <script src="src/modals.js?v=12"></script>
 <script src="src/pages.js?v=12"></script>
 <script src="src/auth.js?v=12"></script>
+<script src="src/integrationsPanel.js?v=12"></script>
 <script>
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {

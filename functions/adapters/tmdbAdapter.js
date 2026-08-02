@@ -1,5 +1,5 @@
 /**
- * Adapter para TMDB (Browser version)
+ * Adapter para TMDB (Cloud Functions / Node 18)
  */
 class TMDBAdapter {
   constructor(apiKey) {
@@ -29,10 +29,10 @@ class TMDBAdapter {
 
   async fetch(workId, fields) {
     if (!this.apiKey) throw new Error('TMDB API Key missing');
-    
+
     let tmdbId = workId;
-    let type = 'movie'; // default
-    
+    let type = 'movie';
+
     if (isNaN(tmdbId)) {
       const searchRes = await fetch(`${this.baseURL}/search/multi?api_key=${this.apiKey}&query=${encodeURIComponent(workId)}&language=pt-BR`);
       const searchData = await searchRes.json();
@@ -46,7 +46,7 @@ class TMDBAdapter {
     const detailsRes = await fetch(`${this.baseURL}/${type}/${tmdbId}?api_key=${this.apiKey}&language=pt-BR&append_to_response=credits`);
     const raw = await detailsRes.json();
     const isMovie = type === 'movie';
-    
+
     const result = {};
     const now = new Date().toISOString();
 
@@ -77,11 +77,11 @@ class TMDBAdapter {
     addField('episodes', !isMovie && raw.number_of_episodes ? raw.number_of_episodes : null);
     addField('studio', (raw.production_companies || []).map(c => c.name).join(', '));
     addField('publisher', !isMovie && raw.networks && raw.networks.length ? raw.networks.map(n => n.name).join(', ') : null);
-    
+
     if (isMovie && raw.belongs_to_collection) {
       addField('collection_id', raw.belongs_to_collection.id);
     }
-    
+
     if (isMovie && raw.credits && raw.credits.crew) {
       const dir = raw.credits.crew.find(c => c.job === 'Director');
       if (dir) addField('director', dir.name, 5);
@@ -94,3 +94,5 @@ class TMDBAdapter {
     return result;
   }
 }
+
+module.exports = TMDBAdapter;

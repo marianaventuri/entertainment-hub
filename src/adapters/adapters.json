@@ -1,0 +1,27 @@
+[
+  {
+    "name": "TMDB",
+    "classFile": "tmdbAdapter.js",
+    "weight": 5
+  },
+  {
+    "name": "AniList",
+    "classFile": "anilistAdapter.js",
+    "weight": 5
+  },
+  {
+    "name": "RAWG",
+    "classFile": "rawgAdapter.js",
+    "weight": 5
+  },
+  {
+    "name": "Google Books",
+    "classFile": "googleBooksAdapter.js",
+    "weight": 5
+  },
+  {
+    "name": "OpenLibrary",
+    "classFile": "openLibraryAdapter.js",
+    "weight": 4
+  }
+]

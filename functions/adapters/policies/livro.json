@@ -1,0 +1,13 @@
+{
+  "media": "Livro",
+  "pipeline": [
+    {
+      "api": "Google Books",
+      "fields": ["title", "authors", "description", "industryIdentifiers", "pageCount", "categories", "publishedDate", "publisher", "language", "imageLinks"]
+    },
+    {
+      "api": "OpenLibrary",
+      "fields": ["cover", "subjects"]
+    }
+  ]
+}

@@ -190,6 +190,63 @@ Firebase Hosting → `https://entertainment-hub-7777a.web.app`
 ### Deploy
 `firebase deploy` executado — live em `https://entertainment-hub-7777a.web.app`
 
+## Sessão — 02/08/2026
+
+**Comando de salvar:** "Atualize tudo e deixe certinho" → atualizar este log, corrigir e commitar.
+
+### Sprint API.04 — Adapter Registry + Proxy (Cloud Functions)
+
+Trabalho extenso que estava **não commitado e não anotado** em sessões anteriores (arquivos em working tree desde antes do `4cc60bf`). Auditado, corrigido e documentado nesta sessão.
+
+#### Arquitetura nova
+
+**Adapters como classes (browser + cloud)** — os adapters deixaram de ser funções `adapter(raw, type)` e viraram classes com contrato uniforme:
+- `capabilities()` → mapa de campos suportados por tipo de mídia
+- `fetch(workId, fields)` → retorna `{ campo: { value, source, confidence, fetchedAt } }`
+- Formato de campo com metadados de procedência (fonte, confiança, timestamp)
+
+| Arquivo | Descrição |
+|---|---|
+| `src/adapters/index.js` | `AdapterRegistry` singleton (browser) |
+| `src/adapters/adapters.json` | Config do registro (nomes + pesos) |
+| `src/adapters/googleBooksAdapter.js` | Novo adapter dedicado (antes o código vivia em `api.js`) |
+| `src/adapters/policies/*.json` | Pipelines por tipo de mídia (anime, filme, jogo, livro, série) |
+| `functions/adapters/` | Mesma camada em Node CJS para as Cloud Functions (chaves via `process.env`/`functions/.env`) |
+| `functions/index.js` | `fetchFromApi` (pipeline multi-adapter com merge por confiança) + `adminIntegrations` (status mock) |
+
+**Painel de Integrações**
+- `src/integrationsPanel.js` + página `integracoes` no `index.html` (`page-integracoes`)
+- Botão "Integrações" na sidebar agora navega pra página (antes caía na config)
+- `adminIntegrations` busca status na nuvem, com fallback estático se as functions não estiverem deployadas
+
+**Config de infra**
+- `firebase.js`: emulador de functions habilitado para `localhost`/`127.0.0.1` (porta 5001)
+- `firebase.json`: bloco `functions` + `emulators`
+- `index.html`: script `firebase-functions-compat`, novos `<script>` dos adapters + registro inline
+
+#### Bugs corrigidos nesta sessão (refactor estava quebrado)
+
+1. **`functions/index.js` quebrava no load** — `require("./adapters/index")` apontava pra pasta inexistente. Criada a camada completa `functions/adapters/` (5 adapters + registry + policies copiadas).
+2. **Crash no merge de metadados** — `metadata[key].confidence` acessado antes de `metadata[key]` existir. Corrigido (`metadata[key] ? metadata[key].confidence : -1`).
+3. **`searchTMDB/searchAniList/searchRAWG/searchOpenLibrary` quebradas** — chamavam `tmdbAdapter()`/`anilistAdapter()` como função, mas os adapters viraram classes. Usadas pela Jornada da Obra (`jornadaAddFromApi`). Reescrevidas como wrappers sobre `adapter.fetch()` (retornam objeto único no formato comum).
+4. **`openLibraryDetailAdapter` removida do refactor** — quebrava o import por código OLID/ISBN. `fetchOpenLibraryByCode()` agora usa o `OpenLibraryAdapter` (que já trata OLID/ISBN e resolve nome de autor).
+5. **`_adapterResultToUi()` incompleta** — faltava `author`, `volumes`, `hoursPlayed`, `readUrl`, `externalIds`, `_source`, `_apiId`. Adicionados todos; `externalIds` populado a partir dos novos campos de id dos adapters (`tmdb_id`, `anilist_id`, `rawg_id`, `googlebooks_id`, `openlibrary_id`, `isbn`).
+6. **Campos perdidos nos adapters** — TMDB não emitia `seasons`, `episodes`, `studio`, `publisher`, `tmdb_id`; AniList não emitia `anilist_id`; RAWG não emitia `rawg_id`/`website`; Google Books não emitia `googlebooks_id`; OpenLibrary não resolvia autor. Todos adicionados (browser + cloud).
+7. **`firebase.json` sem `functions` antes** — `firebase deploy --only hosting` não incluía as functions; bloco adicionado.
+
+#### Nota de design
+- `buscarOnline()` agora retorna **1 resultado** (melhor correspondência por adapter/policy), em vez dos 5 resultados do Smart Search. O autocomplete continua funcionando — seleção explícita mantida — mas com sugestão única. Coerente com o modelo de pipeline/proxy.
+
+#### Arquivos alterados
+`src/api.js`, `src/adapters/*` (5 adapters + index + adapters.json + policies), `src/integrationsPanel.js`, `index.html`, `firebase.js`, `firebase.json`, `functions/` (novo: adapters + index.js + package.json + policies), `CONTEXT.md`
+
+### Pendências
+- `firebase deploy --only functions` ainda não executado (functions não estão no ar — painel usa fallback estático).
+- Branch 2 commits à frente de `origin/main`; push pendente.
+
+### Deploy
+`firebase deploy --only hosting` executado — live em `https://entertainment-hub-7777a.web.app`
+
 ## Sessão — 01/08/2026
 
 **Comando de salvar:** "Salve" → atualizar este log e commitar.

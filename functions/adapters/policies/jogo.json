@@ -1,0 +1,9 @@
+{
+  "media": "Jogo",
+  "pipeline": [
+    {
+      "api": "RAWG",
+      "fields": ["title", "description", "released", "background_image", "screenshots", "rating", "platforms", "developers", "publishers", "genres", "tags", "esrb_rating"]
+    }
+  ]
+}

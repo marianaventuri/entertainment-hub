@@ -1,5 +1,5 @@
 /**
- * Adapter para RAWG (Browser version)
+ * Adapter para RAWG (Cloud Functions / Node 18)
  */
 class RAWGAdapter {
   constructor(apiKey) {
@@ -15,22 +15,22 @@ class RAWGAdapter {
       description: ['Jogo'],
       released: ['Jogo'],
       background_image: ['Jogo'],
-      screenshots: ['Jogo'],
       rating: ['Jogo'],
       platforms: ['Jogo'],
       developers: ['Jogo'],
       publishers: ['Jogo'],
       genres: ['Jogo'],
       tags: ['Jogo'],
-      esrb_rating: ['Jogo']
+      esrb_rating: ['Jogo'],
+      website: ['Jogo']
     };
   }
 
   async fetch(workId, fields) {
     if (!this.apiKey) throw new Error('RAWG API Key missing');
-    
+
     let rawgId = workId;
-    
+
     if (isNaN(rawgId)) {
       const searchRes = await fetch(`${this.baseURL}/games?key=${this.apiKey}&search=${encodeURIComponent(workId)}&page_size=1`);
       const searchData = await searchRes.json();
@@ -40,7 +40,7 @@ class RAWGAdapter {
 
     const detailsRes = await fetch(`${this.baseURL}/games/${rawgId}?key=${this.apiKey}`);
     const raw = await detailsRes.json();
-    
+
     const result = {};
     const now = new Date().toISOString();
 
@@ -64,7 +64,7 @@ class RAWGAdapter {
     addField('rating', raw.rating);
     addField('rawg_id', rawgId);
     addField('website', raw.website);
-    
+
     if (raw.platforms) {
       addField('platforms', raw.platforms.map(p => p.platform.name).join(', '));
     }
@@ -87,3 +87,5 @@ class RAWGAdapter {
     return result;
   }
 }
+
+module.exports = RAWGAdapter;

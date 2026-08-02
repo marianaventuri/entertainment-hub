@@ -1,5 +1,5 @@
 /**
- * Adapter para OpenLibrary (Browser version)
+ * Adapter para OpenLibrary (Cloud Functions / Node 18)
  */
 class OpenLibraryAdapter {
   constructor() {
@@ -25,7 +25,7 @@ class OpenLibraryAdapter {
   async fetch(workId, fields) {
     let url;
     let olid = '';
-    
+
     if (/^OL\d+/.test(workId)) {
       olid = workId;
       url = `${this.baseURL}${workId.startsWith('/') ? '' : '/'}${workId}.json`;
@@ -68,7 +68,7 @@ class OpenLibraryAdapter {
 
     addField('title', raw.title);
     addField('openlibrary_id', olid);
-    
+
     let synopsis = '';
     if (typeof raw.description === 'string') synopsis = raw.description;
     else if (raw.description && raw.description.value) synopsis = raw.description.value;
@@ -76,12 +76,12 @@ class OpenLibraryAdapter {
 
     addField('publish_date', raw.publish_date);
     addField('number_of_pages', raw.number_of_pages);
-    
+
     if (raw.publishers) addField('publishers', raw.publishers.join(', '));
-    if (raw.subjects) addField('subjects', raw.subjects.slice(0,5).join(', '));
+    if (raw.subjects) addField('subjects', raw.subjects.slice(0, 5).join(', '));
 
     if (raw.authors && raw.authors[0]) {
-      const authorKey = raw.authors[0].author?.key || raw.authors[0].key || '';
+      const authorKey = raw.authors[0].author && raw.authors[0].author.key ? raw.authors[0].author.key : (raw.authors[0].key || '');
       if (authorKey) {
         try {
           const authorRes = await fetch(`${this.baseURL}${authorKey}.json`);
@@ -92,7 +92,7 @@ class OpenLibraryAdapter {
         } catch (_) {}
       }
     }
-    
+
     if (raw.covers && raw.covers.length > 0) {
       addField('cover', `https://covers.openlibrary.org/b/id/${raw.covers[0]}-L.jpg`);
     }
@@ -106,3 +106,5 @@ class OpenLibraryAdapter {
     return result;
   }
 }
+
+module.exports = OpenLibraryAdapter;
